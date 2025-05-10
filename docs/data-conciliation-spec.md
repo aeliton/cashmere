@@ -19,7 +19,7 @@ I the where B also registers transactions, they would eventually get to A and
 because the would have the same logic of creating the visualization, they must
 show exactly the same content.
 
-# Conflict resolution
+# Editing Conflicts
 
 Conflicts will happen when the same transaction is edited on two or more
 different devices concurrently. In such cases is not possible for the merge
@@ -38,26 +38,28 @@ In the example bellow, A and B are the ID of the devices, the square brackets
 display the vector clock of each device:
 
 ```
-Time    A [ 0.00]                             B [ 0.00]
- 0  .-- * add  5.00 [ 5.00] (1, 0) -.         * add  2.00 [ 2.00] (0, 1) ----.
- 1  '---v                           '------>  * add  5.00 [ 7.00] (1, 1) --. |
- 2  .-- * edit 4.00 [ 8.00] (2, 0)         .- * edit 6.00 [ 8.00] (1, 2) <-' |
- 3  .-- * add  3.00 [ 7.00] (3, 0)         |                                 |
- 4  |   * add  2.00 [ 9.00] (3, 1) <-------+---------------------------------'
+      Device A                              Device B
+Time    A                                     B
+ 0      * [ 0.00]                             * [ 0.00]
+ 1  .-- * add  5.00 [ 5.00] (1, 0) -.         * add  2.00 [ 2.00] (0, 1) ----.
+ 2  '---v                           '------>  * add  5.00 [ 7.00] (1, 1) --. |
+ 3  .-- * edit 4.00 [ 4.00] (2, 0)         .- * edit 6.00 [ 8.00] (1, 2) <-' |
+ 4  .-- * add  3.00 [ 7.00] (3, 0)         |                                 |
+ 5  |   * add  2.00 [ 9.00] (3, 1) <-------+---------------------------------'
     |   * edit 6.00 [ 9.00] (3, 2) <-------'
- 5  |------------------------------------->  * add  3.00 [11.00] (2, 2)
+ 6  |------------------------------------->  * add  3.00 [11.00] (2, 2)
                                      '---->  * edit 4.00 [ 9.00] (3, 2)
 ```
 
-* Up to the time 1, there's a single shared transaction of value $5.00 from A to
+* Up to the time 2, there's a single shared transaction of value $5.00 from A to
 B. A is not aware yet of the B's $2.00 transaction.
-* In time 2, both devices edit the same shared transaction witch will cause a
+* In time 3, both devices edit the same shared transaction witch will cause a
   conflict when the devices receive each others edits. In
-* In time 3 A adds a $3.00 transaction
-* In time 4, A receives two updates from B, including the edit. The conflict is
+* In time 4 A adds a $3.00 transaction
+* In time 5, A receives two updates from B, including the edit. The conflict is
   resolved automatically by choosing the smaller lexicographical ID as the
   winner.
-* In time 5, A shares the edit alongside the with an addition. The conflict of
+* In time 6, A shares the edit alongside the with an addition. The conflict of
   the edit is then resolved in B, with both devices converging to the same
   agreed state.
 
