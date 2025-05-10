@@ -68,6 +68,47 @@ facing UI that an automatic conflict resolution was made, which would help the
 user to double check and potentially override the automatic conflict resolution
 by creating an edit transaction that will alter the previous resolution.
 
+# Data representation
+
+One possible way of representing the model data would be through a map where
+the keys would be a pair `(device-id, operation-id)`. From the perespective of
+the device A from the example above, we would have the following sequence of
+operations constructing the map:
+
+| Key    | value                | view    |
+|------- | -------------------- | ------- |
+| (1, 0) | (a, 1, 5.00)         | 5.00    |
+| (2, 0) | (a, 2, 4.00, (a, 1)) | 4.00    |
+| (3, 0) | (a, 3, 3.00)         | 7.00    |
+| (3, 1) | (b, 1, 2.00)         | 9.00    |
+| (3, 2) | (b, 2, 6.00, (a, 1)) | 9.00    |
+
+
+With the above map we would construct the model for each transaction considering
+the modifications sorted lexicographically:
+
+```
+(1, 0), [(a, 4.00), (b, 6.00)] => 4.00
+(3, 0), []                     => 3.00
+(3, 1), []                     => 2.00
+---------------------------------------
++                                 9.00
+```
+
+We can avoid a whole can of worms if we prevent the editing of the transactions
+of the Edit type. If such edits were allowed, the case where a chain of
+edits would be discarded during a merge with an editing transaction of a device
+with smaller lexicographical id.
+
+From the view perspective, when selecting to edit an already edited value, the
+behaviour must trigger an edit on the original value in such a way that the last
+edit wins.
+
+# Deleteion Conflicts
+
+Deletions are transactions that makes a previous transaction null. A deletion
+conflict happens when one device deletes a transaction and another
+
 # How to ensure the view of data
 
 * CRDT
