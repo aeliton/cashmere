@@ -21,7 +21,8 @@
 
 using OptionsMap = std::unordered_map<std::string, std::string>;
 
-class Options {
+class Options
+{
 public:
   Options(int argc, const char *const *const argv);
 
