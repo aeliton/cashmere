@@ -104,10 +104,17 @@ From the view perspective, when selecting to edit an already edited value, the
 behaviour must trigger an edit on the original value in such a way that the last
 edit wins.
 
-# Deleteion Conflicts
+# Deletion Conflicts
 
-Deletions are transactions that makes a previous transaction null. A deletion
-conflict happens when one device deletes a transaction and another
+Deletions are transactions that makes a previous transaction null and all their
+edits null. A deletion conflict can happen in two cases:
+
+1. Two (or more) devices can delete the same transaction concurrently. Although
+   the effect is the same no mater which node performed the deletion, the node
+   with the smaller lexicographical ID will be selected as the truth.
+2. A deletion of a transaction can happen concurrently with one (or more) edits
+   of the same transaction being deleted. I this case, the update of the device
+   with the smallest lexicographical ID wins.
 
 # How to ensure the view of data
 
