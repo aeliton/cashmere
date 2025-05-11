@@ -15,12 +15,12 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "options.h"
 
-Options::Options(int argc, const char *const *const argv)
+Options::Options(int argc, const char* const* const argv)
   : _options()
 {
 }
 
-bool Options::contains(const std::string &option) const
+bool Options::contains(const std::string& option) const
 {
   return _options.find(option) != _options.end();
 }
@@ -30,7 +30,7 @@ size_t Options::size() const
   return _options.size();
 }
 
-OptionsMap Options::parse(int argc, const char *const *const argv)
+OptionsMap Options::parse(int argc, const char* const* const argv)
 {
   return {};
 }

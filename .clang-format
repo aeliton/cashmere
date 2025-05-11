@@ -27,7 +27,7 @@ FixNamespaceComments: 'false'
 IndentCaseLabels: 'true'
 IndentWidth: '2'
 Language: Cpp
-PointerAlignment: Right
+PointerAlignment: Left
 SortIncludes: 'true'
 SortUsingDeclarations: 'true'
 SpaceAfterLogicalNot: 'false'

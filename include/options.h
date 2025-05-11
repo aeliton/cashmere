@@ -24,12 +24,12 @@ using OptionsMap = std::unordered_map<std::string, std::string>;
 class Options
 {
 public:
-  Options(int argc, const char *const *const argv);
+  Options(int argc, const char* const* const argv);
 
-  bool contains(const std::string &option) const;
+  bool contains(const std::string& option) const;
   size_t size() const;
 
-  static OptionsMap parse(int argc, const char *const *const argv);
+  static OptionsMap parse(int argc, const char* const* const argv);
 
 private:
   OptionsMap _options;

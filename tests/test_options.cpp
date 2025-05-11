@@ -18,7 +18,7 @@
 
 TEST_CASE("invalid arguments")
 {
-  const char *const argv[] = {"cashew", "is", "nutricious"};
+  const char* const argv[] = {"cashew", "is", "nutricious"};
   REQUIRE(Options::parse(0, argv) == OptionsMap{});
   REQUIRE(Options::parse(-1, argv) == OptionsMap{});
   REQUIRE(Options::parse(10, nullptr) == OptionsMap{});

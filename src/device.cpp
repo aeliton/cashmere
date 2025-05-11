@@ -20,7 +20,7 @@ const uint8_t Device::id() const
   return _deviceId;
 }
 
-const std::vector<uint64_t> &Device::clock() const
+const std::vector<uint64_t>& Device::clock() const
 {
   return _clock;
 }

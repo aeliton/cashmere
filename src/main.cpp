@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 
-int main(int argc, const char *argv[])
+int main(int argc, const char* argv[])
 {
   std::cout << "test" << std::endl;
   return 0;
