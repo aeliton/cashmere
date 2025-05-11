@@ -1,4 +1,4 @@
-// Cashmere - a distributed conflict free replicated database.
+// Cashmere - a distributed conflict-free replicated database.
 // Copyright (C) 2025 Aeliton G. Silva
 //
 // This program is free software: you can redistribute it and/or modify

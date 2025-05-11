@@ -22,6 +22,7 @@ set (CMAKE_CXX_STANDARD 17)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 add_library(cash_objects OBJECT
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/device.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
 )
 target_include_directories(cash_objects PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -38,6 +39,7 @@ find_package(Catch2 3 REQUIRED)
 add_executable(tests)
 target_sources(tests PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_options.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain cash_objects)
