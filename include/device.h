@@ -16,6 +16,7 @@ public:
   explicit Device(uint64_t poolId);
 
   const uint8_t id() const;
+  const uint64_t poolId() const;
   const std::vector<uint64_t>& clock() const;
 
 private:

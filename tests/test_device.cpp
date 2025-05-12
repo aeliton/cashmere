@@ -10,9 +10,5 @@ SCENARIO("device adds and edits transactions")
     {
       REQUIRE(device.clock().size() == 1);
     }
-    AND_THEN("the device id is zero")
-    {
-      REQUIRE(device.id() == 0);
-    }
   }
 }

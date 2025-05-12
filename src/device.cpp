@@ -22,6 +22,11 @@ const uint8_t Device::id() const
   return _deviceId;
 }
 
+const uint64_t Device::poolId() const
+{
+  return _poolId;
+}
+
 const std::vector<uint64_t>& Device::clock() const
 {
   return _clock;
