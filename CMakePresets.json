@@ -11,7 +11,7 @@
         "generator": "Ninja",
         "binaryDir": "${sourceDir}/build/release",
         "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Release",
+          "CMAKE_BUILD_TYPE": "RelWithDebInfo",
           "CMAKE_VERBOSE_MAKEFILE": "OFF",
           "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
           "CMAKE_COMPILE_WARNING_AS_ERROR": "ON"
@@ -20,7 +20,10 @@
       {
         "name": "debug",
         "binaryDir": "${sourceDir}/build/debug",
-        "inherits": "release"
+        "inherits": "release",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug"
+        }
       }
     ],
     "buildPresets": [
