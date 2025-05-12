@@ -21,12 +21,29 @@ SCENARIO("device adds and edits transactions")
   GIVEN("an empty device object")
   {
     Cashmere::Device device;
+    THEN("the device won't have any transaction")
+    {
+      REQUIRE(device.transactions().size() == 0);
+    }
     WHEN("adding the first transaction")
     {
-      const bool result = device.add(5);
+      constexpr uint64_t kTransactionValue = 500;
+      const bool result = device.add(kTransactionValue);
       THEN("it must succeed")
       {
         REQUIRE(result);
+      }
+      AND_WHEN("retrieving the device's transactions")
+      {
+        THEN("the number of transactions has increased")
+        {
+          REQUIRE(device.transactions().size() == 1);
+        }
+        AND_THEN("the transaction value matches the transaction added")
+        {
+          auto [clock, transaction] = *device.transactions().begin();
+          REQUIRE(transaction.value == kTransactionValue);
+        }
       }
     }
   }

@@ -1,7 +1,9 @@
 #include "device.h"
+#include <cassert>
 
 namespace Cashmere
 {
+using std::vector;
 
 Random Device::_random{};
 
@@ -34,7 +36,16 @@ const std::vector<uint64_t>& Device::clock() const
 
 bool Device::add(uint64_t value)
 {
+  size_t previousSize = _transactions.size();
+  _clock[_deviceId]++;
+  _transactions.insert({_clock, Transaction{value}});
+  assert(_transactions.size() == previousSize + 1);
   return true;
+}
+
+std::map<std::vector<uint64_t>, Transaction> Device::transactions() const
+{
+  return _transactions;
 }
 
 }
