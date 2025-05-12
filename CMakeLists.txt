@@ -39,10 +39,11 @@ find_package(Catch2 3 REQUIRED)
 
 add_executable(tests)
 target_sources(tests PRIVATE
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device_clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device_id.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device_pool.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device_transaction.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_options.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain cash_objects)

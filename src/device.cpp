@@ -32,4 +32,9 @@ const std::vector<uint64_t>& Device::clock() const
   return _clock;
 }
 
+bool Device::add(uint64_t value)
+{
+  return true;
+}
+
 }
