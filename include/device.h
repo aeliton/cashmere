@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "random.h"
+
 namespace Cashmere
 {
 
@@ -20,6 +22,7 @@ private:
   const uint64_t _poolId;
   const uint8_t _deviceId;
   std::vector<uint64_t> _clock;
+  static Random _random;
 };
 
 }

@@ -24,6 +24,7 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/device.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
 )
 target_include_directories(cash_objects PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

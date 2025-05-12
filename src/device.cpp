@@ -3,8 +3,10 @@
 namespace Cashmere
 {
 
+Random Device::_random{};
+
 Device::Device()
-  : Device(0)
+  : Device(_random.next())
 {
 }
 
