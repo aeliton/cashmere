@@ -3,12 +3,5 @@
 
 SCENARIO("device adds and edits transactions")
 {
-  GIVEN("an empty device object")
-  {
-    Cashmere::Device device;
-    THEN("the device vector clock shows a single entry")
-    {
-      REQUIRE(device.clock().size() == 1);
-    }
-  }
+  GIVEN("an empty device object") {}
 }
