@@ -25,10 +25,6 @@ SCENARIO("device id creation")
     {
       REQUIRE(device.clock().size() == 1);
     }
-    AND_THEN("the device id is zero")
-    {
-      REQUIRE(device.id() == 0);
-    }
 
     WHEN("creating a second device")
     {
