@@ -13,35 +13,35 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "device.h"
+#include "ledger.h"
 #include <catch2/catch_all.hpp>
 
-SCENARIO("device adds and edits transactions")
+SCENARIO("adds and edits transactions")
 {
-  GIVEN("an empty device object")
+  GIVEN("an empty ledger")
   {
-    Cashmere::Device device;
-    THEN("the device won't have any transaction")
+    Cashmere::Ledger ledger;
+    THEN("the ledger won't have any transaction")
     {
-      REQUIRE(device.transactions().size() == 0);
+      REQUIRE(ledger.transactions().size() == 0);
     }
     WHEN("adding the first transaction")
     {
       constexpr uint64_t kTransactionValue = 500;
-      const bool result = device.add(kTransactionValue);
+      const bool result = ledger.add(kTransactionValue);
       THEN("it must succeed")
       {
         REQUIRE(result);
       }
-      AND_WHEN("retrieving the device's transactions")
+      AND_WHEN("retrieving the transactions")
       {
         THEN("the number of transactions has increased")
         {
-          REQUIRE(device.transactions().size() == 1);
+          REQUIRE(ledger.transactions().size() == 1);
         }
         AND_THEN("the transaction value matches the transaction added")
         {
-          auto [clock, transaction] = *device.transactions().begin();
+          auto [clock, transaction] = *ledger.transactions().begin();
           REQUIRE(transaction.value == kTransactionValue);
         }
       }

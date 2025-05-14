@@ -23,7 +23,7 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/device.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
 )
@@ -40,12 +40,12 @@ find_package(Catch2 3 REQUIRED)
 
 add_executable(tests)
 target_sources(tests PRIVATE
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device_clock.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device_id.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device_pool.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_device_transaction.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_book.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger_clock.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger_id.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_options.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_transaction.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain cash_objects)
 
