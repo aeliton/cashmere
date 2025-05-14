@@ -9,6 +9,9 @@
 namespace Cashmere
 {
 
+using Id = uint64_t;
+using Clock = std::map<Id, uint64_t>;
+
 struct Transaction
 {
   uint64_t value;
@@ -20,9 +23,9 @@ public:
   Ledger();
   explicit Ledger(uint64_t poolId);
 
-  const uint64_t id() const;
-  const uint64_t bookId() const;
-  const std::map<uint64_t, uint64_t>& clock() const;
+  const Id id() const;
+  const Id bookId() const;
+  const Clock& clock() const;
 
   bool add(uint64_t value);
 
@@ -30,10 +33,10 @@ public:
 
 private:
   static Random _random;
-  const uint64_t _bookId;
-  const uint64_t _ledgerId;
-  std::map<uint64_t, uint64_t> _clock;
-  std::map<std::map<uint64_t, uint64_t>, Transaction> _transactions;
+  const Id _bookId;
+  const Id _ledgerId;
+  Clock _clock;
+  std::map<Clock, Transaction> _transactions;
 };
 
 }

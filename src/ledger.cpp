@@ -11,24 +11,24 @@ Ledger::Ledger()
 {
 }
 
-Ledger::Ledger(uint64_t poolId)
+Ledger::Ledger(Id poolId)
   : _bookId(poolId)
   , _ledgerId(_random.next())
 {
   _clock.insert({_ledgerId, 0});
 }
 
-const uint64_t Ledger::id() const
+const Id Ledger::id() const
 {
   return _ledgerId;
 }
 
-const uint64_t Ledger::bookId() const
+const Id Ledger::bookId() const
 {
   return _bookId;
 }
 
-const std::map<uint64_t, uint64_t>& Ledger::clock() const
+const Clock& Ledger::clock() const
 {
   return _clock;
 }
@@ -40,7 +40,7 @@ bool Ledger::add(uint64_t value)
   return true;
 }
 
-std::map<std::map<uint64_t, uint64_t>, Transaction> Ledger::transactions() const
+std::map<Clock, Transaction> Ledger::transactions() const
 {
   return _transactions;
 }
