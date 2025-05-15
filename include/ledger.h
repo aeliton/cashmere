@@ -60,13 +60,13 @@ public:
   const Transaction& query(Time time) const;
   const Transaction& query(Id ledgerId, Time time) const;
 
-  const BookTransactions& transactions() const;
+  const BookTransactions& book() const;
 
 private:
   static Random _random;
   const Id _bookId;
-  const Id _ledgerId;
-  BookTransactions _transactions;
+  const Id _id;
+  BookTransactions _book;
 };
 
 }

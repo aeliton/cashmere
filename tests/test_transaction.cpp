@@ -26,7 +26,7 @@ SCENARIO("adds and edits transactions")
     const Ledger::Id kId0 = ledger.id();
     THEN("the ledger won't have any transaction")
     {
-      REQUIRE(ledger.transactions().size() == 0);
+      REQUIRE(ledger.book().size() == 0);
     }
     THEN("the ledger's clock value is zero")
     {

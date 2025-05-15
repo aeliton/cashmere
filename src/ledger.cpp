@@ -13,13 +13,13 @@ Ledger::Ledger()
 
 Ledger::Ledger(Id poolId)
   : _bookId(poolId)
-  , _ledgerId(_random.next())
+  , _id(_random.next())
 {
 }
 
 const Ledger::Id Ledger::id() const
 {
-  return _ledgerId;
+  return _id;
 }
 
 const Ledger::Id Ledger::bookId() const
@@ -29,8 +29,8 @@ const Ledger::Id Ledger::bookId() const
 
 Ledger::Clock Ledger::clock() const
 {
-  Clock clock{{_ledgerId, 0UL}};
-  for (auto& [ledgerId, transactions] : _transactions) {
+  Clock clock{{_id, 0UL}};
+  for (auto& [ledgerId, transactions] : _book) {
     clock[ledgerId] = transactions.empty() ? 0 : transactions.rbegin()->first;
   }
   return clock;
@@ -38,12 +38,12 @@ Ledger::Clock Ledger::clock() const
 
 bool Ledger::append(Amount value)
 {
-  return append(_ledgerId, {Operation::Insert, value, {}});
+  return append(_id, {Operation::Insert, value, {}});
 }
 
 bool Ledger::append(const Transaction& value)
 {
-  return append(_ledgerId, value);
+  return append(_id, value);
 }
 
 bool Ledger::append(Id ledgerId, Amount value)
@@ -53,36 +53,35 @@ bool Ledger::append(Id ledgerId, Amount value)
 
 bool Ledger::append(Id ledgerId, const Transaction& value)
 {
-  Time time =
-      _transactions[ledgerId].empty() ? 0UL : _transactions.rbegin()->first;
+  Time time = _book[ledgerId].empty() ? 0UL : _book.rbegin()->first;
   return insert(ledgerId, time + 1, value);
 }
 
 bool Ledger::insert(Id ledgerId, Time time, Amount value)
 {
-  _transactions[ledgerId][time] = {Operation::Insert, value, {}};
+  _book[ledgerId][time] = {Operation::Insert, value, {}};
   return true;
 }
 
 bool Ledger::insert(Id ledgerId, Time time, const Transaction& value)
 {
-  _transactions[ledgerId][time] = value;
+  _book[ledgerId][time] = value;
   return true;
 }
 
 const Ledger::Transaction& Ledger::query(Time time) const
 {
-  return _transactions.at(_ledgerId).at(time);
+  return _book.at(_id).at(time);
 }
 
 const Ledger::Transaction& Ledger::query(Id ledgerId, Time time) const
 {
-  return _transactions.at(ledgerId).at(time);
+  return _book.at(ledgerId).at(time);
 }
 
-const Ledger::BookTransactions& Ledger::transactions() const
+const Ledger::BookTransactions& Ledger::book() const
 {
-  return _transactions;
+  return _book;
 }
 
 }
