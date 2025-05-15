@@ -33,7 +33,7 @@ const Clock& Ledger::clock() const
   return _clock;
 }
 
-bool Ledger::add(uint64_t value)
+bool Ledger::add(Amount value)
 {
   _clock[_ledgerId]++;
   _transactions.insert({_clock, Transaction{value}});

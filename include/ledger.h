@@ -10,11 +10,12 @@ namespace Cashmere
 {
 
 using Id = uint64_t;
+using Amount = int64_t;
 using Clock = std::map<Id, uint64_t>;
 
 struct Transaction
 {
-  uint64_t value;
+  Amount value;
 };
 
 class Ledger
@@ -27,9 +28,9 @@ public:
   const Id bookId() const;
   const Clock& clock() const;
 
-  bool add(uint64_t value);
+  bool add(Amount value);
 
-  std::map<std::map<uint64_t, uint64_t>, Transaction> transactions() const;
+  std::map<Clock, Transaction> transactions() const;
 
 private:
   static Random _random;
