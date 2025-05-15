@@ -49,6 +49,15 @@ SCENARIO("adds and edits transactions")
           REQUIRE(clock == Cashmere::Clock{{ledger.id(), 1}});
         }
       }
+      AND_WHEN("adding a transaction with another ID")
+      {
+        ledger.add(0xbeeffeed, 2, 9);
+        auto transactions = ledger.transactions();
+        THEN("the transaction count increases")
+        {
+          REQUIRE(transactions.size() == 2);
+        }
+      }
     }
   }
 }

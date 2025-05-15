@@ -11,7 +11,8 @@ namespace Cashmere
 
 using Id = uint64_t;
 using Amount = int64_t;
-using Clock = std::map<Id, uint64_t>;
+using Time = uint64_t;
+using Clock = std::map<Id, Time>;
 
 struct Transaction
 {
@@ -22,14 +23,14 @@ class Ledger
 {
 public:
   Ledger();
-  explicit Ledger(uint64_t poolId);
+  explicit Ledger(Id poolId);
 
   const Id id() const;
   const Id bookId() const;
   const Clock& clock() const;
 
   bool add(Amount value);
-  bool add(Id ledgerId, Amount value);
+  bool add(Id ledgerId, Time time, Amount value);
 
   std::map<Clock, Transaction> transactions() const;
 
