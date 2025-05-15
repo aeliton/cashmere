@@ -14,11 +14,6 @@ using Amount = int64_t;
 using Time = uint64_t;
 using Clock = std::map<Id, Time>;
 
-struct Transaction
-{
-  Amount value;
-};
-
 class Ledger
 {
 public:
@@ -27,19 +22,19 @@ public:
 
   const Id id() const;
   const Id bookId() const;
-  const Clock& clock() const;
+  Clock clock() const;
 
   bool add(Amount value);
+  bool add(Id ledgerId, Amount value);
   bool add(Id ledgerId, Time time, Amount value);
 
-  std::map<Clock, Transaction> transactions() const;
+  std::map<Id, std::map<Time, Amount>> transactions() const;
 
 private:
   static Random _random;
   const Id _bookId;
   const Id _ledgerId;
-  Clock _clock;
-  std::map<Clock, Transaction> _transactions;
+  std::map<Id, std::map<Time, Amount>> _transactions;
 };
 
 }

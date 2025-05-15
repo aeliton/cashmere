@@ -16,18 +16,20 @@
 #include "ledger.h"
 #include <catch2/catch_all.hpp>
 
+using namespace Cashmere;
+
 SCENARIO("adds and edits transactions")
 {
   GIVEN("an empty ledger")
   {
-    Cashmere::Ledger ledger;
+    Ledger ledger;
     THEN("the ledger won't have any transaction")
     {
       REQUIRE(ledger.transactions().size() == 0);
     }
     THEN("the ledger's clock value is zero")
     {
-      REQUIRE(ledger.clock() == Cashmere::Clock{{ledger.id(), 0}});
+      REQUIRE(ledger.clock() == Clock{{ledger.id(), 0}});
     }
     WHEN("adding the first transaction")
     {
@@ -39,23 +41,19 @@ SCENARIO("adds and edits transactions")
       }
       AND_WHEN("retrieving the transactions")
       {
-        auto [clock, transaction] = *ledger.transactions().begin();
+        const auto transactions = ledger.transactions().at(ledger.id());
         THEN("the transaction value matches the transaction added")
         {
-          REQUIRE(transaction.value == kTransactionValue);
-        }
-        AND_THEN("the ledger clock is incremented")
-        {
-          REQUIRE(clock == Cashmere::Clock{{ledger.id(), 1}});
+          REQUIRE(transactions.at(Time(1)) == kTransactionValue);
         }
       }
       AND_WHEN("adding a transaction with another ID")
       {
-        ledger.add(0xbeeffeed, 2, 9);
-        auto transactions = ledger.transactions();
-        THEN("the transaction count increases")
+        constexpr Id kSecondId = 0xbeeffeed;
+        ledger.add(kSecondId, Time(2), Amount(900));
+        THEN("the transaction is retrievable")
         {
-          REQUIRE(transactions.size() == 2);
+          REQUIRE(ledger.transactions().at(kSecondId).at(Time(2)) == 900);
         }
       }
     }

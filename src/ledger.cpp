@@ -15,7 +15,6 @@ Ledger::Ledger(Id poolId)
   : _bookId(poolId)
   , _ledgerId(_random.next())
 {
-  _clock.insert({_ledgerId, 0});
 }
 
 const Id Ledger::id() const
@@ -28,25 +27,34 @@ const Id Ledger::bookId() const
   return _bookId;
 }
 
-const Clock& Ledger::clock() const
+Clock Ledger::clock() const
 {
-  return _clock;
+  Clock clock{{_ledgerId, 0UL}};
+  for (auto& [ledgerId, transactions] : _transactions) {
+    clock[ledgerId] = transactions.empty() ? 0 : transactions.rbegin()->first;
+  }
+  return clock;
 }
 
 bool Ledger::add(Amount value)
 {
-  return add(_ledgerId, _clock[_ledgerId] + 1, value);
+  return add(_ledgerId, value);
+}
+
+bool Ledger::add(Id ledgerId, Amount value)
+{
+  Time time =
+      _transactions[ledgerId].empty() ? 0UL : _transactions.rbegin()->first;
+  return add(ledgerId, time + 1, value);
 }
 
 bool Ledger::add(Id ledgerId, Time time, Amount value)
 {
-  auto clock = _clock;
-  clock[ledgerId] = time;
-  _transactions.insert({clock, Transaction{value}});
+  _transactions[ledgerId][time] = value;
   return true;
 }
 
-std::map<Clock, Transaction> Ledger::transactions() const
+std::map<Id, std::map<Time, Amount>> Ledger::transactions() const
 {
   return _transactions;
 }
