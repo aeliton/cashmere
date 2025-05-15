@@ -9,14 +9,14 @@
 namespace Cashmere
 {
 
-using Id = uint64_t;
 using Amount = int64_t;
 using Time = uint64_t;
-using Clock = std::map<Id, Time>;
 
 class Ledger
 {
 public:
+  using Id = uint64_t;
+  using Clock = std::map<Id, Time>;
   Ledger();
   explicit Ledger(Id poolId);
 

@@ -17,17 +17,17 @@ Ledger::Ledger(Id poolId)
 {
 }
 
-const Id Ledger::id() const
+const Ledger::Id Ledger::id() const
 {
   return _ledgerId;
 }
 
-const Id Ledger::bookId() const
+const Ledger::Id Ledger::bookId() const
 {
   return _bookId;
 }
 
-Clock Ledger::clock() const
+Ledger::Clock Ledger::clock() const
 {
   Clock clock{{_ledgerId, 0UL}};
   for (auto& [ledgerId, transactions] : _transactions) {
@@ -64,7 +64,7 @@ Amount Ledger::query(Id ledgerId, Time time) const
   return _transactions.at(ledgerId).at(time);
 }
 
-std::map<Id, std::map<Time, Amount>> Ledger::transactions() const
+std::map<Ledger::Id, std::map<Time, Amount>> Ledger::transactions() const
 {
   return _transactions;
 }
