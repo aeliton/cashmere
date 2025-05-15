@@ -35,7 +35,7 @@ SCENARIO("adds and edits transactions")
     WHEN("adding the first transaction")
     {
       constexpr uint64_t kTransactionValue = 500;
-      const bool result = ledger.add(kTransactionValue);
+      const bool result = ledger.append(kTransactionValue);
       THEN("it must succeed")
       {
         REQUIRE(result);
@@ -47,7 +47,7 @@ SCENARIO("adds and edits transactions")
       AND_WHEN("adding a transaction with another ID")
       {
         constexpr Ledger::Id kId1 = 0xbeeffeed;
-        ledger.add(kId1, Time(2), Amount(900));
+        ledger.insert(kId1, Time(2), Amount(900));
         THEN("the transaction is retrievable")
         {
           REQUIRE(ledger.query(kId1, 2) == 900);

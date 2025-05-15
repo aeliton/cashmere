@@ -24,9 +24,9 @@ public:
   const Id bookId() const;
   Clock clock() const;
 
-  bool add(Amount value);
-  bool add(Id ledgerId, Amount value);
-  bool add(Id ledgerId, Time time, Amount value);
+  bool append(Amount value);
+  bool append(Id ledgerId, Amount value);
+  bool insert(Id ledgerId, Time time, Amount value);
 
   Amount query(Time time) const;
   Amount query(Id ledgerId, Time time) const;

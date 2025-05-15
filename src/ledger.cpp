@@ -36,19 +36,19 @@ Ledger::Clock Ledger::clock() const
   return clock;
 }
 
-bool Ledger::add(Amount value)
+bool Ledger::append(Amount value)
 {
-  return add(_ledgerId, value);
+  return append(_ledgerId, value);
 }
 
-bool Ledger::add(Id ledgerId, Amount value)
+bool Ledger::append(Id ledgerId, Amount value)
 {
   Time time =
       _transactions[ledgerId].empty() ? 0UL : _transactions.rbegin()->first;
-  return add(ledgerId, time + 1, value);
+  return insert(ledgerId, time + 1, value);
 }
 
-bool Ledger::add(Id ledgerId, Time time, Amount value)
+bool Ledger::insert(Id ledgerId, Time time, Amount value)
 {
   _transactions[ledgerId][time] = value;
   return true;
