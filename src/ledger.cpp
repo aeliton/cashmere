@@ -32,7 +32,9 @@ Amount Ledger::balance() const
         auto& [id, time] = entry.alters;
         result -= _journal->query(id, time).value;
       }
-      result += entry.value;
+      if (entry.operation != Journal::Operation::Delete) {
+        result += entry.value;
+      }
     }
   }
   return result;
