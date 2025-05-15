@@ -27,12 +27,22 @@ SCENARIO("evaluate transactions")
     journal->append(200);
     journal->append(100);
 
+    REQUIRE(journal->query(1).value == 300);
+
     WHEN("using a ledger to process the journal")
     {
       Ledger ledger(journal);
       THEN("the recorded journal entries are consolidated")
       {
         REQUIRE(ledger.balance() == 600);
+      }
+      AND_WHEN("editing one of the entries")
+      {
+        journal->append({Journal::Operation::Replace, 50, {journal->id(), 1}});
+        THEN("the balance is updated accordingly")
+        {
+          REQUIRE(ledger.balance() == 350);
+        }
       }
     }
   }

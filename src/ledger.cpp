@@ -28,6 +28,10 @@ Amount Ledger::balance() const
   Amount result = 0;
   for (auto& [journalId, entries] : _journal->journals()) {
     for (auto& [time, entry] : entries) {
+      if (entry.operation != Journal::Operation::Insert) {
+        auto& [id, time] = entry.alters;
+        result -= _journal->query(id, time).value;
+      }
       result += entry.value;
     }
   }
