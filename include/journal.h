@@ -52,13 +52,13 @@ public:
 
   bool append(Amount value);
   bool append(const Entry& value);
-  bool append(Id ledgerId, Amount value);
-  bool append(Id ledgerId, const Entry& value);
-  bool insert(Id ledgerId, Time time, Amount value);
-  bool insert(Id ledgerId, Time time, const Entry& value);
+  bool append(Id journalId, Amount value);
+  bool append(Id journalId, const Entry& value);
+  bool insert(Id journalId, Time time, Amount value);
+  bool insert(Id journalId, Time time, const Entry& value);
 
   const Entry& query(Time time) const;
-  const Entry& query(Id ledgerId, Time time) const;
+  const Entry& query(Id journalId, Time time) const;
 
   const JournalBook& journals() const;
 

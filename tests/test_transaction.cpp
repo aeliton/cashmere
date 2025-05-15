@@ -13,48 +13,48 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "ledger.h"
+#include "journal.h"
 #include <catch2/catch_all.hpp>
 
 using namespace Cashmere;
 
 SCENARIO("adds and edits transactions")
 {
-  GIVEN("an empty ledger")
+  GIVEN("an empty journal")
   {
-    Journal ledger;
-    const Journal::Id kId0 = ledger.id();
-    THEN("the ledger won't have any transaction")
+    Journal journal;
+    const Journal::Id kId0 = journal.id();
+    THEN("the journal won't have any transaction")
     {
-      REQUIRE(ledger.journals().size() == 0);
+      REQUIRE(journal.journals().size() == 0);
     }
-    THEN("the ledger's clock value is zero")
+    THEN("the journal's clock value is zero")
     {
-      REQUIRE(ledger.clock() == Journal::Clock{{kId0, 0}});
+      REQUIRE(journal.clock() == Journal::Clock{{kId0, 0}});
     }
     WHEN("adding the first transaction")
     {
       constexpr uint64_t kTransactionValue = 500;
-      const bool result = ledger.append(kTransactionValue);
+      const bool result = journal.append(kTransactionValue);
       THEN("it must succeed")
       {
         REQUIRE(result);
       }
       AND_THEN("the transaction value matches the transaction added")
       {
-        REQUIRE(ledger.query(1).value == kTransactionValue);
+        REQUIRE(journal.query(1).value == kTransactionValue);
       }
       AND_WHEN("adding a transaction with another ID")
       {
         constexpr Journal::Id kId1 = 0xbeeffeed;
-        ledger.insert(kId1, Time(2), 900);
+        journal.insert(kId1, Time(2), 900);
         THEN("the transaction is retrievable")
         {
-          REQUIRE(ledger.query(kId1, 2).value == 900);
+          REQUIRE(journal.query(kId1, 2).value == 900);
         }
-        AND_THEN("the clock reports the current times for all ledger ids")
+        AND_THEN("the clock reports the current times for all journal ids")
         {
-          REQUIRE(ledger.clock() == Journal::Clock{{kId0, 1UL}, {kId1, 2UL}});
+          REQUIRE(journal.clock() == Journal::Clock{{kId0, 1UL}, {kId1, 2UL}});
         }
       }
     }
