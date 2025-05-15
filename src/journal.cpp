@@ -69,6 +69,16 @@ bool Journal::insert(Id journalId, Time time, const Entry& value)
   return true;
 }
 
+bool Journal::replace(Id journalId, Time time, Amount value)
+{
+  return append({Operation::Replace, value, {journalId, time}});
+}
+
+bool Journal::erase(Id journalId, Time time)
+{
+  return append({Operation::Delete, 0, {journalId, time}});
+}
+
 const Journal::Entry& Journal::query(Time time) const
 {
   return _book.at(_id).at(time);

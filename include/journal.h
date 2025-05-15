@@ -58,6 +58,10 @@ public:
   bool insert(Id journalId, Time time, Amount value);
   bool insert(Id journalId, Time time, const Entry& value);
 
+  bool replace(Id journalId, Time time, Amount value);
+
+  bool erase(Id journalId, Time time);
+
   const Entry& query(Time time) const;
   const Entry& query(Id journalId, Time time) const;
 

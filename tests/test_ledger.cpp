@@ -38,14 +38,14 @@ SCENARIO("evaluate transactions")
       }
       AND_WHEN("editing one of the entries")
       {
-        journal->append({Journal::Operation::Replace, 50, {journal->id(), 1}});
+        journal->replace(journal->id(), 1, 50);
         THEN("the balance is updated accordingly")
         {
           REQUIRE(ledger.balance() == 350);
         }
         AND_WHEN("deleting another entry")
         {
-          journal->append({Journal::Operation::Delete, 0, {journal->id(), 2}});
+          journal->erase(journal->id(), 2);
           THEN("the balance is updated accordingly")
           {
             REQUIRE(ledger.balance() == 150);
