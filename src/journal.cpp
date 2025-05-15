@@ -53,7 +53,7 @@ bool Journal::append(Id journalId, Amount value)
 
 bool Journal::append(Id journalId, const Entry& value)
 {
-  Time time = _book[journalId].empty() ? 0UL : _book.rbegin()->first;
+  Time time = _book[journalId].empty() ? 0UL : _book[journalId].rbegin()->first;
   return insert(journalId, time + 1, value);
 }
 

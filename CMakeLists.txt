@@ -24,6 +24,7 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
 )
@@ -41,6 +42,7 @@ find_package(Catch2 3 REQUIRED)
 add_executable(tests)
 target_sources(tests PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_book.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_id.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp

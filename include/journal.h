@@ -1,8 +1,9 @@
-#ifndef CASHEMERE_DEVICE_H
-#define CASHEMERE_DEVICE_H
+#ifndef CASHEMERE_JOURNAL_H
+#define CASHEMERE_JOURNAL_H
 
 #include <cstdint>
 #include <map>
+#include <memory>
 
 #include "random.h"
 
@@ -68,6 +69,8 @@ private:
   const Id _id;
   JournalBook _book;
 };
+
+using JournalPtr = std::shared_ptr<Journal>;
 
 }
 

@@ -44,7 +44,15 @@ SCENARIO("adds and edits transactions")
       {
         REQUIRE(journal.query(1).value == kTransactionValue);
       }
-      AND_WHEN("adding a transaction with another ID")
+      WHEN("adding a second transaction")
+      {
+        journal.append(200);
+        THEN("the second transaction is retrievable")
+        {
+          REQUIRE(journal.query(2).value == 200);
+        }
+      }
+      WHEN("adding a transaction with another ID")
       {
         constexpr Journal::Id kId1 = 0xbeeffeed;
         journal.insert(kId1, Time(2), 900);
