@@ -38,10 +38,20 @@ Ledger::Clock Ledger::clock() const
 
 bool Ledger::append(Amount value)
 {
+  return append(_ledgerId, {Operation::Insert, value, {}});
+}
+
+bool Ledger::append(const Transaction& value)
+{
   return append(_ledgerId, value);
 }
 
 bool Ledger::append(Id ledgerId, Amount value)
+{
+  return append(ledgerId, {Operation::Insert, value, {}});
+}
+
+bool Ledger::append(Id ledgerId, const Transaction& value)
 {
   Time time =
       _transactions[ledgerId].empty() ? 0UL : _transactions.rbegin()->first;
@@ -50,21 +60,27 @@ bool Ledger::append(Id ledgerId, Amount value)
 
 bool Ledger::insert(Id ledgerId, Time time, Amount value)
 {
+  _transactions[ledgerId][time] = {Operation::Insert, value, {}};
+  return true;
+}
+
+bool Ledger::insert(Id ledgerId, Time time, const Transaction& value)
+{
   _transactions[ledgerId][time] = value;
   return true;
 }
 
-Amount Ledger::query(Time time) const
+const Ledger::Transaction& Ledger::query(Time time) const
 {
   return _transactions.at(_ledgerId).at(time);
 }
 
-Amount Ledger::query(Id ledgerId, Time time) const
+const Ledger::Transaction& Ledger::query(Id ledgerId, Time time) const
 {
   return _transactions.at(ledgerId).at(time);
 }
 
-std::map<Ledger::Id, std::map<Time, Amount>> Ledger::transactions() const
+const Ledger::BookTransactions& Ledger::transactions() const
 {
   return _transactions;
 }

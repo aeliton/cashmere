@@ -42,15 +42,15 @@ SCENARIO("adds and edits transactions")
       }
       AND_THEN("the transaction value matches the transaction added")
       {
-        REQUIRE(ledger.query(1) == kTransactionValue);
+        REQUIRE(ledger.query(1).value == kTransactionValue);
       }
       AND_WHEN("adding a transaction with another ID")
       {
         constexpr Ledger::Id kId1 = 0xbeeffeed;
-        ledger.insert(kId1, Time(2), Amount(900));
+        ledger.insert(kId1, Time(2), 900);
         THEN("the transaction is retrievable")
         {
-          REQUIRE(ledger.query(kId1, 2) == 900);
+          REQUIRE(ledger.query(kId1, 2).value == 900);
         }
         AND_THEN("the clock reports the current times for all ledger ids")
         {

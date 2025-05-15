@@ -12,11 +12,37 @@ namespace Cashmere
 using Amount = int64_t;
 using Time = uint64_t;
 
+struct Transaction;
+
 class Ledger
 {
 public:
   using Id = uint64_t;
   using Clock = std::map<Id, Time>;
+
+  enum class Operation
+  {
+    Insert,
+    Replace,
+    Delete
+  };
+
+  struct Transaction
+  {
+    struct Id
+    {
+      Ledger::Id ledgerId;
+      Time time;
+    };
+
+    Operation operation;
+    Amount value;
+    Id alters;
+  };
+
+  using LedgerTransactions = std::map<Id, Transaction>;
+  using BookTransactions = std::map<Id, LedgerTransactions>;
+
   Ledger();
   explicit Ledger(Id poolId);
 
@@ -25,19 +51,22 @@ public:
   Clock clock() const;
 
   bool append(Amount value);
+  bool append(const Transaction& value);
   bool append(Id ledgerId, Amount value);
+  bool append(Id ledgerId, const Transaction& value);
   bool insert(Id ledgerId, Time time, Amount value);
+  bool insert(Id ledgerId, Time time, const Transaction& value);
 
-  Amount query(Time time) const;
-  Amount query(Id ledgerId, Time time) const;
+  const Transaction& query(Time time) const;
+  const Transaction& query(Id ledgerId, Time time) const;
 
-  std::map<Id, std::map<Time, Amount>> transactions() const;
+  const BookTransactions& transactions() const;
 
 private:
   static Random _random;
   const Id _bookId;
   const Id _ledgerId;
-  std::map<Id, std::map<Time, Amount>> _transactions;
+  BookTransactions _transactions;
 };
 
 }
