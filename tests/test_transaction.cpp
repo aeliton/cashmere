@@ -25,6 +25,10 @@ SCENARIO("adds and edits transactions")
     {
       REQUIRE(ledger.transactions().size() == 0);
     }
+    THEN("the ledger's clock value is zero")
+    {
+      REQUIRE(ledger.clock() == Cashmere::Clock{{ledger.id(), 0}});
+    }
     WHEN("adding the first transaction")
     {
       constexpr uint64_t kTransactionValue = 500;
@@ -35,14 +39,14 @@ SCENARIO("adds and edits transactions")
       }
       AND_WHEN("retrieving the transactions")
       {
-        THEN("the number of transactions has increased")
+        auto [clock, transaction] = *ledger.transactions().begin();
+        THEN("the transaction value matches the transaction added")
         {
-          REQUIRE(ledger.transactions().size() == 1);
-        }
-        AND_THEN("the transaction value matches the transaction added")
-        {
-          auto [clock, transaction] = *ledger.transactions().begin();
           REQUIRE(transaction.value == kTransactionValue);
+        }
+        AND_THEN("the ledger clock is incremented")
+        {
+          REQUIRE(clock == Cashmere::Clock{{ledger.id(), 1}});
         }
       }
     }

@@ -29,6 +29,7 @@ public:
   const Clock& clock() const;
 
   bool add(Amount value);
+  bool add(Id ledgerId, Amount value);
 
   std::map<Clock, Transaction> transactions() const;
 
