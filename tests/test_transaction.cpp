@@ -22,15 +22,15 @@ SCENARIO("adds and edits transactions")
 {
   GIVEN("an empty ledger")
   {
-    Ledger ledger;
-    const Ledger::Id kId0 = ledger.id();
+    Journal ledger;
+    const Journal::Id kId0 = ledger.id();
     THEN("the ledger won't have any transaction")
     {
-      REQUIRE(ledger.book().size() == 0);
+      REQUIRE(ledger.journals().size() == 0);
     }
     THEN("the ledger's clock value is zero")
     {
-      REQUIRE(ledger.clock() == Ledger::Clock{{kId0, 0}});
+      REQUIRE(ledger.clock() == Journal::Clock{{kId0, 0}});
     }
     WHEN("adding the first transaction")
     {
@@ -46,7 +46,7 @@ SCENARIO("adds and edits transactions")
       }
       AND_WHEN("adding a transaction with another ID")
       {
-        constexpr Ledger::Id kId1 = 0xbeeffeed;
+        constexpr Journal::Id kId1 = 0xbeeffeed;
         ledger.insert(kId1, Time(2), 900);
         THEN("the transaction is retrievable")
         {
@@ -54,7 +54,7 @@ SCENARIO("adds and edits transactions")
         }
         AND_THEN("the clock reports the current times for all ledger ids")
         {
-          REQUIRE(ledger.clock() == Ledger::Clock{{kId0, 1UL}, {kId1, 2UL}});
+          REQUIRE(ledger.clock() == Journal::Clock{{kId0, 1UL}, {kId1, 2UL}});
         }
       }
     }

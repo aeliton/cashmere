@@ -4,30 +4,30 @@
 namespace Cashmere
 {
 
-Random Ledger::_random{};
+Random Journal::_random{};
 
-Ledger::Ledger()
-  : Ledger(_random.next())
+Journal::Journal()
+  : Journal(_random.next())
 {
 }
 
-Ledger::Ledger(Id poolId)
+Journal::Journal(Id poolId)
   : _bookId(poolId)
   , _id(_random.next())
 {
 }
 
-const Ledger::Id Ledger::id() const
+const Journal::Id Journal::id() const
 {
   return _id;
 }
 
-const Ledger::Id Ledger::bookId() const
+const Journal::Id Journal::bookId() const
 {
   return _bookId;
 }
 
-Ledger::Clock Ledger::clock() const
+Journal::Clock Journal::clock() const
 {
   Clock clock{{_id, 0UL}};
   for (auto& [ledgerId, transactions] : _book) {
@@ -36,50 +36,50 @@ Ledger::Clock Ledger::clock() const
   return clock;
 }
 
-bool Ledger::append(Amount value)
+bool Journal::append(Amount value)
 {
   return append(_id, {Operation::Insert, value, {}});
 }
 
-bool Ledger::append(const Transaction& value)
+bool Journal::append(const Entry& value)
 {
   return append(_id, value);
 }
 
-bool Ledger::append(Id ledgerId, Amount value)
+bool Journal::append(Id ledgerId, Amount value)
 {
   return append(ledgerId, {Operation::Insert, value, {}});
 }
 
-bool Ledger::append(Id ledgerId, const Transaction& value)
+bool Journal::append(Id ledgerId, const Entry& value)
 {
   Time time = _book[ledgerId].empty() ? 0UL : _book.rbegin()->first;
   return insert(ledgerId, time + 1, value);
 }
 
-bool Ledger::insert(Id ledgerId, Time time, Amount value)
+bool Journal::insert(Id ledgerId, Time time, Amount value)
 {
   _book[ledgerId][time] = {Operation::Insert, value, {}};
   return true;
 }
 
-bool Ledger::insert(Id ledgerId, Time time, const Transaction& value)
+bool Journal::insert(Id ledgerId, Time time, const Entry& value)
 {
   _book[ledgerId][time] = value;
   return true;
 }
 
-const Ledger::Transaction& Ledger::query(Time time) const
+const Journal::Entry& Journal::query(Time time) const
 {
   return _book.at(_id).at(time);
 }
 
-const Ledger::Transaction& Ledger::query(Id ledgerId, Time time) const
+const Journal::Entry& Journal::query(Id ledgerId, Time time) const
 {
   return _book.at(ledgerId).at(time);
 }
 
-const Ledger::BookTransactions& Ledger::book() const
+const Journal::JournalBook& Journal::journals() const
 {
   return _book;
 }

@@ -5,7 +5,7 @@ SCENARIO("ledger clock behaviour")
 {
   GIVEN("an empty ledger object")
   {
-    Cashmere::Ledger ledger;
+    Cashmere::Journal ledger;
     THEN("the ledger vector clock shows a single entry")
     {
       REQUIRE(ledger.clock().size() == 1);

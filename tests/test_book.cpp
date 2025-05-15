@@ -5,11 +5,11 @@ SCENARIO("within book transactions")
 {
   GIVEN("an empty ledger")
   {
-    Cashmere::Ledger a;
+    Cashmere::Journal a;
 
     WHEN("creating a second ledger passing the a book ID")
     {
-      Cashmere::Ledger b(a.bookId());
+      Cashmere::Journal b(a.bookId());
       THEN("the second ledger has the same poolId as the first")
       {
         REQUIRE(b.bookId() == a.bookId());

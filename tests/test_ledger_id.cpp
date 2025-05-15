@@ -5,7 +5,7 @@ SCENARIO("ledger id creation")
 {
   GIVEN("an empty ledger object")
   {
-    Cashmere::Ledger ledger;
+    Cashmere::Journal ledger;
     THEN("the ledger has a clock shows a single entry")
     {
       REQUIRE(ledger.clock().size() == 1);
@@ -13,7 +13,7 @@ SCENARIO("ledger id creation")
 
     WHEN("creating a second ledger")
     {
-      Cashmere::Ledger second;
+      Cashmere::Journal second;
       THEN("the ledgers belong to different pools")
       {
         REQUIRE(ledger.bookId() != second.bookId());

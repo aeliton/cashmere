@@ -14,7 +14,7 @@ using Time = uint64_t;
 
 struct Transaction;
 
-class Ledger
+class Journal
 {
 public:
   using Id = uint64_t;
@@ -27,11 +27,11 @@ public:
     Delete
   };
 
-  struct Transaction
+  struct Entry
   {
     struct Id
     {
-      Ledger::Id ledgerId;
+      Journal::Id journalId;
       Time time;
     };
 
@@ -40,33 +40,33 @@ public:
     Id alters;
   };
 
-  using LedgerTransactions = std::map<Id, Transaction>;
-  using BookTransactions = std::map<Id, LedgerTransactions>;
+  using JournalEntries = std::map<Id, Entry>;
+  using JournalBook = std::map<Id, JournalEntries>;
 
-  Ledger();
-  explicit Ledger(Id poolId);
+  Journal();
+  explicit Journal(Id poolId);
 
   const Id id() const;
   const Id bookId() const;
   Clock clock() const;
 
   bool append(Amount value);
-  bool append(const Transaction& value);
+  bool append(const Entry& value);
   bool append(Id ledgerId, Amount value);
-  bool append(Id ledgerId, const Transaction& value);
+  bool append(Id ledgerId, const Entry& value);
   bool insert(Id ledgerId, Time time, Amount value);
-  bool insert(Id ledgerId, Time time, const Transaction& value);
+  bool insert(Id ledgerId, Time time, const Entry& value);
 
-  const Transaction& query(Time time) const;
-  const Transaction& query(Id ledgerId, Time time) const;
+  const Entry& query(Time time) const;
+  const Entry& query(Id ledgerId, Time time) const;
 
-  const BookTransactions& book() const;
+  const JournalBook& journals() const;
 
 private:
   static Random _random;
   const Id _bookId;
   const Id _id;
-  BookTransactions _book;
+  JournalBook _book;
 };
 
 }
