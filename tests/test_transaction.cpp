@@ -23,13 +23,14 @@ SCENARIO("adds and edits transactions")
   GIVEN("an empty ledger")
   {
     Ledger ledger;
+    const Id kId0 = ledger.id();
     THEN("the ledger won't have any transaction")
     {
       REQUIRE(ledger.transactions().size() == 0);
     }
     THEN("the ledger's clock value is zero")
     {
-      REQUIRE(ledger.clock() == Clock{{ledger.id(), 0}});
+      REQUIRE(ledger.clock() == Clock{{kId0, 0}});
     }
     WHEN("adding the first transaction")
     {
@@ -39,21 +40,21 @@ SCENARIO("adds and edits transactions")
       {
         REQUIRE(result);
       }
-      AND_WHEN("retrieving the transactions")
+      AND_THEN("the transaction value matches the transaction added")
       {
-        const auto transactions = ledger.transactions().at(ledger.id());
-        THEN("the transaction value matches the transaction added")
-        {
-          REQUIRE(transactions.at(Time(1)) == kTransactionValue);
-        }
+        REQUIRE(ledger.query(1) == kTransactionValue);
       }
       AND_WHEN("adding a transaction with another ID")
       {
-        constexpr Id kSecondId = 0xbeeffeed;
-        ledger.add(kSecondId, Time(2), Amount(900));
+        constexpr Id kId1 = 0xbeeffeed;
+        ledger.add(kId1, Time(2), Amount(900));
         THEN("the transaction is retrievable")
         {
-          REQUIRE(ledger.transactions().at(kSecondId).at(Time(2)) == 900);
+          REQUIRE(ledger.query(kId1, 2) == 900);
+        }
+        AND_THEN("the clock reports the current times for all ledger ids")
+        {
+          REQUIRE(ledger.clock() == Clock{{kId0, 1UL}, {kId1, 2UL}});
         }
       }
     }

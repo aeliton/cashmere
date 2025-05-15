@@ -28,6 +28,9 @@ public:
   bool add(Id ledgerId, Amount value);
   bool add(Id ledgerId, Time time, Amount value);
 
+  Amount query(Time time) const;
+  Amount query(Id ledgerId, Time time) const;
+
   std::map<Id, std::map<Time, Amount>> transactions() const;
 
 private:

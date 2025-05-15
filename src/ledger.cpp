@@ -54,6 +54,16 @@ bool Ledger::add(Id ledgerId, Time time, Amount value)
   return true;
 }
 
+Amount Ledger::query(Time time) const
+{
+  return _transactions.at(_ledgerId).at(time);
+}
+
+Amount Ledger::query(Id ledgerId, Time time) const
+{
+  return _transactions.at(ledgerId).at(time);
+}
+
 std::map<Id, std::map<Time, Amount>> Ledger::transactions() const
 {
   return _transactions;
