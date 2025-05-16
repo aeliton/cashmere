@@ -45,7 +45,7 @@ public:
     Id alters;
   };
 
-  using JournalEntries = std::map<Id, Entry>;
+  using JournalEntries = std::map<Time, Entry>;
   using JournalBook = std::map<Id, JournalEntries>;
 
   Journal();
