@@ -28,6 +28,7 @@ SCENARIO("evaluate transactions")
     journal->append(100);
 
     REQUIRE(journal->query(1).value == 300);
+    REQUIRE(journal->clock() == Journal::Clock{{journal->id(), 3}});
 
     WHEN("using a ledger to process the journal")
     {
@@ -42,6 +43,22 @@ SCENARIO("evaluate transactions")
         THEN("the balance is updated accordingly")
         {
           REQUIRE(ledger.balance() == 350);
+          AND_THEN("the clock has increased after the replace call")
+          {
+            REQUIRE(journal->clock() == Journal::Clock{{journal->id(), 4}});
+          }
+          AND_WHEN("editing the same entry a second time")
+          {
+            journal->replace(journal->id(), 1, 25);
+            THEN("the second edit takes priority over the previous")
+            {
+              REQUIRE(ledger.balance() == 325);
+              AND_THEN("the clock is updated accordingly")
+              {
+                REQUIRE(journal->clock() == Journal::Clock{{journal->id(), 5}});
+              }
+            }
+          }
         }
         AND_WHEN("deleting another entry")
         {

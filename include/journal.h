@@ -34,6 +34,10 @@ public:
     {
       Journal::Id journalId;
       Time time;
+      friend bool operator<(const Id& l, const Id& r)
+      {
+        return std::tie(l.journalId, l.time) < std::tie(r.journalId, r.time);
+      }
     };
 
     Operation operation;
