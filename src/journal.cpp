@@ -65,13 +65,12 @@ bool Journal::erase(Id journalId, const Clock& time)
   return append(journalId, {Operation::Delete, 0, time});
 }
 
-const Journal::Entry& Journal::query() const
+Journal::Entry Journal::query(const Clock& time) const
 {
-  return _book.at(_clock);
-}
+  if (_book.find(time) == _book.end()) {
+    return {Journal::Operation::Invalid, 0, {}};
+  }
 
-const Journal::Entry& Journal::query(const Clock& time) const
-{
   return _book.at(time);
 }
 

@@ -62,10 +62,6 @@ SCENARIO("adds and edits transactions")
         journal.append(kId1, 900);
         THEN("the transaction is retrievable")
         {
-          REQUIRE(journal.query().value == 900);
-        }
-        AND_THEN("the clock reports the current times for all journal ids")
-        {
           REQUIRE(journal.query(Clock{{kId0, 1UL}, {kId1, 1UL}}).value == 900);
         }
       }

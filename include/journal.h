@@ -25,7 +25,8 @@ public:
   {
     Insert,
     Replace,
-    Delete
+    Delete,
+    Invalid
   };
 
   struct Entry
@@ -33,6 +34,15 @@ public:
     Operation operation;
     Amount value;
     Clock alters;
+    friend bool operator==(const Entry& l, const Entry& r)
+    {
+      return std::tie(l.operation, l.value, l.alters) ==
+             std::tie(r.operation, r.value, r.alters);
+    }
+    bool valid() const
+    {
+      return operation != Operation::Invalid;
+    }
   };
 
   using JournalEntries = std::map<Clock, Entry>;
@@ -53,8 +63,8 @@ public:
 
   bool erase(Id journalId, const Clock& time);
 
-  const Entry& query() const;
-  const Entry& query(const Clock& time) const;
+  Entry query() const;
+  Entry query(const Clock& time) const;
 
   const JournalEntries& journals() const;
 
