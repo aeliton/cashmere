@@ -14,7 +14,7 @@ Journal::Journal()
 Journal::Journal(Id poolId)
   : _bookId(poolId)
   , _id(_random.next())
-  , _clock({{_id, 0}})
+  , _clock({})
 {
 }
 
@@ -38,7 +38,7 @@ bool Journal::append(Amount value)
   return append(_id, {Operation::Insert, value, {}});
 }
 
-bool Journal::append(const Entry& value)
+bool Journal::append(Entry value)
 {
   return append(_id, value);
 }
@@ -48,8 +48,10 @@ bool Journal::append(Id journalId, Amount value)
   return append(journalId, {Operation::Insert, value, {}});
 }
 
-bool Journal::append(Id journalId, const Entry& value)
+bool Journal::append(Id journalId, Entry value)
 {
+  std::erase_if(
+      value.alters, [](const auto& item) { return item.second == 0; });
   _clock[journalId]++;
   _book[_clock] = value;
   return true;
@@ -65,8 +67,9 @@ bool Journal::erase(Id journalId, const Clock& time)
   return append(journalId, {Operation::Delete, 0, time});
 }
 
-Journal::Entry Journal::query(const Clock& time) const
+Journal::Entry Journal::query(Clock time) const
 {
+  std::erase_if(time, [](const auto& item) { return item.second == 0; });
   if (_book.find(time) == _book.end()) {
     return {Journal::Operation::Invalid, 0, {}};
   }

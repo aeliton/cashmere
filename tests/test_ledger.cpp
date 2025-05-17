@@ -33,7 +33,7 @@ SCENARIO("evaluate transactions")
     const Clock kReplaceClock = {{kId_FF, 1}, {journal->id(), 0}};
 
     REQUIRE(journal->query({{kId_FF, 1}, {journal->id(), 0}}).value == 300);
-    REQUIRE(journal->clock() == Clock{{kId_FF, 3}, {journal->id(), 0}});
+    REQUIRE(journal->clock() == Clock{{kId_FF, 3}});
 
     WHEN("using a ledger to process the journal")
     {
@@ -52,8 +52,7 @@ SCENARIO("evaluate transactions")
           REQUIRE(ledger.balance() == 350);
           AND_THEN("the clock has increased after the replace call")
           {
-            REQUIRE(journal->clock() ==
-                    Clock{{kId_FF, 3}, {kId_AA, 1}, {journal->id(), 0}});
+            REQUIRE(journal->clock() == Clock{{kId_FF, 3}, {kId_AA, 1}});
           }
           AND_WHEN("editing the same entry a second time")
           {
@@ -64,15 +63,14 @@ SCENARIO("evaluate transactions")
               REQUIRE(ledger.balance() == 325);
               AND_THEN("the clock is updated accordingly")
               {
-                REQUIRE(journal->clock() ==
-                        Clock{{kId_FF, 3}, {kId_AA, 2}, {journal->id(), 0}});
+                REQUIRE(journal->clock() == Clock{{kId_FF, 3}, {kId_AA, 2}});
               }
             }
           }
         }
         AND_WHEN("deleting another entry")
         {
-          journal->erase(kId_FF, Clock{{kId_FF, 2}, {journal->id(), 0}});
+          journal->erase(kId_FF, Clock{{kId_FF, 2}});
           THEN("the balance is updated accordingly")
           {
             REQUIRE(ledger.balance() == 150);

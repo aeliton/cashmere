@@ -30,9 +30,9 @@ SCENARIO("adds and edits transactions")
     {
       REQUIRE(journal.journals().size() == 0);
     }
-    THEN("the journal's clock value is zero")
+    THEN("the journal's clock value is empty")
     {
-      REQUIRE(journal.clock() == Clock{{kId0, 0}});
+      REQUIRE(journal.clock() == Clock{});
     }
 
     WHEN("adding the first transaction")

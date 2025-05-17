@@ -55,16 +55,15 @@ public:
   Clock clock() const;
 
   bool append(Amount value);
-  bool append(const Entry& value);
+  bool append(Entry value);
   bool append(Id journalId, Amount value);
-  bool append(Id journalId, const Entry& value);
+  bool append(Id journalId, Entry value);
 
   bool replace(Id journalId, const Clock& clock, Amount value);
 
   bool erase(Id journalId, const Clock& time);
 
-  Entry query() const;
-  Entry query(const Clock& time) const;
+  Entry query(Clock time) const;
 
   const JournalEntries& journals() const;
 
