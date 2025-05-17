@@ -18,6 +18,8 @@
 
 using namespace Cashmere;
 
+using Clock = Journal::Clock;
+
 SCENARIO("adds and edits transactions")
 {
   GIVEN("an empty journal")
@@ -30,8 +32,9 @@ SCENARIO("adds and edits transactions")
     }
     THEN("the journal's clock value is zero")
     {
-      REQUIRE(journal.clock() == Journal::Clock{{kId0, 0}});
+      REQUIRE(journal.clock() == Clock{{kId0, 0}});
     }
+
     WHEN("adding the first transaction")
     {
       constexpr uint64_t kTransactionValue = 500;
@@ -42,27 +45,28 @@ SCENARIO("adds and edits transactions")
       }
       AND_THEN("the transaction value matches the transaction added")
       {
-        REQUIRE(journal.query(1).value == kTransactionValue);
+        REQUIRE(journal.query(Clock{{kId0, 1UL}}).value == kTransactionValue);
       }
-      WHEN("adding a second transaction")
+      AND_WHEN("adding a second transaction")
       {
         journal.append(200);
         THEN("the second transaction is retrievable")
         {
-          REQUIRE(journal.query(2).value == 200);
+          REQUIRE(journal.query(Clock{{kId0, 2}}).value == 200);
         }
       }
+
       WHEN("adding a transaction with another ID")
       {
         constexpr Journal::Id kId1 = 0xbeeffeed;
-        journal.insert(kId1, Time(2), 900);
+        journal.append(kId1, 900);
         THEN("the transaction is retrievable")
         {
-          REQUIRE(journal.query(kId1, 2).value == 900);
+          REQUIRE(journal.query().value == 900);
         }
         AND_THEN("the clock reports the current times for all journal ids")
         {
-          REQUIRE(journal.clock() == Journal::Clock{{kId0, 1UL}, {kId1, 2UL}});
+          REQUIRE(journal.query(Clock{{kId0, 1UL}, {kId1, 1UL}}).value == 900);
         }
       }
     }

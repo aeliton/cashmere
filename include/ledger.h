@@ -31,7 +31,6 @@ public:
 
 private:
   JournalPtr _journal;
-  std::map<Journal::Entry::Id, Journal::Entry> _applied;
 };
 
 }

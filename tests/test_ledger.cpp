@@ -22,13 +22,17 @@ SCENARIO("evaluate transactions")
 {
   GIVEN("a journal with a few transactions")
   {
+    constexpr Journal::Id kId_FF = 0xFF;
     auto journal = std::make_shared<Journal>();
-    journal->append(300);
-    journal->append(200);
-    journal->append(100);
+    journal->append(kId_FF, 300);
+    journal->append(kId_FF, 200);
+    journal->append(kId_FF, 100);
 
-    REQUIRE(journal->query(1).value == 300);
-    REQUIRE(journal->clock() == Journal::Clock{{journal->id(), 3}});
+    const Journal::Clock kReplaceClock = {{kId_FF, 1}, {journal->id(), 0}};
+
+    REQUIRE(journal->query({{kId_FF, 1}, {journal->id(), 0}}).value == 300);
+    REQUIRE(
+        journal->clock() == Journal::Clock{{kId_FF, 3}, {journal->id(), 0}});
 
     WHEN("using a ledger to process the journal")
     {
@@ -39,30 +43,37 @@ SCENARIO("evaluate transactions")
       }
       AND_WHEN("editing one of the entries")
       {
-        journal->replace(journal->id(), 1, 50);
+        constexpr Journal::Id kId_AA = 0xAA;
+        journal->append(
+            kId_AA, {Journal::Operation::Replace, 50, kReplaceClock});
         THEN("the balance is updated accordingly")
         {
           REQUIRE(ledger.balance() == 350);
           AND_THEN("the clock has increased after the replace call")
           {
-            REQUIRE(journal->clock() == Journal::Clock{{journal->id(), 4}});
+            REQUIRE(journal->clock() == Journal::Clock{{kId_FF, 3}, {kId_AA, 1},
+                                            {journal->id(), 0}});
           }
           AND_WHEN("editing the same entry a second time")
           {
-            journal->replace(journal->id(), 1, 25);
+            journal->append(
+                kId_AA, {Journal::Operation::Replace, 25, kReplaceClock});
             THEN("the second edit takes priority over the previous")
             {
               REQUIRE(ledger.balance() == 325);
               AND_THEN("the clock is updated accordingly")
               {
-                REQUIRE(journal->clock() == Journal::Clock{{journal->id(), 5}});
+                REQUIRE(
+                    journal->clock() == Journal::Clock{{kId_FF, 3}, {kId_AA, 2},
+                                            {journal->id(), 0}});
               }
             }
           }
         }
         AND_WHEN("deleting another entry")
         {
-          journal->erase(journal->id(), 2);
+          journal->erase(
+              kId_FF, Journal::Clock{{kId_FF, 2}, {journal->id(), 0}});
           THEN("the balance is updated accordingly")
           {
             REQUIRE(ledger.balance() == 150);

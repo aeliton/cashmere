@@ -30,23 +30,12 @@ public:
 
   struct Entry
   {
-    struct Id
-    {
-      Journal::Id journalId;
-      Time time;
-      friend bool operator<(const Id& l, const Id& r)
-      {
-        return std::tie(l.journalId, l.time) < std::tie(r.journalId, r.time);
-      }
-    };
-
     Operation operation;
     Amount value;
-    Id alters;
+    Clock alters;
   };
 
-  using JournalEntries = std::map<Time, Entry>;
-  using JournalBook = std::map<Id, JournalEntries>;
+  using JournalEntries = std::map<Clock, Entry>;
 
   Journal();
   explicit Journal(Id poolId);
@@ -59,23 +48,22 @@ public:
   bool append(const Entry& value);
   bool append(Id journalId, Amount value);
   bool append(Id journalId, const Entry& value);
-  bool insert(Id journalId, Time time, Amount value);
-  bool insert(Id journalId, Time time, const Entry& value);
 
-  bool replace(Id journalId, Time time, Amount value);
+  bool replace(Id journalId, const Clock& clock, Amount value);
 
-  bool erase(Id journalId, Time time);
+  bool erase(Id journalId, const Clock& time);
 
-  const Entry& query(Time time) const;
-  const Entry& query(Id journalId, Time time) const;
+  const Entry& query() const;
+  const Entry& query(const Clock& time) const;
 
-  const JournalBook& journals() const;
+  const JournalEntries& journals() const;
 
 private:
   static Random _random;
   const Id _bookId;
   const Id _id;
-  JournalBook _book;
+  JournalEntries _book;
+  Clock _clock;
 };
 
 using JournalPtr = std::shared_ptr<Journal>;

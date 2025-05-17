@@ -25,20 +25,26 @@ Ledger::Ledger(JournalPtr journal)
 
 Amount Ledger::balance() const
 {
-  std::map<Journal::Entry::Id, Journal::Entry> applied;
+  std::map<Journal::Clock, std::pair<Journal::Clock, Journal::Entry>> applied;
   Amount result = 0;
-  for (auto& [journalId, entries] : _journal->journals()) {
-    for (auto& [time, entry] : entries) {
-      if (entry.operation == Journal::Operation::Insert) {
-        auto entryId = Journal::Entry::Id{journalId, time};
-        applied[entryId] = entry;
-        result += applied.at(entryId).value;
-      } else {
-        auto entryId = entry.alters;
-        result -= applied.at(entryId).value;
-        applied[entryId] = entry;
-        result += applied.at(entryId).value;
+  for (auto& [clock, entry] : _journal->journals()) {
+    if (entry.operation == Journal::Operation::Insert) {
+      if (applied.find(clock) == applied.end()) {
+        applied[clock] = {clock, entry};
+        result += applied.at(clock).second.value;
       }
+    } else {
+      auto q = applied.find(entry.alters);
+      if (q == applied.end()) {
+        applied[entry.alters] = {clock, entry};
+      } else {
+        auto [oldClock, oldEntry] = q->second;
+        if (oldClock < clock) {
+          result -= oldEntry.value;
+          applied[entry.alters] = {clock, entry};
+        }
+      }
+      result += applied.at(entry.alters).second.value;
     }
   }
   return result;

@@ -14,6 +14,7 @@ Journal::Journal()
 Journal::Journal(Id poolId)
   : _bookId(poolId)
   , _id(_random.next())
+  , _clock({{_id, 0}})
 {
 }
 
@@ -29,11 +30,7 @@ const Journal::Id Journal::bookId() const
 
 Journal::Clock Journal::clock() const
 {
-  Clock clock{{_id, 0UL}};
-  for (auto& [journalId, transactions] : _book) {
-    clock[journalId] = transactions.empty() ? 0 : transactions.rbegin()->first;
-  }
-  return clock;
+  return _clock;
 }
 
 bool Journal::append(Amount value)
@@ -53,43 +50,32 @@ bool Journal::append(Id journalId, Amount value)
 
 bool Journal::append(Id journalId, const Entry& value)
 {
-  Time time = _book[journalId].empty() ? 0UL : _book[journalId].rbegin()->first;
-  return insert(journalId, time + 1, value);
-}
-
-bool Journal::insert(Id journalId, Time time, Amount value)
-{
-  _book[journalId][time] = {Operation::Insert, value, {}};
+  _clock[journalId]++;
+  _book[_clock] = value;
   return true;
 }
 
-bool Journal::insert(Id journalId, Time time, const Entry& value)
+bool Journal::replace(Id journalId, const Clock& clock, Amount value)
 {
-  _book[journalId][time] = value;
-  return true;
+  return append({Operation::Replace, value, clock});
 }
 
-bool Journal::replace(Id journalId, Time time, Amount value)
+bool Journal::erase(Id journalId, const Clock& time)
 {
-  return append({Operation::Replace, value, {journalId, time}});
+  return append(journalId, {Operation::Delete, 0, time});
 }
 
-bool Journal::erase(Id journalId, Time time)
+const Journal::Entry& Journal::query() const
 {
-  return append({Operation::Delete, 0, {journalId, time}});
+  return _book.at(_clock);
 }
 
-const Journal::Entry& Journal::query(Time time) const
+const Journal::Entry& Journal::query(const Clock& time) const
 {
-  return _book.at(_id).at(time);
+  return _book.at(time);
 }
 
-const Journal::Entry& Journal::query(Id journalId, Time time) const
-{
-  return _book.at(journalId).at(time);
-}
-
-const Journal::JournalBook& Journal::journals() const
+const Journal::JournalEntries& Journal::journals() const
 {
   return _book;
 }
