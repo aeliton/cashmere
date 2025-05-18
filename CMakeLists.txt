@@ -44,7 +44,7 @@ target_sources(tests PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_book.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_clock.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_id.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_query.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_transaction.cpp

@@ -15,33 +15,12 @@ SCENARIO("journal clock behaviour")
     {
       REQUIRE(journal.clock() == Clock{});
     }
-    WHEN("query for an inexisting transaction")
-    {
-      THEN("the invalid entry is returned")
-      {
-        REQUIRE_FALSE(journal.query(Clock{{journal.id(), 0}}).valid());
-      }
-    }
-
     WHEN("adding a entry with the journal ID")
     {
       journal.append(1000);
       THEN("the clock is updated")
       {
         REQUIRE(journal.clock() == Clock{{journal.id(), 1}});
-      }
-      AND_THEN("the entry is retrievable")
-      {
-        REQUIRE(journal.query(Clock{{journal.id(), 1}}) ==
-                Journal::Entry{Operation::Insert, 1000, {}});
-      }
-      AND_THEN("the entry is also retrievable if providing extra ids with time "
-               "zeroed")
-      {
-        auto clock =
-            Clock{{journal.id(), 1}, {0xbeef, 0}, {0xbaad, 0}, {0xcafe, 0}};
-        REQUIRE(journal.query(clock) ==
-                Journal::Entry{Operation::Insert, 1000, {}});
       }
 
       AND_WHEN("adding an entry with an different journal ID")
@@ -50,11 +29,6 @@ SCENARIO("journal clock behaviour")
         THEN("the clock is updated")
         {
           REQUIRE(journal.clock() == Clock{{journal.id(), 1}, {0xbaadcafe, 1}});
-        }
-        AND_THEN("the query with the updated clock returns the new transaction")
-        {
-          REQUIRE(journal.query(Clock{{journal.id(), 1}, {0xbaadcafe, 1}}) ==
-                  Journal::Entry{Operation::Insert, 200, {}});
         }
       }
     }
