@@ -67,6 +67,19 @@ SCENARIO("evaluate transactions")
               }
             }
           }
+          AND_WHEN("editing the same entry by another journal")
+          {
+            journal->append(
+                kId_FF, {Journal::Operation::Replace, 10, kReplaceClock});
+            THEN("the edit from greatest journal id takes priority")
+            {
+              REQUIRE(ledger.balance() == 310);
+              AND_THEN("the clock is updated accordingly")
+              {
+                REQUIRE(journal->clock() == Clock{{kId_FF, 4}, {kId_AA, 1}});
+              }
+            }
+          }
         }
         AND_WHEN("deleting another entry")
         {
