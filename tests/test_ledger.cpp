@@ -19,8 +19,9 @@
 using namespace Cashmere;
 
 using Clock = Journal::Clock;
+using Operation = Journal::Operation;
 
-SCENARIO("evaluate transactions")
+SCENARIO("a ledger handles entries of multiple nodes")
 {
   GIVEN("a journal with a few transactions")
   {
@@ -30,12 +31,7 @@ SCENARIO("evaluate transactions")
     journal->append(kId_FF, 200);
     journal->append(kId_FF, 100);
 
-    const Clock kReplaceClock = {{kId_FF, 1}, {journal->id(), 0}};
-
-    REQUIRE(journal->query({{kId_FF, 1}, {journal->id(), 0}}).value == 300);
-    REQUIRE(journal->clock() == Clock{{kId_FF, 3}});
-
-    WHEN("using a ledger to process the journal")
+    WHEN("a ledger to process the journal")
     {
       Ledger ledger(journal);
       THEN("the recorded journal entries are consolidated")
@@ -45,39 +41,26 @@ SCENARIO("evaluate transactions")
       AND_WHEN("editing one of the entries")
       {
         constexpr Journal::Id kId_AA = 0xAA;
-        journal->append(
-            kId_AA, {Journal::Operation::Replace, 50, kReplaceClock});
+        journal->append(kId_AA, {Operation::Replace, 50, {{kId_FF, 1}}});
+
         THEN("the balance is updated accordingly")
         {
           REQUIRE(ledger.balance() == 350);
-          AND_THEN("the clock has increased after the replace call")
+
+          AND_WHEN("the same node edits the same entry")
           {
-            REQUIRE(journal->clock() == Clock{{kId_FF, 3}, {kId_AA, 1}});
-          }
-          AND_WHEN("editing the same entry a second time")
-          {
-            journal->append(
-                kId_AA, {Journal::Operation::Replace, 25, kReplaceClock});
+            journal->append(kId_AA, {Operation::Replace, 25, {{kId_FF, 1}}});
             THEN("the second edit takes priority over the previous")
             {
               REQUIRE(ledger.balance() == 325);
-              AND_THEN("the clock is updated accordingly")
-              {
-                REQUIRE(journal->clock() == Clock{{kId_FF, 3}, {kId_AA, 2}});
-              }
             }
           }
           AND_WHEN("editing the same entry by another journal")
           {
-            journal->append(
-                kId_FF, {Journal::Operation::Replace, 10, kReplaceClock});
+            journal->append(kId_FF, {Operation::Replace, 10, {{kId_FF, 1}}});
             THEN("the edit from greatest journal id takes priority")
             {
               REQUIRE(ledger.balance() == 310);
-              AND_THEN("the clock is updated accordingly")
-              {
-                REQUIRE(journal->clock() == Clock{{kId_FF, 4}, {kId_AA, 1}});
-              }
             }
           }
         }
