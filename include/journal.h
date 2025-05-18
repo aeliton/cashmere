@@ -57,13 +57,13 @@ public:
 
   Entry query(Clock time) const;
 
-  const JournalEntries& journals() const;
+  const JournalEntries& entries() const;
 
 private:
   static Random _random;
   const Id _bookId;
   const Id _id;
-  JournalEntries _book;
+  JournalEntries _entries;
   Clock _clock;
 };
 

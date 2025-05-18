@@ -53,7 +53,7 @@ bool Journal::append(Id journalId, Entry value)
   std::erase_if(
       value.alters, [](const auto& item) { return item.second == 0; });
   _clock[journalId]++;
-  _book[_clock] = value;
+  _entries[_clock] = value;
   return true;
 }
 
@@ -81,16 +81,16 @@ Journal::Entry Journal::query(Clock time) const
 {
   std::erase_if(time, [](const auto& item) { return item.second == 0; });
 
-  if (_book.find(time) == _book.end()) {
+  if (_entries.find(time) == _entries.end()) {
     return {0, {{0UL, 0}}};
   }
 
-  return _book.at(time);
+  return _entries.at(time);
 }
 
-const Journal::JournalEntries& Journal::journals() const
+const Journal::JournalEntries& Journal::entries() const
 {
-  return _book;
+  return _entries;
 }
 
 }

@@ -28,7 +28,7 @@ SCENARIO("adds and edits transactions")
     const Journal::Id kId0 = journal.id();
     THEN("the journal won't have any transaction")
     {
-      REQUIRE(journal.journals().size() == 0);
+      REQUIRE(journal.entries().size() == 0);
     }
     THEN("the journal's clock value is empty")
     {
