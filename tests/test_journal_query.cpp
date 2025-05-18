@@ -20,6 +20,7 @@ using namespace Cashmere;
 
 using Clock = Journal::Clock;
 using Operation = Journal::Operation;
+using Entry = Journal::Entry;
 
 SCENARIO("journal queries")
 {
@@ -44,24 +45,24 @@ SCENARIO("journal queries")
       journal.append(1000);
       AND_THEN("the entry is retrievable")
       {
-        REQUIRE(journal.query(Clock{{journal.id(), 1}}) ==
-                Journal::Entry{Operation::Insert, 1000, {}});
+        const auto clock = Clock{{journal.id(), 1}};
+        REQUIRE(journal.query(clock) == Entry{Operation::Insert, 1000, {}});
       }
 
       THEN("query ignores zero values in clock entries")
       {
         const auto clock =
             Clock{{journal.id(), 1}, {0xbeef, 0}, {0xbaad, 0}, {0xcafe, 0}};
-        REQUIRE(journal.query(clock) ==
-                Journal::Entry{Operation::Insert, 1000, {}});
+        REQUIRE(journal.query(clock) == Entry{Operation::Insert, 1000, {}});
       }
+
       AND_WHEN("adding an entry with an different journal ID")
       {
         journal.append(0xbaadcafe, 200);
         THEN("the query with the updated clock returns the new transaction")
         {
-          REQUIRE(journal.query(Clock{{journal.id(), 1}, {0xbaadcafe, 1}}) ==
-                  Journal::Entry{Operation::Insert, 200, {}});
+          const auto clock = Clock{{journal.id(), 1}, {0xbaadcafe, 1}};
+          REQUIRE(journal.query(clock) == Entry{Operation::Insert, 200, {}});
         }
       }
     }
