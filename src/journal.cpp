@@ -35,7 +35,7 @@ Journal::Clock Journal::clock() const
 
 bool Journal::append(Amount value)
 {
-  return append(_id, {Operation::Insert, value, {}});
+  return append(_id, {value, {}});
 }
 
 bool Journal::append(Entry value)
@@ -45,7 +45,7 @@ bool Journal::append(Entry value)
 
 bool Journal::append(Id journalId, Amount value)
 {
-  return append(journalId, {Operation::Insert, value, {}});
+  return append(journalId, {value, {}});
 }
 
 bool Journal::append(Id journalId, Entry value)
@@ -59,29 +59,30 @@ bool Journal::append(Id journalId, Entry value)
 
 bool Journal::replace(Amount value, const Clock& clock)
 {
-  return append({Operation::Replace, value, clock});
+  return append({value, clock});
 }
 
 bool Journal::replace(Id journalId, Amount value, const Clock& clock)
 {
-  return append(journalId, {Operation::Replace, value, clock});
+  return append(journalId, {value, clock});
 }
 
 bool Journal::erase(Clock time)
 {
-  return append(_id, {Operation::Delete, 0, time});
+  return append(_id, {0, time});
 }
 
 bool Journal::erase(Id journalId, Clock time)
 {
-  return append(journalId, {Operation::Delete, 0, time});
+  return append(journalId, {0, time});
 }
 
 Journal::Entry Journal::query(Clock time) const
 {
   std::erase_if(time, [](const auto& item) { return item.second == 0; });
+
   if (_book.find(time) == _book.end()) {
-    return {Journal::Operation::Invalid, 0, {}};
+    return {0, {{0UL, 0}}};
   }
 
   return _book.at(time);

@@ -4,7 +4,6 @@
 using namespace Cashmere;
 
 using Clock = Journal::Clock;
-using Operation = Journal::Operation;
 
 SCENARIO("journal clock updates when entries are changed")
 {
@@ -73,7 +72,7 @@ SCENARIO("zero values in clocks are ignored")
       const auto result = journal.query(validClockWithZeroes);
       THEN("the clock's zeroed entries are ignored")
       {
-        REQUIRE(result == Journal::Entry{Operation::Insert, 1000, {}});
+        REQUIRE(result == Journal::Entry{1000, {}});
       }
     }
 
@@ -88,7 +87,7 @@ SCENARIO("zero values in clocks are ignored")
         const auto result = journal.query({{id, 2}});
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Journal::Entry{Operation::Replace, 500, {{id, 1}}});
+          REQUIRE(result == Journal::Entry{500, {{id, 1}}});
         }
       }
     }
@@ -104,7 +103,7 @@ SCENARIO("zero values in clocks are ignored")
         const auto result = journal.query({{id, 2}});
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Journal::Entry{Operation::Delete, 0, {{id, 1}}});
+          REQUIRE(result == Journal::Entry{0, {{id, 1}}});
         }
       }
     }

@@ -21,27 +21,17 @@ public:
   using Id = uint64_t;
   using Clock = std::map<Id, Time>;
 
-  enum class Operation
-  {
-    Insert,
-    Replace,
-    Delete,
-    Invalid
-  };
-
   struct Entry
   {
-    Operation operation;
     Amount value;
     Clock alters;
     friend bool operator==(const Entry& l, const Entry& r)
     {
-      return std::tie(l.operation, l.value, l.alters) ==
-             std::tie(r.operation, r.value, r.alters);
+      return std::tie(l.value, l.alters) == std::tie(r.value, r.alters);
     }
     bool valid() const
     {
-      return operation != Operation::Invalid;
+      return alters.size() > 0 && alters.begin()->first != 0UL;
     }
   };
 

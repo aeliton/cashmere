@@ -28,7 +28,7 @@ Amount Ledger::balance() const
   std::map<Journal::Clock, std::pair<Journal::Clock, Journal::Entry>> applied;
   Amount result = 0;
   for (auto& [clock, entry] : _journal->journals()) {
-    if (entry.operation == Journal::Operation::Insert) {
+    if (entry.value != 0 && entry.alters.empty()) {
       if (applied.find(clock) == applied.end()) {
         applied[clock] = {clock, entry};
         result += applied.at(clock).second.value;
