@@ -62,8 +62,8 @@ public:
   bool replace(Amount value, const Clock& clock);
   bool replace(Id journalId, Amount value, const Clock& clock);
 
-  bool erase(const Clock& time);
-  bool erase(Id journalId, const Clock& time);
+  bool erase(Clock time);
+  bool erase(Id journalId, Clock time);
 
   Entry query(Clock time) const;
 

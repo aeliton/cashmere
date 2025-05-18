@@ -67,12 +67,12 @@ bool Journal::replace(Id journalId, Amount value, const Clock& clock)
   return append(journalId, {Operation::Replace, value, clock});
 }
 
-bool Journal::erase(const Clock& time)
+bool Journal::erase(Clock time)
 {
   return append(_id, {Operation::Delete, 0, time});
 }
 
-bool Journal::erase(Id journalId, const Clock& time)
+bool Journal::erase(Id journalId, Clock time)
 {
   return append(journalId, {Operation::Delete, 0, time});
 }
