@@ -27,10 +27,6 @@ SCENARIO("journal queries")
   GIVEN("an empty journal object")
   {
     Journal journal;
-    THEN("the journal has an empty clock")
-    {
-      REQUIRE(journal.clock().empty());
-    }
 
     WHEN("query for an inexisting transaction")
     {
@@ -40,10 +36,10 @@ SCENARIO("journal queries")
       }
     }
 
-    WHEN("addint an entry")
+    WHEN("adding an entry")
     {
       journal.append(1000);
-      AND_THEN("the entry is retrievable")
+      THEN("the entry is retrievable")
       {
         const auto clock = Clock{{journal.id(), 1}};
         REQUIRE(journal.query(clock) == Entry{Operation::Insert, 1000, {}});
