@@ -19,7 +19,6 @@
 using namespace Cashmere;
 
 using Clock = Journal::Clock;
-using Operation = Journal::Operation;
 
 SCENARIO("a ledger handles entries of multiple nodes")
 {
@@ -41,7 +40,7 @@ SCENARIO("a ledger handles entries of multiple nodes")
       AND_WHEN("editing one of the entries")
       {
         constexpr Journal::Id kId_AA = 0xAA;
-        journal->append(kId_AA, {Operation::Replace, 50, {{kId_FF, 1}}});
+        journal->replace(kId_AA, 50, Clock{{kId_FF, 1}});
 
         THEN("the balance is updated accordingly")
         {
@@ -49,7 +48,7 @@ SCENARIO("a ledger handles entries of multiple nodes")
 
           AND_WHEN("the same node edits the same entry")
           {
-            journal->append(kId_AA, {Operation::Replace, 25, {{kId_FF, 1}}});
+            journal->replace(kId_AA, 25, Clock{{kId_FF, 1}});
             THEN("the second edit takes priority over the previous")
             {
               REQUIRE(ledger.balance() == 325);
@@ -57,7 +56,7 @@ SCENARIO("a ledger handles entries of multiple nodes")
           }
           AND_WHEN("editing the same entry by another journal")
           {
-            journal->append(kId_FF, {Operation::Replace, 10, {{kId_FF, 1}}});
+            journal->replace(kId_FF, 10, Clock{{kId_FF, 1}});
             THEN("the edit from greatest journal id takes priority")
             {
               REQUIRE(ledger.balance() == 310);

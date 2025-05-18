@@ -57,9 +57,19 @@ bool Journal::append(Id journalId, Entry value)
   return true;
 }
 
-bool Journal::replace(Id journalId, const Clock& clock, Amount value)
+bool Journal::replace(Amount value, const Clock& clock)
 {
   return append({Operation::Replace, value, clock});
+}
+
+bool Journal::replace(Id journalId, Amount value, const Clock& clock)
+{
+  return append(journalId, {Operation::Replace, value, clock});
+}
+
+bool Journal::erase(const Clock& time)
+{
+  return append(_id, {Operation::Delete, 0, time});
 }
 
 bool Journal::erase(Id journalId, const Clock& time)

@@ -33,14 +33,14 @@ SCENARIO("journal clock updates when entries are changed")
         }
         AND_WHEN("another journal replaces a transaction")
         {
-          journal.append(0xFF, {Operation::Replace, 300, {{kId, 1}}});
+          journal.replace(0xFF, 300, {{kId, 1}});
           THEN("the actor's id is incremented")
           {
             REQUIRE(journal.clock() == Clock{{kId, 1}, {0xAA, 1}, {0xFF, 1}});
           }
           AND_WHEN("an entry is deleted")
           {
-            journal.append({Operation::Delete, 300, {{kId, 1}}});
+            journal.erase({{kId, 1}});
             THEN("the actor's is incremented")
             {
               REQUIRE(journal.clock() == Clock{{kId, 2}, {0xAA, 1}, {0xFF, 1}});
