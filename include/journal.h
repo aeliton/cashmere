@@ -43,6 +43,8 @@ public:
   const Id id() const;
   const Id bookId() const;
   Clock clock() const;
+  static Clock merge(const Clock& a, const Clock& b);
+  static bool smaller(const Clock& a, const Clock& b);
 
   bool append(Amount value);
   bool append(Entry value);

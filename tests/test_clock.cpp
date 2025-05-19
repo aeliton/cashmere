@@ -16,15 +16,17 @@
 #include "journal.h"
 #include <catch2/catch_all.hpp>
 
-using Clock = Cashmere::Journal::Clock;
+using namespace Cashmere;
+using Clock = Journal::Clock;
 
 TEST_CASE("incomparable clocks")
 {
-  REQUIRE_FALSE(Clock{{0xAA, 1}} < Clock{{0xBB, 1}});
-  REQUIRE_FALSE(Clock{{0xAA, 2}, {0xBB, 2}} < Clock{{0xCC, 1}});
+  REQUIRE_FALSE(Journal::smaller(Clock{{0xAA, 1}}, Clock{{0xBB, 1}}));
+  REQUIRE_FALSE(
+      Journal::smaller(Clock{{0xAA, 2}, {0xBB, 2}}, Clock{{0xCC, 1}}));
 }
 
 TEST_CASE("comparable clocks")
 {
-  REQUIRE(Clock{{0xAA, 1}} < Clock{{0xAA, 2}});
+  REQUIRE(Journal::smaller(Clock{{0xFF, 2}}, Clock{{0xAA, 1}, {0xFF, 2}}));
 }

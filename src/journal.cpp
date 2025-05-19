@@ -33,6 +33,21 @@ Journal::Clock Journal::clock() const
   return _clock;
 }
 
+Journal::Clock Journal::merge(const Clock& a, const Clock& b)
+{
+  auto out = a;
+  for (auto& [id, count] : b) {
+    out[id] = std::max(a.find(id) != a.end() ? a.at(id) : 0, count);
+  }
+  return out;
+}
+
+bool Journal::smaller(const Clock& a, const Clock& b)
+{
+  const auto top = merge(a, b);
+  return top == b;
+}
+
 bool Journal::append(Amount value)
 {
   return append(_id, {value, {}});

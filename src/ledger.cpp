@@ -41,9 +41,11 @@ Amount Ledger::balance() const
     const auto row = isInsert ? clock : entry.alters;
     if (rows.find(row) == rows.end()) {
       rows[row] = {clock, entry};
-    } else if (rows.at(row).clock < clock) {
+    } else if (Journal::smaller(rows.at(row).clock, clock)) {
       result -= rows.at(row).entry.value;
       rows[row] = {clock, entry};
+    } else {
+      continue;
     }
     result += rows.at(row).entry.value;
   }
