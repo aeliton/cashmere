@@ -17,6 +17,11 @@
 
 namespace Cashmere
 {
+struct ClockEntry
+{
+  Journal::Clock clock;
+  Journal::Entry entry;
+};
 
 Ledger::Ledger(JournalPtr journal)
   : _journal(journal)
@@ -25,27 +30,22 @@ Ledger::Ledger(JournalPtr journal)
 
 Amount Ledger::balance() const
 {
-  std::map<Journal::Clock, std::pair<Journal::Clock, Journal::Entry>> applied;
   Amount result = 0;
+  std::map<Journal::Clock, ClockEntry> rows;
+
   for (auto& [clock, entry] : _journal->entries()) {
-    if (entry.value != 0 && entry.alters.empty()) {
-      if (applied.find(clock) == applied.end()) {
-        applied[clock] = {clock, entry};
-        result += applied.at(clock).second.value;
-      }
-    } else {
-      auto q = applied.find(entry.alters);
-      if (q == applied.end()) {
-        applied[entry.alters] = {clock, entry};
-      } else {
-        auto [oldClock, oldEntry] = q->second;
-        if (oldClock < clock) {
-          result -= oldEntry.value;
-          applied[entry.alters] = {clock, entry};
-        }
-      }
-      result += applied.at(entry.alters).second.value;
+    const bool isInsert = entry.alters.empty();
+    if (isInsert && rows.find(clock) != rows.end()) {
+      continue;
     }
+    const auto row = isInsert ? clock : entry.alters;
+    if (rows.find(row) == rows.end()) {
+      rows[row] = {clock, entry};
+    } else if (rows.at(row).clock < clock) {
+      result -= rows.at(row).entry.value;
+      rows[row] = {clock, entry};
+    }
+    result += rows.at(row).entry.value;
   }
   return result;
 }
