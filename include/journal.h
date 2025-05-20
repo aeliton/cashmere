@@ -50,6 +50,7 @@ public:
   bool append(Entry value);
   bool append(Id journalId, Amount value);
   bool append(Id journalId, Entry value);
+  bool insert(Id journalId, Clock clock, Entry value);
 
   bool replace(Amount value, const Clock& clock);
   bool replace(Id journalId, Amount value, const Clock& clock);

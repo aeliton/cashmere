@@ -65,10 +65,15 @@ bool Journal::append(Id journalId, Amount value)
 
 bool Journal::append(Id journalId, Entry value)
 {
+  _clock[journalId]++;
+  return insert(journalId, _clock, value);
+}
+
+bool Journal::insert(Id journalId, Clock clock, Entry value)
+{
   std::erase_if(
       value.alters, [](const auto& item) { return item.second == 0; });
-  _clock[journalId]++;
-  _entries[_clock] = value;
+  _entries[clock] = value;
   return true;
 }
 
