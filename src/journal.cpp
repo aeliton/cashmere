@@ -50,7 +50,7 @@ bool Journal::smaller(const Clock& a, const Clock& b)
 
 bool Journal::append(Amount value)
 {
-  return append(_id, {value, {}});
+  return append(_id, {_id, value, {}});
 }
 
 bool Journal::append(Entry value)
@@ -60,7 +60,7 @@ bool Journal::append(Entry value)
 
 bool Journal::append(Id journalId, Amount value)
 {
-  return append(journalId, {value, {}});
+  return append(journalId, {journalId, value, {}});
 }
 
 bool Journal::append(Id journalId, Entry value)
@@ -79,22 +79,22 @@ bool Journal::insert(Id journalId, Clock clock, Entry value)
 
 bool Journal::replace(Amount value, const Clock& clock)
 {
-  return append({value, clock});
+  return append({_id, value, clock});
 }
 
 bool Journal::replace(Id journalId, Amount value, const Clock& clock)
 {
-  return append(journalId, {value, clock});
+  return append(journalId, {journalId, value, clock});
 }
 
 bool Journal::erase(Clock time)
 {
-  return append(_id, {0, time});
+  return append(_id, {_id, 0, time});
 }
 
 bool Journal::erase(Id journalId, Clock time)
 {
-  return append(journalId, {0, time});
+  return append(journalId, {journalId, 0, time});
 }
 
 Journal::Entry Journal::query(Clock time) const
@@ -102,7 +102,7 @@ Journal::Entry Journal::query(Clock time) const
   std::erase_if(time, [](const auto& item) { return item.second == 0; });
 
   if (_entries.find(time) == _entries.end()) {
-    return {0, {{0UL, 0}}};
+    return {0, 0, {{0UL, 0}}};
   }
 
   return _entries.at(time);

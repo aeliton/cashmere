@@ -23,6 +23,7 @@ public:
 
   struct Entry
   {
+    Id journalId;
     Amount value;
     Clock alters;
     friend bool operator==(const Entry& l, const Entry& r)

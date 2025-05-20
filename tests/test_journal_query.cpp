@@ -41,7 +41,7 @@ SCENARIO("journal queries")
       THEN("the entry is retrievable")
       {
         const auto clock = Clock{{journal.id(), 1}};
-        REQUIRE(journal.query(clock) == Entry{1000, {}});
+        REQUIRE(journal.query(clock) == Entry{journal.id(), 1000, {}});
       }
 
       AND_WHEN("adding an entry with an different journal ID")
@@ -50,7 +50,7 @@ SCENARIO("journal queries")
         THEN("the query with the updated clock returns the new transaction")
         {
           const auto clock = Clock{{journal.id(), 1}, {0xbaadcafe, 1}};
-          REQUIRE(journal.query(clock) == Entry{200, {}});
+          REQUIRE(journal.query(clock) == Entry{0xbaadcafe, 200, {}});
         }
       }
     }
