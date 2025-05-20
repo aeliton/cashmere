@@ -113,3 +113,43 @@ SCENARIO("ledger process two alternating edits of the same transaction")
     }
   }
 }
+
+SCENARIO("ledger process concurrent transactions")
+{
+  GIVEN("a ledger processing a journal with a single entry initially")
+  {
+    constexpr Journal::Id kTinyId = 0xAA;
+    constexpr Journal::Id kHugeId = 0xFF;
+
+    auto journal = std::make_shared<Journal>();
+    journal->append(kHugeId, 100);
+
+    const Clock toReplaceClock = {{kHugeId, 1}};
+
+    REQUIRE(journal->clock() == toReplaceClock);
+    REQUIRE(journal->query(toReplaceClock).value == 100);
+
+    Ledger ledger(journal);
+
+    WHEN("a journal with a bigger ID replaces the entry")
+    {
+      journal->replace(kHugeId, 200, toReplaceClock);
+
+      REQUIRE(journal->clock() == Clock{{kHugeId, 2}});
+      REQUIRE(journal->query({{kHugeId, 2}}).value == 200);
+
+      AND_WHEN("the journal with smaller ID replaces the same entry")
+      {
+        journal->insert(kTinyId, {{kTinyId, 1}, {kHugeId, 1}},
+            {kTinyId, 300, toReplaceClock});
+
+        REQUIRE(journal->query({{kTinyId, 1}, {kHugeId, 1}}).value == 300);
+
+        THEN("device with bigger ID takes precedence in concurrent edits")
+        {
+          REQUIRE(ledger.balance() == 200);
+        }
+      }
+    }
+  }
+}

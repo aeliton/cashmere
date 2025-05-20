@@ -44,6 +44,11 @@ Amount Ledger::balance() const
     } else if (Journal::smaller(rows.at(row).clock, clock)) {
       result -= rows.at(row).entry.value;
       rows[row] = {clock, entry};
+    } else if (!Journal::smaller(clock, rows.at(row).clock)) {
+      if (rows[row].entry.journalId < entry.journalId) {
+        result -= rows.at(row).entry.value;
+        rows[row] = {clock, entry};
+      }
     } else {
       continue;
     }
