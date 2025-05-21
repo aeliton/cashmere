@@ -97,7 +97,7 @@ SCENARIO("zero values in clocks are ignored")
 
       WHEN("a conflicting transaction is received")
       {
-        journal.insert(id, {{0xAA, 0}, {0xBB, 0}, {0xCC, 1}}, {id, 206, {}});
+        journal.insert({{0xAA, 0}, {0xBB, 0}, {0xCC, 1}}, {id, 206, {}});
         AND_WHEN("querying the inserted entry")
         {
           const auto result = journal.query({{0xCC, 1}});
@@ -135,8 +135,8 @@ SCENARIO("concurrent transactions update clock")
     journal.append(10);
     WHEN("a conflicting transaction is received")
     {
-      journal.insert(0xAA, {{journal.id(), 1}, {0xAA, 1}},
-          {0xAA, 20, {{journal.id(), 1}}});
+      journal.insert(
+          {{journal.id(), 1}, {0xAA, 1}}, {0xAA, 20, {{journal.id(), 1}}});
       THEN("the clock is updated")
       {
         REQUIRE(journal.clock() == Clock{{journal.id(), 1}, {0xAA, 1}});

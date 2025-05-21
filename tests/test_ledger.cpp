@@ -134,7 +134,7 @@ SCENARIO("ledger process concurrent transactions")
 
       AND_WHEN("the journal with smaller ID replaces the same entry")
       {
-        journal->insert(0xAA, {{0xAA, 1}, {0xBB, 1}}, {0xAA, 100, fixMe});
+        journal->insert({{0xAA, 1}, {0xBB, 1}}, {0xAA, 100, fixMe});
 
         THEN("device with bigger ID takes precedence in concurrent edits")
         {
@@ -143,7 +143,7 @@ SCENARIO("ledger process concurrent transactions")
       }
       AND_WHEN("another journal with a bigger id also conflicts")
       {
-        journal->insert(0xCC, {{0xAA, 1}, {0xCC, 1}}, {0xCC, 1000, fixMe});
+        journal->insert({{0xAA, 1}, {0xCC, 1}}, {0xCC, 1000, fixMe});
         THEN("device with bigger ID takes precedence in concurrent edits")
         {
           REQUIRE(ledger.balance() == 1000);
