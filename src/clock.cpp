@@ -11,6 +11,7 @@ Clock::Clock()
 Clock::Clock(const std::initializer_list<std::pair<const Id, Time>>& list)
   : std::map<Id, Time>(list)
 {
+  std::erase_if(*this, [](const auto& item) { return item.second == 0; });
 }
 
 Clock Clock::merge(const Clock& other) const

@@ -51,9 +51,6 @@ bool Journal::append(Entry value)
 
 bool Journal::insert(Clock clock, Entry value)
 {
-  std::erase_if(
-      value.alters, [](const auto& item) { return item.second == 0; });
-  std::erase_if(clock, [](const auto& item) { return item.second == 0; });
   _entries[clock] = value;
   _clock = _clock.merge(clock);
   return true;
@@ -81,8 +78,6 @@ bool Journal::erase(Id journalId, Clock time)
 
 Journal::Entry Journal::query(Clock time) const
 {
-  std::erase_if(time, [](const auto& item) { return item.second == 0; });
-
   if (_entries.find(time) == _entries.end()) {
     return {0, 0, {{0UL, 0}}};
   }
