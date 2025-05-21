@@ -18,39 +18,19 @@ Journal::Journal(Id poolId)
 {
 }
 
-const Journal::Id Journal::id() const
+const Id Journal::id() const
 {
   return _id;
 }
 
-const Journal::Id Journal::bookId() const
+const Id Journal::bookId() const
 {
   return _bookId;
 }
 
-Journal::Clock Journal::clock() const
+Clock Journal::clock() const
 {
   return _clock;
-}
-
-Journal::Clock Journal::merge(const Clock& a, const Clock& b)
-{
-  auto out = a;
-  for (auto& [id, count] : b) {
-    out[id] = std::max(a.find(id) != a.end() ? a.at(id) : 0, count);
-  }
-  return out;
-}
-
-bool Journal::smaller(const Clock& a, const Clock& b)
-{
-  const auto top = merge(a, b);
-  return top == b;
-}
-
-bool Journal::concurrent(const Clock& a, const Clock& b)
-{
-  return !smaller(a, b) && !smaller(b, a);
 }
 
 bool Journal::append(Id journalId, Amount value)
@@ -75,7 +55,7 @@ bool Journal::insert(Clock clock, Entry value)
       value.alters, [](const auto& item) { return item.second == 0; });
   std::erase_if(clock, [](const auto& item) { return item.second == 0; });
   _entries[clock] = value;
-  _clock = merge(clock, _clock);
+  _clock = _clock.merge(clock);
   return true;
 }
 

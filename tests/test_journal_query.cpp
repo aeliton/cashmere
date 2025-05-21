@@ -18,7 +18,6 @@
 
 using namespace Cashmere;
 
-using Clock = Journal::Clock;
 using Entry = Journal::Entry;
 
 SCENARIO("journal queries")

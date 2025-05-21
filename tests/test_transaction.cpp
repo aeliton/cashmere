@@ -18,14 +18,12 @@
 
 using namespace Cashmere;
 
-using Clock = Journal::Clock;
-
 SCENARIO("adds and edits transactions")
 {
   GIVEN("an empty journal")
   {
     Journal journal;
-    const Journal::Id kId0 = journal.id();
+    const Id kId0 = journal.id();
     THEN("the journal won't have any transaction")
     {
       REQUIRE(journal.entries().size() == 0);
@@ -58,7 +56,7 @@ SCENARIO("adds and edits transactions")
 
       WHEN("adding a transaction with another ID")
       {
-        constexpr Journal::Id kId1 = 0xbeeffeed;
+        constexpr Id kId1 = 0xbeeffeed;
         journal.append(kId1, 900);
         THEN("the transaction is retrievable")
         {

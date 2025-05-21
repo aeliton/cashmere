@@ -18,13 +18,11 @@
 
 using namespace Cashmere;
 
-using Clock = Journal::Clock;
-
 SCENARIO("a ledger handles entries of multiple nodes")
 {
   GIVEN("a journal with a few transactions")
   {
-    constexpr Journal::Id kId_FF = 0xFF;
+    constexpr Id kId_FF = 0xFF;
     auto journal = std::make_shared<Journal>();
     journal->append(kId_FF, 300);
     journal->append(kId_FF, 200);
@@ -39,7 +37,7 @@ SCENARIO("a ledger handles entries of multiple nodes")
       }
       AND_WHEN("editing one of the entries")
       {
-        constexpr Journal::Id kId_AA = 0xAA;
+        constexpr Id kId_AA = 0xAA;
         journal->replace(kId_AA, 50, Clock{{kId_FF, 1}});
 
         THEN("the balance is updated accordingly")
@@ -80,8 +78,8 @@ SCENARIO("ledger process two alternating edits of the same transaction")
 {
   GIVEN("a ledger processing a journal with a single entry initially")
   {
-    constexpr Journal::Id kTinyId = 0xAA;
-    constexpr Journal::Id kHugeId = 0xFF;
+    constexpr Id kTinyId = 0xAA;
+    constexpr Id kHugeId = 0xFF;
 
     auto journal = std::make_shared<Journal>();
     journal->append(kHugeId, 100);
@@ -118,8 +116,8 @@ SCENARIO("ledger process concurrent transactions")
 {
   GIVEN("a ledger processing a journal with a single entry initially")
   {
-    constexpr Journal::Id kAA = 0xAA;
-    constexpr Journal::Id kBB = 0xBB;
+    constexpr Id kAA = 0xAA;
+    constexpr Id kBB = 0xBB;
 
     auto journal = std::make_shared<Journal>();
     journal->append(0xBB, 1);

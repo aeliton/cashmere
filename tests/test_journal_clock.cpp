@@ -3,8 +3,6 @@
 
 using namespace Cashmere;
 
-using Clock = Journal::Clock;
-
 SCENARIO("journal clock updates when entries are changed")
 {
   GIVEN("an empty journal object")

@@ -13,20 +13,18 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "journal.h"
+#include "clock.h"
 #include <catch2/catch_all.hpp>
 
 using namespace Cashmere;
-using Clock = Journal::Clock;
 
 TEST_CASE("incomparable clocks")
 {
-  REQUIRE_FALSE(Journal::smaller(Clock{{0xAA, 1}}, Clock{{0xBB, 1}}));
-  REQUIRE_FALSE(
-      Journal::smaller(Clock{{0xAA, 2}, {0xBB, 2}}, Clock{{0xCC, 1}}));
+  REQUIRE(Clock{{0xAA, 1}}.concurrent(Clock{{0xBB, 1}}));
+  REQUIRE(Clock{{0xAA, 2}, {0xBB, 2}}.concurrent(Clock{{0xCC, 1}}));
 }
 
 TEST_CASE("comparable clocks")
 {
-  REQUIRE(Journal::smaller(Clock{{0xFF, 2}}, Clock{{0xAA, 1}, {0xFF, 2}}));
+  REQUIRE(Clock{{0xFF, 2}}.smallerThan(Clock{{0xAA, 1}, {0xFF, 2}}));
 }

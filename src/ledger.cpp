@@ -19,7 +19,7 @@ namespace Cashmere
 {
 struct ClockEntry
 {
-  Journal::Clock clock;
+  Clock clock;
   Journal::Entry entry;
 };
 
@@ -31,18 +31,17 @@ Ledger::Ledger(JournalPtr journal)
 Amount Ledger::balance() const
 {
   Amount result = 0;
-  std::map<Journal::Clock, ClockEntry> rows;
+  std::map<Clock, ClockEntry> rows;
 
-  auto existingKeyNeedsReplace = [&rows](const Journal::Clock& k,
-                                     const Journal::Clock& c,
+  auto existingKeyNeedsReplace = [&rows](const Clock& k, const Clock& c,
                                      const Journal::Entry& e) -> bool {
     if (rows.find(k) == rows.end()) {
       return false;
     }
-    if (Journal::smaller(rows.at(k).clock, c)) {
+    if (rows.at(k).clock.smallerThan(c)) {
       return true;
     }
-    if (Journal::smaller(c, rows.at(k).clock)) {
+    if (c.smallerThan(rows.at(k).clock)) {
       return false;
     }
     return rows[k].entry.journalId < e.journalId;

@@ -1,26 +1,19 @@
 #ifndef CASHEMERE_JOURNAL_H
 #define CASHEMERE_JOURNAL_H
 
-#include <cstdint>
 #include <map>
 #include <memory>
 
+#include "cashmere.h"
+#include "clock.h"
 #include "random.h"
 
 namespace Cashmere
 {
 
-using Amount = int64_t;
-using Time = uint64_t;
-
-struct Transaction;
-
 class Journal
 {
 public:
-  using Id = uint64_t;
-  using Clock = std::map<Id, Time>;
-
   struct Entry
   {
     Id journalId;
@@ -44,9 +37,6 @@ public:
   const Id id() const;
   const Id bookId() const;
   Clock clock() const;
-  static Clock merge(const Clock& a, const Clock& b);
-  static bool smaller(const Clock& a, const Clock& b);
-  static bool concurrent(const Clock& a, const Clock& b);
 
   bool append(Amount value);
   bool append(Id journalId, Amount value);
