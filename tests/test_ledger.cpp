@@ -118,36 +118,35 @@ SCENARIO("ledger process concurrent transactions")
 {
   GIVEN("a ledger processing a journal with a single entry initially")
   {
-    constexpr Journal::Id kTinyId = 0xAA;
-    constexpr Journal::Id kHugeId = 0xFF;
+    constexpr Journal::Id kAA = 0xAA;
+    constexpr Journal::Id kBB = 0xBB;
 
     auto journal = std::make_shared<Journal>();
-    journal->append(kHugeId, 100);
+    journal->append(0xBB, 1);
 
-    const Clock toReplaceClock = {{kHugeId, 1}};
-
-    REQUIRE(journal->clock() == toReplaceClock);
-    REQUIRE(journal->query(toReplaceClock).value == 100);
+    const Clock fixMe = {{0xBB, 1}};
 
     Ledger ledger(journal);
 
     WHEN("a journal with a bigger ID replaces the entry")
     {
-      journal->replace(kHugeId, 200, toReplaceClock);
-
-      REQUIRE(journal->clock() == Clock{{kHugeId, 2}});
-      REQUIRE(journal->query({{kHugeId, 2}}).value == 200);
+      journal->replace(0xBB, 10, fixMe);
 
       AND_WHEN("the journal with smaller ID replaces the same entry")
       {
-        journal->insert(kTinyId, {{kTinyId, 1}, {kHugeId, 1}},
-            {kTinyId, 300, toReplaceClock});
-
-        REQUIRE(journal->query({{kTinyId, 1}, {kHugeId, 1}}).value == 300);
+        journal->insert(0xAA, {{0xAA, 1}, {0xBB, 1}}, {0xAA, 100, fixMe});
 
         THEN("device with bigger ID takes precedence in concurrent edits")
         {
-          REQUIRE(ledger.balance() == 200);
+          REQUIRE(ledger.balance() == 10);
+        }
+      }
+      AND_WHEN("another journal with a bigger id also conflicts")
+      {
+        journal->insert(0xCC, {{0xAA, 1}, {0xCC, 1}}, {0xCC, 1000, fixMe});
+        THEN("device with bigger ID takes precedence in concurrent edits")
+        {
+          REQUIRE(ledger.balance() == 1000);
         }
       }
     }

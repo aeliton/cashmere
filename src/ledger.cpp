@@ -39,19 +39,19 @@ Amount Ledger::balance() const
       continue;
     }
     const auto row = isInsert ? clock : entry.alters;
-    if (rows.find(row) == rows.end()) {
-      rows[row] = {clock, entry};
-    } else if (Journal::smaller(rows.at(row).clock, clock)) {
-      result -= rows.at(row).entry.value;
-      rows[row] = {clock, entry};
-    } else if (!Journal::smaller(clock, rows.at(row).clock)) {
-      if (rows[row].entry.journalId < entry.journalId) {
-        result -= rows.at(row).entry.value;
-        rows[row] = {clock, entry};
-      }
-    } else {
+    if (!(rows.find(row) == rows.end()) &&
+        !(Journal::smaller(rows.at(row).clock, clock) ||
+            (!Journal::smaller(clock, rows.at(row).clock) &&
+                rows[row].entry.journalId < entry.journalId))) {
       continue;
     }
+    if (rows.find(row) != rows.end() &&
+        (Journal::smaller(rows.at(row).clock, clock) ||
+            (!Journal::smaller(clock, rows.at(row).clock) &&
+                rows[row].entry.journalId < entry.journalId))) {
+      result -= rows.at(row).entry.value;
+    }
+    rows[row] = {clock, entry};
     result += rows.at(row).entry.value;
   }
   return result;

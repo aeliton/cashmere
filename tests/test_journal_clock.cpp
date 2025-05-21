@@ -109,3 +109,21 @@ SCENARIO("zero values in clocks are ignored")
     }
   }
 }
+
+SCENARIO("concurrent transactions update clock")
+{
+  GIVEN("a journal with a transaction")
+  {
+    Journal journal;
+    journal.append(10);
+    WHEN("a conflicting transaction is received")
+    {
+      journal.insert(0xAA, {{journal.id(), 1}, {0xAA, 1}},
+          {0xAA, 20, {{journal.id(), 1}}});
+      THEN("the clock is updated")
+      {
+        REQUIRE(journal.clock() == Clock{{journal.id(), 1}, {0xAA, 1}});
+      }
+    }
+  }
+}

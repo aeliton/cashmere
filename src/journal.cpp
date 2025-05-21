@@ -74,6 +74,7 @@ bool Journal::insert(Id journalId, Clock clock, Entry value)
   std::erase_if(
       value.alters, [](const auto& item) { return item.second == 0; });
   _entries[clock] = value;
+  _clock = merge(clock, _clock);
   return true;
 }
 
