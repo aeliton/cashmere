@@ -11,9 +11,9 @@ Journal::Journal()
 {
 }
 
-Journal::Journal(Id poolId)
-  : _bookId(poolId)
-  , _id(_random.next())
+Journal::Journal(Id id)
+  : _bookId(_random.next())
+  , _id(id)
   , _clock({})
 {
 }

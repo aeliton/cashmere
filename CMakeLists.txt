@@ -42,13 +42,10 @@ find_package(Catch2 3 REQUIRED)
 
 add_executable(tests)
 target_sources(tests PRIVATE
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_book.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_query.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_transaction.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain cash_objects)

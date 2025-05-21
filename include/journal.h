@@ -32,7 +32,7 @@ public:
   using JournalEntries = std::map<Clock, Entry>;
 
   Journal();
-  explicit Journal(Id poolId);
+  explicit Journal(Id id);
 
   const Id id() const;
   const Id bookId() const;
