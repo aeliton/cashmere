@@ -33,26 +33,36 @@ Amount Ledger::balance() const
   Amount result = 0;
   std::map<Journal::Clock, ClockEntry> rows;
 
+  auto existingKeyNeedsReplace = [&rows](const Journal::Clock& k,
+                                     const Journal::Clock& c,
+                                     const Journal::Entry& e) -> bool {
+    if (rows.find(k) == rows.end()) {
+      return false;
+    }
+    if (Journal::smaller(rows.at(k).clock, c)) {
+      return true;
+    }
+    if (Journal::smaller(c, rows.at(k).clock)) {
+      return false;
+    }
+    return rows[k].entry.journalId < e.journalId;
+  };
+
   for (auto& [clock, entry] : _journal->entries()) {
     const bool isInsert = entry.alters.empty();
     if (isInsert && rows.find(clock) != rows.end()) {
       continue;
     }
-    const auto row = isInsert ? clock : entry.alters;
-    if (!(rows.find(row) == rows.end()) &&
-        !(Journal::smaller(rows.at(row).clock, clock) ||
-            (!Journal::smaller(clock, rows.at(row).clock) &&
-                rows[row].entry.journalId < entry.journalId))) {
-      continue;
+    const auto key = isInsert ? clock : entry.alters;
+    const bool keyExists = rows.find(key) != rows.end();
+    if (keyExists) {
+      if (!existingKeyNeedsReplace(key, clock, entry)) {
+        continue;
+      }
+      result -= rows.at(key).entry.value;
     }
-    if (rows.find(row) != rows.end() &&
-        (Journal::smaller(rows.at(row).clock, clock) ||
-            (!Journal::smaller(clock, rows.at(row).clock) &&
-                rows[row].entry.journalId < entry.journalId))) {
-      result -= rows.at(row).entry.value;
-    }
-    rows[row] = {clock, entry};
-    result += rows.at(row).entry.value;
+    rows[key] = {clock, entry};
+    result += rows.at(key).entry.value;
   }
   return result;
 }

@@ -48,6 +48,11 @@ bool Journal::smaller(const Clock& a, const Clock& b)
   return top == b;
 }
 
+bool Journal::concurrent(const Clock& a, const Clock& b)
+{
+  return !smaller(a, b) && !smaller(b, a);
+}
+
 bool Journal::append(Id journalId, Amount value)
 {
   return append({journalId, value, {}});

@@ -46,6 +46,7 @@ public:
   Clock clock() const;
   static Clock merge(const Clock& a, const Clock& b);
   static bool smaller(const Clock& a, const Clock& b);
+  static bool concurrent(const Clock& a, const Clock& b);
 
   bool append(Amount value);
   bool append(Id journalId, Amount value);
