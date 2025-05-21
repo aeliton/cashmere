@@ -92,6 +92,23 @@ SCENARIO("zero values in clocks are ignored")
       }
     }
 
+    WHEN("inserting a transaction using a clock with zeroed id counts")
+    {
+
+      WHEN("a conflicting transaction is received")
+      {
+        journal.insert(id, {{0xAA, 0}, {0xBB, 0}, {0xCC, 1}}, {id, 206, {}});
+        AND_WHEN("querying the inserted entry")
+        {
+          const auto result = journal.query({{0xCC, 1}});
+          THEN("the zeroed entries are ignored")
+          {
+            REQUIRE(result == Journal::Entry{id, 206, {}});
+          }
+        }
+      }
+    }
+
     WHEN("erasing a transaction using a clock with zeroed id counts")
     {
       const bool success = journal.erase(validClockWithZeroes);
