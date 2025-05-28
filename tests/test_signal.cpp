@@ -36,5 +36,70 @@ SCENARIO("signal to a single slot")
         REQUIRE(calledWith == 10);
       }
     }
+
+    WHEN("passing a member method as a slot")
+    {
+      struct A
+      {
+        void slot(int x)
+        {
+          value = x;
+        }
+        int value = 0;
+      };
+
+      A a;
+
+      REQUIRE(a.value == 0);
+
+      signal.connect(&a, &A::slot);
+
+      AND_WHEN("triggering the signal")
+      {
+        signal(20);
+        THEN("the member method is called")
+        {
+          REQUIRE(a.value == 20);
+        }
+        AND_THEN("the lambda is also called with the same value")
+        {
+          REQUIRE(calledWith == 20);
+        }
+      }
+    }
+  }
+}
+
+SCENARIO("using a member with multiple arguments")
+{
+  GIVEN("a signal object with a lambda connected to it")
+  {
+    struct A
+    {
+      void slot(int a, int b)
+      {
+        value = a + b;
+      }
+      int value = 0;
+    };
+    Signal<void, int, int> signal;
+
+    WHEN("passing a member method as a slot")
+    {
+      A a;
+
+      REQUIRE(a.value == 0);
+
+      signal.connect(&a, &A::slot);
+
+      AND_WHEN("triggering the signal")
+      {
+        signal(20, 30);
+        THEN("the member method is called")
+        {
+          REQUIRE(a.value == 50);
+        }
+      }
+    }
   }
 }

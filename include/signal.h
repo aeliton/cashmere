@@ -42,6 +42,13 @@ public:
     return true;
   }
 
+  template<class Member, class Object>
+  bool connect(Object* object, Member&& member)
+  {
+    _callbacks.push_back(std::bind_front(member, object));
+    return true;
+  }
+
 private:
   std::vector<Slot> _callbacks;
 };
