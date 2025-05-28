@@ -1,6 +1,7 @@
 #ifndef CASHEMERE_JOURNAL_H
 #define CASHEMERE_JOURNAL_H
 
+#include <functional>
 #include <map>
 #include <memory>
 
@@ -53,12 +54,15 @@ public:
 
   const JournalEntries& entries() const;
 
+  bool registerForUpdates(std::function<void(Clock)> func);
+
 private:
   static Random _random;
   const Id _bookId;
   const Id _id;
   JournalEntries _entries;
   Clock _clock;
+  std::vector<std::function<void(Clock)>> _callbacks;
 };
 
 using JournalPtr = std::shared_ptr<Journal>;

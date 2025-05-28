@@ -14,3 +14,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "broker.h"
+
+namespace Cashmere
+{
+
+Broker::Broker(JournalPtr journal)
+  : _journal(journal)
+{
+  _journal->registerForUpdates(
+      [this](Clock clock) { _presense[_journal->id()] = clock; });
+}
+
+std::map<Id, Clock> Broker::presense() const
+{
+  return _presense;
+}
+}

@@ -42,6 +42,7 @@ find_package(Catch2 3 REQUIRED)
 
 add_executable(tests)
 target_sources(tests PRIVATE
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_clock.cpp

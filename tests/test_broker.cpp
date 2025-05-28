@@ -13,28 +13,27 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_BROKER_H
-#define CASHMERE_BROKER_H
+#include "broker.h"
+#include <catch2/catch_all.hpp>
 
-#include "journal.h"
-// #include <unordered_map>
+using namespace Cashmere;
 
-namespace Cashmere
+SCENARIO("the broker observes the transactions of a journal")
 {
+  GIVEN("a broker and a journal")
+  {
+    auto journal = std::make_shared<Journal>();
+    Broker broker(journal);
 
-class Broker
-{
-public:
-  explicit Broker(JournalPtr journal);
+    WHEN("a journal adds an entry")
+    {
+      journal->append(10);
 
-  std::map<Id, Clock> presense() const;
-
-private:
-  //  std::unordered_map<uint64_t, std::list
-  JournalPtr _journal;
-  std::map<Id, Clock> _presense;
-};
-
+      THEN("the broker has the updated clock version of the journal")
+      {
+        REQUIRE(broker.presense() == std::map<Id, Clock>{{journal->id(),
+                                         Clock{{journal->id(), 1}}}});
+      }
+    }
+  }
 }
-
-#endif
