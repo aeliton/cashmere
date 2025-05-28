@@ -53,9 +53,7 @@ bool Journal::insert(Clock clock, Entry value)
 {
   _entries[clock] = value;
   _clock = _clock.merge(clock);
-  for (auto f : _callbacks) {
-    f(_clock);
-  }
+  _clockChanged(_clock);
   return true;
 }
 
@@ -93,9 +91,9 @@ const Journal::JournalEntries& Journal::entries() const
   return _entries;
 }
 
-bool Journal::registerForUpdates(std::function<void(Clock)> func)
+bool Journal::connect(ClockChangeSlot func)
 {
-  _callbacks.push_back(func);
+  _clockChanged.connect(func);
   return true;
 }
 

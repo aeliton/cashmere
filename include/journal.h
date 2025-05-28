@@ -1,16 +1,19 @@
 #ifndef CASHEMERE_JOURNAL_H
 #define CASHEMERE_JOURNAL_H
 
-#include <functional>
 #include <map>
 #include <memory>
 
 #include "cashmere.h"
 #include "clock.h"
 #include "random.h"
+#include "signal.h"
 
 namespace Cashmere
 {
+
+using ClockChangeSignal = Signal<void, Clock>;
+using ClockChangeSlot = ClockChangeSignal::Slot;
 
 class Journal
 {
@@ -54,7 +57,7 @@ public:
 
   const JournalEntries& entries() const;
 
-  bool registerForUpdates(std::function<void(Clock)> func);
+  bool connect(ClockChangeSlot func);
 
 private:
   static Random _random;
@@ -62,7 +65,7 @@ private:
   const Id _id;
   JournalEntries _entries;
   Clock _clock;
-  std::vector<std::function<void(Clock)>> _callbacks;
+  ClockChangeSignal _clockChanged;
 };
 
 using JournalPtr = std::shared_ptr<Journal>;

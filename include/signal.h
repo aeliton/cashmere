@@ -13,19 +13,38 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "broker.h"
+#ifndef CASHMERE_SIGNAL_H
+#define CASHMERE_SIGNAL_H
+
+#include <functional>
+#include <vector>
 
 namespace Cashmere
 {
-
-Broker::Broker(JournalPtr journal)
-  : _journal(journal)
+template<typename R, typename... T>
+class Signal
 {
-  _journal->connect([this](Clock clock) { _presense[_journal->id()] = clock; });
+public:
+  Signal() = default;
+
+  using Slot = std::function<R(T...)>;
+
+  void operator()(T... t) const
+  {
+    for (auto& callback : _callbacks) {
+      callback(t...);
+    }
+  }
+
+  bool connect(Slot functor)
+  {
+    _callbacks.push_back(functor);
+    return true;
+  }
+
+private:
+  std::vector<Slot> _callbacks;
+};
 }
 
-std::map<Id, Clock> Broker::presense() const
-{
-  return _presense;
-}
-}
+#endif
