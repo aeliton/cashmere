@@ -17,16 +17,17 @@ cmake_minimum_required(VERSION 3.30)
 
 project(signal)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
-
-add_library(signal_objects OBJECT
- ${CMAKE_CURRENT_SOURCE_DIR}/src/signal.cpp
+add_library(signal INTERFACE)
+target_include_directories( signal INTERFACE
+  $<BUILD_INTERFACE:${signal_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_include_directories(signal_objects PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_library(signal SHARED $<TARGET_OBJECTS:signal_objects>)
+target_compile_features(signal INTERFACE cxx_std_20)
+set_target_properties(signal
+  PROPERTIES CXX_EXTENSIONS OFF
+  CMAKE_COMPILE_WARNING_AS_ERROR ON
+)
 
 find_package(Catch2 3 REQUIRED)
 
@@ -36,7 +37,7 @@ target_sources(tests PRIVATE
 )
 target_link_libraries(tests PRIVATE
   Catch2::Catch2WithMain
-  signal_objects
+  signal
 )
 
 include(CTest)
