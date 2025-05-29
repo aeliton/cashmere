@@ -21,11 +21,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
-add_library(signal_objects OBJECT
- ${CMAKE_CURRENT_SOURCE_DIR}/src/signal.cpp
-)
-target_include_directories(signal_objects PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
@@ -34,14 +29,17 @@ add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
 )
-target_include_directories(cash_objects PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(cash_objects PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../signal/include
+)
 
 add_executable(cash)
 target_sources(cash PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
 
-target_link_libraries(cash PRIVATE cash_objects signal_objects)
+target_link_libraries(cash PRIVATE cash_objects)
 
 find_package(Catch2 3 REQUIRED)
 
@@ -53,12 +51,10 @@ target_sources(tests PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal_query.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_transaction.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_signal.cpp
 )
 target_link_libraries(tests PRIVATE
   Catch2::Catch2WithMain
   cash_objects
-  signal_objects
 )
 
 include(CTest)
