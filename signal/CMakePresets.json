@@ -14,7 +14,8 @@
           "CMAKE_BUILD_TYPE": "RelWithDebInfo",
           "CMAKE_VERBOSE_MAKEFILE": "OFF",
           "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-          "CMAKE_COMPILE_WARNING_AS_ERROR": "ON"
+          "CMAKE_COMPILE_WARNING_AS_ERROR": "ON",
+          "SIGNAL_UNIT_TESTS": "ON"
         }
       },
       {

@@ -18,11 +18,11 @@
 
 #include <map>
 #include <memory>
+#include <signal/signal.h>
 
 #include "cashmere.h"
 #include "clock.h"
 #include "random.h"
-#include "signal.h"
 
 namespace Cashmere
 {
