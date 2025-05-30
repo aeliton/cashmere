@@ -19,20 +19,7 @@ project(cash VERSION 0.0.1)
 
 include(GNUInstallDirs)
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/build")
-
-list(APPEND CMAKE_PREFIX_PATH
-  "${CMAKE_CURRENT_SOURCE_DIR}/build")
-list(APPEND CMAKE_PREFIX_PATH
-  "${CMAKE_CURRENT_SOURCE_DIR}/build/share")
-list(APPEND CMAKE_PREFIX_PATH
-  "${CMAKE_CURRENT_SOURCE_DIR}/build/share/signal")
-list(APPEND CMAKE_PREFIX_PATH
-  "${CMAKE_CURRENT_SOURCE_DIR}/build/share/signal/cmake")
-
-find_package(signal CONFIG REQUIRED)
-
-include_directories(${signal_INCLUDE_DIR})
+add_subdirectory(signal)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -46,7 +33,7 @@ add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
 )
-target_link_libraries(cash_objects PUBLIC signal::signal)
+target_link_libraries(cash_objects PUBLIC signal)
 
 target_include_directories(cash_objects PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
