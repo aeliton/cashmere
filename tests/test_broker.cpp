@@ -18,14 +18,16 @@
 
 using namespace Cashmere;
 
-SCENARIO("the broker observes the transactions of a journal")
+SCENARIO("the broker listens to journal transactions")
 {
-  GIVEN("a broker and a journal")
+  GIVEN("a broker with a journal")
   {
     auto journal = std::make_shared<Journal>();
     Broker broker(journal);
 
-    WHEN("a journal adds an entry")
+    REQUIRE(broker.presense() == std::map<Id, Clock>{});
+
+    WHEN("the journal adds an entry")
     {
       journal->append(10);
 
