@@ -26,7 +26,7 @@ SCENARIO("signal to a single slot")
 
     int calledWith = 0xFFFFFFFF;
     Signal<void, int>::Slot lambda = [&calledWith](int a) { calledWith = a; };
-    signal.connect(lambda);
+    const Connection conn = signal.connect(lambda);
 
     WHEN("trigerring the signal")
     {
@@ -34,6 +34,29 @@ SCENARIO("signal to a single slot")
       THEN("the lambda has ben executed with the passed value")
       {
         REQUIRE(calledWith == 10);
+      }
+      AND_WHEN("disconnecting the lambda")
+      {
+        const bool success = signal.disconnect(conn);
+        THEN("the disconnection succeeds")
+        {
+          REQUIRE(success);
+        }
+        AND_WHEN("re-triggering the signal")
+        {
+          signal(11);
+          THEN("the lamda is not called")
+          {
+            REQUIRE(calledWith == 10);
+          }
+        }
+        AND_WHEN("calling disconnect again with the same connection")
+        {
+          THEN("it fails")
+          {
+            REQUIRE_FALSE(signal.disconnect(conn));
+          }
+        }
       }
     }
 
@@ -52,7 +75,7 @@ SCENARIO("signal to a single slot")
 
       REQUIRE(a.value == 0);
 
-      signal.connect(&a, &A::slot);
+      const Connection conn = signal.connect(&a, &A::slot);
 
       AND_WHEN("triggering the signal")
       {
@@ -64,6 +87,23 @@ SCENARIO("signal to a single slot")
         AND_THEN("the lambda is also called with the same value")
         {
           REQUIRE(calledWith == 20);
+        }
+
+        AND_WHEN("disconnecting the member slot")
+        {
+          const bool success = signal.disconnect(conn);
+          THEN("it succeeds")
+          {
+            REQUIRE(success);
+          }
+          AND_WHEN("re-triggering the signal")
+          {
+            signal(33);
+            THEN("the callback is not called")
+            {
+              REQUIRE(a.value == 20);
+            }
+          }
         }
       }
     }

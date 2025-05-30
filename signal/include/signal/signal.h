@@ -17,10 +17,11 @@
 #define CASHMERE_SIGNAL_H
 
 #include <functional>
-#include <vector>
+#include <map>
 
 namespace Cashmere
 {
+using Connection = size_t;
 template<typename R, typename... T>
 class Signal
 {
@@ -31,26 +32,36 @@ public:
 
   void operator()(T... t) const
   {
-    for (auto& callback : _callbacks) {
-      callback(t...);
+    for (auto& [conn, slot] : _slots) {
+      slot(t...);
     }
   }
 
-  bool connect(Slot functor)
+  Connection connect(Slot slot)
   {
-    _callbacks.push_back(functor);
-    return true;
+    _slots[++_count] = slot;
+    return _count;
   }
 
   template<class Member, class Object>
-  bool connect(Object* object, Member&& member)
+  Connection connect(Object* object, Member&& member)
   {
-    _callbacks.push_back(std::bind_front(member, object));
+    _slots[++_count] = std::bind_front(member, object);
+    return _count;
+  }
+
+  bool disconnect(Connection connection)
+  {
+    if (_slots.find(connection) == _slots.end()) {
+      return false;
+    }
+    _slots.erase(connection);
     return true;
   }
 
 private:
-  std::vector<Slot> _callbacks;
+  std::map<Connection, Slot> _slots;
+  Connection _count = 0;
 };
 }
 
