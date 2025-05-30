@@ -68,7 +68,7 @@ install(
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME} DESTINATION include)
 
-if (DEFINED SIGNAL_UNIT_TESTS)
+if (SIGNAL_UNIT_TESTS)
   find_package(Catch2 3 REQUIRED)
 
   add_executable(tests)
@@ -80,7 +80,7 @@ if (DEFINED SIGNAL_UNIT_TESTS)
     signal
   )
 
- include(CTest)
+  include(CTest)
   include(Catch)
   catch_discover_tests(tests)
 endif()
