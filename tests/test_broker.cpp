@@ -20,7 +20,7 @@ using namespace Cashmere;
 
 SCENARIO("the broker listens to journal transactions")
 {
-  GIVEN("a broker with a journal")
+  GIVEN("an empty journal")
   {
     auto journal = std::make_shared<Journal>();
     Broker broker(journal);
@@ -36,6 +36,19 @@ SCENARIO("the broker listens to journal transactions")
         REQUIRE(broker.presense() == std::map<Id, Clock>{{journal->id(),
                                          Clock{{journal->id(), 1}}}});
       }
+    }
+  }
+
+  GIVEN("journal with pre-existing transactions")
+  {
+    auto journal = std::make_shared<Journal>();
+    journal->append(10);
+
+    Broker broker(journal);
+    THEN("the broker initializes the version of the journal")
+    {
+      REQUIRE(broker.presense() ==
+              std::map<Id, Clock>{{journal->id(), Clock{{journal->id(), 1}}}});
     }
   }
 }
