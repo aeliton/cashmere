@@ -27,7 +27,7 @@
 namespace Cashmere
 {
 
-using ClockChangeSignal = Signal<void, Clock>;
+using ClockChangeSignal = Signal<void(Clock)>;
 using ClockChangeSlot = ClockChangeSignal::Slot;
 
 class Journal

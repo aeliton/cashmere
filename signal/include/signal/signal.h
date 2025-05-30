@@ -22,15 +22,19 @@
 namespace Cashmere
 {
 using Connection = size_t;
-template<typename R, typename... T>
-class Signal
+
+template<typename Function>
+class Signal;
+
+template<typename ReturnType, typename... Args>
+class Signal<ReturnType(Args...)>
 {
 public:
   Signal() = default;
 
-  using Slot = std::function<R(T...)>;
+  using Slot = std::function<ReturnType(Args...)>;
 
-  void operator()(T... t) const
+  void operator()(Args... t) const
   {
     for (auto& [conn, slot] : _slots) {
       slot(t...);
@@ -43,11 +47,10 @@ public:
     return _count;
   }
 
-  template<class Member, class Object>
-  Connection connect(Object* object, Member&& member)
+  template<class Class, class Member = ReturnType (Class::*)(Args...)>
+  Connection connect(Class* object, Member&& member)
   {
-    _slots[++_count] = std::bind_front(member, object);
-    return _count;
+    return connect(std::bind_front(member, object));
   }
 
   bool disconnect(Connection connection)

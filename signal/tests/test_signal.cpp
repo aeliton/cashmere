@@ -22,10 +22,10 @@ SCENARIO("signal to a single slot")
 {
   GIVEN("a signal object with a lambda connected to it")
   {
-    Signal<void, int> signal;
+    Signal<void(int)> signal;
 
     int calledWith = 0xFFFFFFFF;
-    Signal<void, int>::Slot lambda = [&calledWith](int a) { calledWith = a; };
+    Signal<void(int)>::Slot lambda = [&calledWith](int a) { calledWith = a; };
     const Connection conn = signal.connect(lambda);
 
     WHEN("trigerring the signal")
@@ -122,7 +122,7 @@ SCENARIO("using a member with multiple arguments")
       }
       int value = 0;
     };
-    Signal<void, int, int> signal;
+    Signal<void(int, int)> signal;
 
     WHEN("passing a member method as a slot")
     {
