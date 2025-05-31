@@ -27,12 +27,12 @@ class Broker
 public:
   explicit Broker(JournalPtr journal);
 
-  std::map<Id, Clock> presense() const;
+  std::map<Id, Clock> versions() const;
 
 private:
   //  std::unordered_map<uint64_t, std::list
   JournalPtr _journal;
-  std::map<Id, Clock> _presense;
+  std::map<Id, Clock> _versions;
 };
 
 }

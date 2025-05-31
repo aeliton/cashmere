@@ -25,7 +25,7 @@ SCENARIO("the broker listens to journal transactions")
     auto journal = std::make_shared<Journal>();
     Broker broker(journal);
 
-    REQUIRE(broker.presense() == std::map<Id, Clock>{});
+    REQUIRE(broker.versions() == std::map<Id, Clock>{});
 
     WHEN("the journal adds an entry")
     {
@@ -33,7 +33,7 @@ SCENARIO("the broker listens to journal transactions")
 
       THEN("the broker has the updated clock version of the journal")
       {
-        REQUIRE(broker.presense() == std::map<Id, Clock>{{journal->id(),
+        REQUIRE(broker.versions() == std::map<Id, Clock>{{journal->id(),
                                          Clock{{journal->id(), 1}}}});
       }
     }
@@ -47,7 +47,7 @@ SCENARIO("the broker listens to journal transactions")
     Broker broker(journal);
     THEN("the broker initializes the version of the journal")
     {
-      REQUIRE(broker.presense() ==
+      REQUIRE(broker.versions() ==
               std::map<Id, Clock>{{journal->id(), Clock{{journal->id(), 1}}}});
     }
   }
