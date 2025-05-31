@@ -66,6 +66,9 @@ bool Journal::append(Entry value)
 
 bool Journal::insert(Clock clock, Entry value)
 {
+  if (_entries.find(clock) != _entries.end()) {
+    return false;
+  }
   _entries[clock] = value;
   _clock = _clock.merge(clock);
   _clockChanged(_clock);

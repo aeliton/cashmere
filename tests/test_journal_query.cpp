@@ -52,6 +52,15 @@ SCENARIO("journal queries")
           REQUIRE(journal.query(clock) == Entry{0xbaadcafe, 200, {}});
         }
       }
+
+      WHEN("inserting a transaction using an existing clock")
+      {
+        const bool success = journal.insert(firstEntryClock, {0xAA, -1, {}});
+        THEN("it should fail")
+        {
+          REQUIRE_FALSE(success);
+        }
+      }
     }
   }
 }
