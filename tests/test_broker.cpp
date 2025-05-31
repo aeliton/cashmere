@@ -24,17 +24,48 @@ SCENARIO("the broker listens to journal transactions")
   {
     auto journal = std::make_shared<Journal>(0xAA);
     Broker broker;
-    broker.attach(journal);
 
-    REQUIRE(broker.versions() == std::map<Id, Clock>{});
+    REQUIRE(broker.versions().empty());
 
-    WHEN("the journal adds an entry")
+    WHEN("attatching the journal to the broker")
     {
-      journal->append(10);
+      broker.attach(journal);
 
-      THEN("the broker has the updated clock version of the journal")
+      THEN("the versions remain empty as the journal has no transactions")
       {
-        REQUIRE(broker.versions() == std::map<Id, Clock>{{0xAA, {{0xAA, 1}}}});
+        REQUIRE(broker.versions().empty());
+      }
+
+      WHEN("the journal adds an entry")
+      {
+        journal->append(10);
+
+        THEN("the broker has the updated clock version of the journal")
+        {
+          REQUIRE(
+              broker.versions() == std::map<Id, Clock>{{0xAA, {{0xAA, 1}}}});
+        }
+      }
+
+      AND_WHEN("the journal is detached")
+      {
+        const bool success = broker.detach(0xAA);
+        THEN("the operation succeeds")
+        {
+          REQUIRE(success);
+        }
+        AND_THEN("the broker versions becames empty again")
+        {
+          REQUIRE(broker.versions().empty());
+        }
+        AND_WHEN("attempting to detach a non-attached journal")
+        {
+          const bool success = broker.detach(0xAA);
+          THEN("the operation fails")
+          {
+            REQUIRE_FALSE(success);
+          }
+        }
       }
     }
   }
@@ -73,6 +104,15 @@ SCENARIO("a broker with multiple journals attached")
         AND_THEN("the entry is retrievable the second journal")
         {
           REQUIRE(b->query({{0xAA, 1}}) == Journal::Entry{0xAA, 10, {}});
+        }
+      }
+      AND_WHEN("a journal detaches")
+      {
+        broker.detach(0xAA);
+        THEN("the broker show only versions of attached journals")
+        {
+          REQUIRE(
+              broker.versions() == std::map<Id, Clock>{{0xBB, {{0xAA, 1}}}});
         }
       }
     }

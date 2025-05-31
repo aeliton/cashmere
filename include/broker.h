@@ -28,6 +28,8 @@ public:
   Broker();
 
   bool attach(JournalPtr journal);
+  bool detach(Id journalId);
+
   std::map<Id, Clock> versions() const;
 
 private:

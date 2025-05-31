@@ -52,4 +52,15 @@ bool Broker::attach(JournalPtr journal)
   });
   return true;
 }
+
+bool Broker::detach(Id journalId)
+{
+  if (_attached.find(journalId) == _attached.end()) {
+    return false;
+  }
+  _versions.erase(journalId);
+  _attached.erase(journalId);
+  return true;
+}
+
 }
