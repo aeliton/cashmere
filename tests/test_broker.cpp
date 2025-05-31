@@ -55,3 +55,27 @@ SCENARIO("the broker listens to journal transactions")
     }
   }
 }
+
+SCENARIO("a broker with multiple journals attached")
+{
+  Broker broker;
+  GIVEN("two journals")
+  {
+    const auto a = std::make_shared<Journal>(0xAA);
+    const auto b = std::make_shared<Journal>(0xBB);
+    broker.attach(a);
+    broker.attach(b);
+    WHEN("one journal adds an entry")
+    {
+      a->append(10);
+      THEN("the other journal gets the transaction via the broker")
+      {
+        REQUIRE(b->clock() == Clock{{0xAA, 1}});
+        AND_THEN("the entry is retrievable the second journal")
+        {
+          REQUIRE(b->query({{0xAA, 1}}) == Journal::Entry{0xAA, 10, {}});
+        }
+      }
+    }
+  }
+}

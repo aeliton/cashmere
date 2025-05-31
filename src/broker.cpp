@@ -38,6 +38,17 @@ bool Broker::attach(JournalPtr journal)
     if (auto journal = this->_attached[journalId].lock()) {
       this->_versions[journalId] = clock;
     }
+    if (auto sender = this->_attached[journalId].lock()) {
+      auto entry = sender->query(clock);
+      for (auto& [id, weakJournalPtr] : this->_attached) {
+        if (id == sender->id()) {
+          continue;
+        }
+        if (auto other = weakJournalPtr.lock()) {
+          other->insert(clock, entry);
+        }
+      }
+    }
   });
   return true;
 }
