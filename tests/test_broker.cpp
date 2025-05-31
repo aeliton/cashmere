@@ -23,7 +23,8 @@ SCENARIO("the broker listens to journal transactions")
   GIVEN("an empty journal")
   {
     auto journal = std::make_shared<Journal>();
-    Broker broker(journal);
+    Broker broker;
+    broker.attach(journal);
 
     REQUIRE(broker.versions() == std::map<Id, Clock>{});
 
@@ -44,7 +45,9 @@ SCENARIO("the broker listens to journal transactions")
     auto journal = std::make_shared<Journal>();
     journal->append(10);
 
-    Broker broker(journal);
+    Broker broker;
+    broker.attach(journal);
+
     THEN("the broker initializes the version of the journal")
     {
       REQUIRE(broker.versions() ==

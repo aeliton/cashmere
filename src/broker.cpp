@@ -18,10 +18,7 @@
 namespace Cashmere
 {
 
-Broker::Broker(JournalPtr journal)
-{
-  attach(journal);
-}
+Broker::Broker() {}
 
 std::map<Id, Clock> Broker::versions() const
 {

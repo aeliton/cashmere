@@ -25,7 +25,7 @@ namespace Cashmere
 class Broker
 {
 public:
-  explicit Broker(JournalPtr journal);
+  Broker();
 
   bool attach(JournalPtr journal);
   std::map<Id, Clock> versions() const;
