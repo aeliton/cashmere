@@ -24,23 +24,23 @@ SCENARIO("journal queries")
 {
   GIVEN("an empty journal object")
   {
-    Journal journal;
+    Journal journal(0xAA);
 
     WHEN("query for an inexisting transaction")
     {
       THEN("the invalid entry is returned")
       {
-        REQUIRE_FALSE(journal.query(Clock{{journal.id(), 0}}).valid());
+        REQUIRE_FALSE(journal.query(Clock{{0xAA, 0}}).valid());
       }
     }
 
     WHEN("adding an entry")
     {
       journal.append(1000);
+      const Clock firstEntryClock = {{0xAA, 1}};
       THEN("the entry is retrievable")
       {
-        const auto clock = Clock{{journal.id(), 1}};
-        REQUIRE(journal.query(clock) == Entry{journal.id(), 1000, {}});
+        REQUIRE(journal.query(firstEntryClock) == Entry{0xAA, 1000, {}});
       }
 
       AND_WHEN("adding an entry with an different journal ID")
@@ -48,7 +48,7 @@ SCENARIO("journal queries")
         journal.append(0xbaadcafe, 200);
         THEN("the query with the updated clock returns the new transaction")
         {
-          const auto clock = Clock{{journal.id(), 1}, {0xbaadcafe, 1}};
+          const auto clock = Clock{{0xAA, 1}, {0xbaadcafe, 1}};
           REQUIRE(journal.query(clock) == Entry{0xbaadcafe, 200, {}});
         }
       }
