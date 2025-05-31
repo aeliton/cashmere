@@ -27,11 +27,11 @@ class Broker
 public:
   explicit Broker(JournalPtr journal);
 
+  bool attach(JournalPtr journal);
   std::map<Id, Clock> versions() const;
 
 private:
-  //  std::unordered_map<uint64_t, std::list
-  JournalPtr _journal;
+  std::unordered_map<Id, std::weak_ptr<Journal>> _attached;
   std::map<Id, Clock> _versions;
 };
 
