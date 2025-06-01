@@ -27,7 +27,7 @@ SCENARIO("the broker listens to journal transactions")
 
     REQUIRE(broker.versions().empty());
 
-    WHEN("attatching the journal to the broker")
+    WHEN("attaching the journal to the broker")
     {
       broker.attach(journal);
 
