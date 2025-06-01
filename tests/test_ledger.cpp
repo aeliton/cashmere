@@ -23,10 +23,10 @@ SCENARIO("a ledger handles entries of multiple nodes")
   GIVEN("a journal with a few transactions")
   {
     constexpr Id kId_FF = 0xFF;
-    auto journal = std::make_shared<Journal>();
-    journal->append(kId_FF, 300);
-    journal->append(kId_FF, 200);
-    journal->append(kId_FF, 100);
+    auto journal = std::make_shared<Journal>(kId_FF);
+    journal->append(300);
+    journal->append(200);
+    journal->append(100);
 
     WHEN("a ledger to process the journal")
     {
@@ -54,7 +54,7 @@ SCENARIO("a ledger handles entries of multiple nodes")
           }
           AND_WHEN("editing the same entry by another journal")
           {
-            journal->replace(kId_FF, 10, Clock{{kId_FF, 1}});
+            journal->replace(10, Clock{{kId_FF, 1}});
             THEN("the edit from greatest journal id takes priority")
             {
               REQUIRE(ledger.balance() == 310);
@@ -63,7 +63,7 @@ SCENARIO("a ledger handles entries of multiple nodes")
         }
         AND_WHEN("deleting another entry")
         {
-          journal->erase(kId_FF, Clock{{kId_FF, 2}});
+          journal->erase(Clock{{kId_FF, 2}});
           THEN("the balance is updated accordingly")
           {
             REQUIRE(ledger.balance() == 150);
