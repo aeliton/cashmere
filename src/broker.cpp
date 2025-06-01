@@ -34,7 +34,7 @@ bool Broker::attach(JournalPtr journal)
     _versions[journal->id()] = clock;
   }
 
-  journal->clockChanged().connect(this, &Broker::onClockUndate);
+  journal->clockChanged().connect(this, &Broker::onClockUpdate);
 
   return true;
 }
@@ -49,7 +49,7 @@ bool Broker::detach(Id journalId)
   return true;
 }
 
-void Broker::onClockUndate(Id journalId, Clock clock)
+void Broker::onClockUpdate(Id journalId, Clock clock)
 {
   const auto sender = _attached[journalId].lock();
   if (!sender) {
