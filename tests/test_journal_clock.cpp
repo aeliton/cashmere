@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "journal.h"
+#include "broker.h"
 #include <catch2/catch_all.hpp>
 
 using namespace Cashmere;
@@ -22,40 +22,49 @@ SCENARIO("journal clock updates when entries are changed")
 {
   GIVEN("an empty journal object")
   {
-    Journal journal;
+    constexpr Id kId = 0xbadcafe;
+    auto journal = std::make_shared<Journal>(kId);
+    auto second = std::make_shared<Journal>(0xAA);
+    auto third = std::make_shared<Journal>(0xFF);
+
+    Broker broker;
+    broker.attach(journal);
+    broker.attach(second);
+    broker.attach(third);
+
     THEN("the journal vector clock is empty")
     {
-      REQUIRE(journal.clock() == Clock{});
+      REQUIRE(journal->clock() == Clock{});
     }
     WHEN("adding a entry with the journal ID")
     {
-      journal.append(1000);
-      const auto kId = journal.id();
+      journal->append(1000);
       THEN("the clock is updated")
       {
-        REQUIRE(journal.clock() == Clock{{kId, 1}});
+        REQUIRE(journal->clock() == Clock{{kId, 1}});
       }
 
       AND_WHEN("adding an entry with an different journal ID")
       {
-        journal.append(0xAA, 200);
+        second->append(200);
         THEN("the clock is updated")
         {
-          REQUIRE(journal.clock() == Clock{{kId, 1}, {0xAA, 1}});
+          REQUIRE(journal->clock() == Clock{{kId, 1}, {0xAA, 1}});
         }
         AND_WHEN("another journal replaces a transaction")
         {
-          journal.replace(0xFF, 300, {{kId, 1}});
+          third->replace(300, {{kId, 1}});
           THEN("the actor's id is incremented")
           {
-            REQUIRE(journal.clock() == Clock{{kId, 1}, {0xAA, 1}, {0xFF, 1}});
+            REQUIRE(journal->clock() == Clock{{kId, 1}, {0xAA, 1}, {0xFF, 1}});
           }
           AND_WHEN("an entry is deleted")
           {
-            journal.erase({{kId, 1}});
+            journal->erase({{kId, 1}});
             THEN("the actor's is incremented")
             {
-              REQUIRE(journal.clock() == Clock{{kId, 2}, {0xAA, 1}, {0xFF, 1}});
+              REQUIRE(
+                  journal->clock() == Clock{{kId, 2}, {0xAA, 1}, {0xFF, 1}});
             }
           }
         }

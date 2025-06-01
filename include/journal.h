@@ -63,7 +63,6 @@ public:
   bool insert(Clock clock, Entry value);
 
   bool replace(Amount value, const Clock& clock);
-  bool replace(Id journalId, Amount value, const Clock& clock);
 
   bool erase(Clock time);
   bool erase(Id journalId, Clock time);

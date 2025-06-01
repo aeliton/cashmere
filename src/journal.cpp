@@ -81,11 +81,6 @@ bool Journal::replace(Amount value, const Clock& clock)
   return append({_id, value, clock});
 }
 
-bool Journal::replace(Id journalId, Amount value, const Clock& clock)
-{
-  return append({journalId, value, clock});
-}
-
 bool Journal::erase(Clock time)
 {
   return append({_id, 0, time});
