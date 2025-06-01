@@ -17,6 +17,7 @@
 #define CASHMERE_CLOCK_H
 
 #include <map>
+#include <ostream>
 
 #include "cashmere.h"
 
@@ -33,5 +34,6 @@ public:
   bool concurrent(const Clock& other) const;
 };
 
+std::ostream& operator<<(std::ostream& os, const Clock& clock);
 }
 #endif

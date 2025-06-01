@@ -48,4 +48,21 @@ bool Clock::concurrent(const Clock& other) const
   return !smallerThan(other) && !other.smallerThan(*this);
 }
 
+std::ostream& operator<<(std::ostream& os, const Clock& clock)
+{
+  os << "{";
+  if (clock.empty()) {
+    os << "}";
+    return os;
+  }
+
+  auto it = clock.begin();
+  os << "{" << it->first << ", " << it->second << "}";
+  it++;
+  for (; it != clock.end(); it++) {
+    os << ", {" << it->first << ", " << it->second << "}";
+  }
+  os << "}";
+  return os;
+}
 }
