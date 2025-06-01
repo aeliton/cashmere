@@ -81,11 +81,6 @@ bool Journal::erase(Clock time)
   return append({_id, 0, time});
 }
 
-bool Journal::erase(Id journalId, Clock time)
-{
-  return append({journalId, 0, time});
-}
-
 Journal::Entry Journal::query(Clock time) const
 {
   if (_entries.find(time) == _entries.end()) {
