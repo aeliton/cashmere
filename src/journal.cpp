@@ -61,7 +61,9 @@ bool Journal::append(Amount value)
 bool Journal::append(Entry value)
 {
   _clock[value.journalId]++;
-  return insert(_clock, value);
+  insert(_clock, value);
+  _clockChanged(_id, _clock);
+  return true;
 }
 
 bool Journal::insert(Clock clock, Entry value)
@@ -71,7 +73,6 @@ bool Journal::insert(Clock clock, Entry value)
   }
   _entries[clock] = value;
   _clock = _clock.merge(clock);
-  _clockChanged(_id, _clock);
   return true;
 }
 

@@ -133,8 +133,17 @@ SCENARIO("ledger process concurrent transactions")
   {
     constexpr Id kAA = 0xAA;
     constexpr Id kBB = 0xBB;
+    constexpr Id kCC = 0xCC;
 
     auto journal = std::make_shared<Journal>(kBB);
+    auto smaller = std::make_shared<Journal>(kAA);
+    auto another = std::make_shared<Journal>(kCC);
+
+    Broker broker;
+    broker.attach(journal);
+    broker.attach(smaller);
+    broker.attach(another);
+
     journal->append(1);
 
     const Clock fixMe = {{0xBB, 1}};
@@ -143,11 +152,19 @@ SCENARIO("ledger process concurrent transactions")
 
     WHEN("a journal with a bigger ID replaces the entry")
     {
+      broker.detach(smaller->id());
+      broker.detach(another->id());
       journal->replace(10, fixMe);
+      REQUIRE(smaller->clock() == Clock{{kBB, 1}});
 
       AND_WHEN("the journal with smaller ID replaces the same entry")
       {
-        journal->insert({{0xAA, 1}, {0xBB, 1}}, {0xAA, 100, fixMe});
+        broker.attach(smaller);
+        smaller->replace(100, fixMe);
+
+        REQUIRE(smaller->clock() == Clock{{kAA, 1}, {kBB, 1}});
+        REQUIRE(journal->clock() == Clock{{kAA, 1}, {kBB, 2}});
+        REQUIRE(another->clock() == Clock{{kBB, 1}});
 
         THEN("device with bigger ID takes precedence in concurrent edits")
         {

@@ -66,6 +66,7 @@ void Broker::onClockUndate(Id journalId, Clock clock)
       continue;
     }
     journal->insert(clock, entry);
+    _versions[journal->id()] = journal->clock();
   }
 }
 
