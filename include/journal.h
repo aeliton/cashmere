@@ -27,7 +27,7 @@
 namespace Cashmere
 {
 
-using ClockChangeSignal = Signal<void(Clock)>;
+using ClockChangeSignal = Signal<void(Id, Clock)>;
 using ClockChangeSlot = ClockChangeSignal::Slot;
 
 class Journal
@@ -72,7 +72,7 @@ public:
 
   const JournalEntries& entries() const;
 
-  bool connect(ClockChangeSlot func);
+  ClockChangeSignal& clockChanged();
 
 private:
   static Random _random;

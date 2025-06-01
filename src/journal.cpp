@@ -71,7 +71,7 @@ bool Journal::insert(Clock clock, Entry value)
   }
   _entries[clock] = value;
   _clock = _clock.merge(clock);
-  _clockChanged(_clock);
+  _clockChanged(_id, _clock);
   return true;
 }
 
@@ -109,10 +109,8 @@ const Journal::JournalEntries& Journal::entries() const
   return _entries;
 }
 
-bool Journal::connect(ClockChangeSlot func)
+ClockChangeSignal& Journal::clockChanged()
 {
-  _clockChanged.connect(func);
-  return true;
+  return _clockChanged;
 }
-
 }

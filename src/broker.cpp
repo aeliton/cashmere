@@ -34,22 +34,8 @@ bool Broker::attach(JournalPtr journal)
     _versions[journal->id()] = clock;
   }
 
-  journal->connect([this, journalId](Clock clock) {
-    if (auto journal = this->_attached[journalId].lock()) {
-      this->_versions[journalId] = clock;
-    }
-    if (auto sender = this->_attached[journalId].lock()) {
-      auto entry = sender->query(clock);
-      for (auto& [id, weakJournalPtr] : this->_attached) {
-        if (id == sender->id()) {
-          continue;
-        }
-        if (auto other = weakJournalPtr.lock()) {
-          other->insert(clock, entry);
-        }
-      }
-    }
-  });
+  journal->clockChanged().connect(this, &Broker::onClockUndate);
+
   return true;
 }
 
@@ -61,6 +47,26 @@ bool Broker::detach(Id journalId)
   _versions.erase(journalId);
   _attached.erase(journalId);
   return true;
+}
+
+void Broker::onClockUndate(Id journalId, Clock clock)
+{
+  const auto sender = _attached[journalId].lock();
+  if (!sender) {
+    return;
+  }
+  _versions[journalId] = clock;
+  const auto entry = sender->query(clock);
+  for (auto& [id, weakJournalPtr] : _attached) {
+    if (id == journalId) {
+      continue;
+    }
+    const auto journal = weakJournalPtr.lock();
+    if (!journal) {
+      continue;
+    }
+    journal->insert(clock, entry);
+  }
 }
 
 }
