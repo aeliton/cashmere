@@ -27,9 +27,6 @@
 namespace Cashmere
 {
 
-using ClockChangeSignal = Signal<void(Id, Clock)>;
-using ClockChangeSlot = ClockChangeSignal::Slot;
-
 class Journal
 {
 public:
@@ -47,6 +44,8 @@ public:
       return alters.size() > 0 && alters.begin()->first != 0UL;
     }
   };
+  using ClockChangeSignal = Signal<void(Id, Clock, Journal::Entry)>;
+  using ClockChangeSlot = ClockChangeSignal::Slot;
 
   using JournalEntries = std::map<Clock, Entry>;
 
