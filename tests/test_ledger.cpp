@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#include "broker.h"
 #include "ledger.h"
 #include <catch2/catch_all.hpp>
 
@@ -24,6 +25,10 @@ SCENARIO("a ledger handles entries of multiple nodes")
   {
     constexpr Id kId_FF = 0xFF;
     auto journal = std::make_shared<Journal>(kId_FF);
+
+    Broker broker;
+    broker.attach(journal);
+
     journal->append(300);
     journal->append(200);
     journal->append(100);
@@ -38,7 +43,11 @@ SCENARIO("a ledger handles entries of multiple nodes")
       AND_WHEN("editing one of the entries")
       {
         constexpr Id kId_AA = 0xAA;
-        journal->replace(kId_AA, 50, Clock{{kId_FF, 1}});
+        auto aa = std::make_shared<Journal>(kId_AA);
+
+        broker.attach(aa);
+
+        aa->replace(50, Clock{{kId_FF, 1}});
 
         THEN("the balance is updated accordingly")
         {
@@ -46,7 +55,7 @@ SCENARIO("a ledger handles entries of multiple nodes")
 
           AND_WHEN("the same node edits the same entry")
           {
-            journal->replace(kId_AA, 25, Clock{{kId_FF, 1}});
+            aa->replace(25, Clock{{kId_FF, 1}});
             THEN("the second edit takes priority over the previous")
             {
               REQUIRE(ledger.balance() == 325);
@@ -81,27 +90,33 @@ SCENARIO("ledger process two alternating edits of the same transaction")
     constexpr Id kTinyId = 0xAA;
     constexpr Id kHugeId = 0xFF;
 
-    auto journal = std::make_shared<Journal>();
-    journal->append(kHugeId, 100);
+    auto huge = std::make_shared<Journal>(kHugeId);
+    auto tiny = std::make_shared<Journal>(kTinyId);
+
+    Broker broker;
+    broker.attach(huge);
+    broker.attach(tiny);
+
+    huge->append(100);
 
     const Clock toReplaceClock = {{kHugeId, 1}};
 
-    REQUIRE(journal->clock() == toReplaceClock);
-    REQUIRE(journal->query(toReplaceClock).value == 100);
+    REQUIRE(huge->clock() == toReplaceClock);
+    REQUIRE(huge->query(toReplaceClock).value == 100);
 
-    Ledger ledger(journal);
+    Ledger ledger(huge);
 
     WHEN("a journal with a bigger ID replaces the entry")
     {
-      journal->replace(kHugeId, 200, toReplaceClock);
+      huge->replace(200, toReplaceClock);
 
-      REQUIRE(journal->clock() == Clock{{kHugeId, 2}});
-      REQUIRE(journal->query({{kHugeId, 2}}).value == 200);
+      REQUIRE(huge->clock() == Clock{{kHugeId, 2}});
+      REQUIRE(huge->query({{kHugeId, 2}}).value == 200);
 
       AND_WHEN("the journal with smaller ID replaces the same entry")
       {
-        journal->replace(kTinyId, 300, toReplaceClock);
-        REQUIRE(journal->query({{kTinyId, 1}, {kHugeId, 2}}).value == 300);
+        tiny->replace(300, toReplaceClock);
+        REQUIRE(tiny->query({{kTinyId, 1}, {kHugeId, 2}}).value == 300);
 
         THEN("the second replace takes precedence as it has a bigger time")
         {
@@ -119,8 +134,8 @@ SCENARIO("ledger process concurrent transactions")
     constexpr Id kAA = 0xAA;
     constexpr Id kBB = 0xBB;
 
-    auto journal = std::make_shared<Journal>();
-    journal->append(0xBB, 1);
+    auto journal = std::make_shared<Journal>(kBB);
+    journal->append(1);
 
     const Clock fixMe = {{0xBB, 1}};
 
@@ -128,7 +143,7 @@ SCENARIO("ledger process concurrent transactions")
 
     WHEN("a journal with a bigger ID replaces the entry")
     {
-      journal->replace(0xBB, 10, fixMe);
+      journal->replace(10, fixMe);
 
       AND_WHEN("the journal with smaller ID replaces the same entry")
       {
