@@ -48,11 +48,6 @@ Clock Journal::clock() const
   return _clock;
 }
 
-bool Journal::append(Id journalId, Amount value)
-{
-  return append({journalId, value, {}});
-}
-
 bool Journal::append(Amount value)
 {
   return append({_id, value, {}});

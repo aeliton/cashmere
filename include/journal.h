@@ -58,7 +58,6 @@ public:
   Clock clock() const;
 
   bool append(Amount value);
-  bool append(Id journalId, Amount value);
   bool append(Entry value);
   bool insert(Clock clock, Entry value);
 

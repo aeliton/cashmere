@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "journal.h"
+#include "broker.h"
 #include <catch2/catch_all.hpp>
 
 using namespace Cashmere;
@@ -22,45 +22,51 @@ SCENARIO("adds and edits transactions")
 {
   GIVEN("an empty journal")
   {
-    Journal journal;
-    const Id kId0 = journal.id();
+    constexpr Id kId0 = 0xbadcafe;
+    constexpr Id kId1 = 0xbeeffeed;
+    auto journal = std::make_shared<Journal>(kId0);
+    auto second = std::make_shared<Journal>(kId1);
+
+    Broker broker;
+    broker.attach(journal);
+    broker.attach(second);
+
     THEN("the journal won't have any transaction")
     {
-      REQUIRE(journal.entries().size() == 0);
+      REQUIRE(journal->entries().size() == 0);
     }
     THEN("the journal's clock value is empty")
     {
-      REQUIRE(journal.clock() == Clock{});
+      REQUIRE(journal->clock() == Clock{});
     }
 
     WHEN("adding the first transaction")
     {
       constexpr uint64_t kTransactionValue = 500;
-      const bool result = journal.append(kTransactionValue);
+      const bool result = journal->append(kTransactionValue);
       THEN("it must succeed")
       {
         REQUIRE(result);
       }
       AND_THEN("the transaction value matches the transaction added")
       {
-        REQUIRE(journal.query(Clock{{kId0, 1UL}}).value == kTransactionValue);
+        REQUIRE(journal->query(Clock{{kId0, 1UL}}).value == kTransactionValue);
       }
       AND_WHEN("adding a second transaction")
       {
-        journal.append(200);
+        journal->append(200);
         THEN("the second transaction is retrievable")
         {
-          REQUIRE(journal.query(Clock{{kId0, 2}}).value == 200);
+          REQUIRE(journal->query(Clock{{kId0, 2}}).value == 200);
         }
       }
 
       WHEN("adding a transaction with another ID")
       {
-        constexpr Id kId1 = 0xbeeffeed;
-        journal.append(kId1, 900);
+        second->append(900);
         THEN("the transaction is retrievable")
         {
-          REQUIRE(journal.query(Clock{{kId0, 1UL}, {kId1, 1UL}}).value == 900);
+          REQUIRE(journal->query(Clock{{kId0, 1UL}, {kId1, 1UL}}).value == 900);
         }
       }
     }
