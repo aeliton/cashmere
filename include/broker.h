@@ -17,7 +17,7 @@
 #define CASHMERE_BROKER_H
 
 #include "journal.h"
-// #include <unordered_map>
+#include <unordered_map>
 
 namespace Cashmere
 {
