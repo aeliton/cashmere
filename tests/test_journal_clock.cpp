@@ -18,53 +18,62 @@
 
 using namespace Cashmere;
 
-SCENARIO("journal clock updates when entries are changed")
+struct ThreeJournals
+{
+  JournalPtr tiny;
+  JournalPtr midd;
+  JournalPtr huge;
+  ThreeJournals()
+    : tiny(std::make_shared<Journal>(0xAA))
+    , midd(std::make_shared<Journal>(0xDD))
+    , huge(std::make_shared<Journal>(0xFF))
+  {
+  }
+};
+
+SCENARIO_METHOD(ThreeJournals, "journal clock updates when entries are changed")
 {
   GIVEN("an empty journal object")
   {
-    constexpr Id kId = 0xbadcafe;
-    auto journal = std::make_shared<Journal>(kId);
-    auto second = std::make_shared<Journal>(0xAA);
-    auto third = std::make_shared<Journal>(0xFF);
-
     Broker broker;
-    broker.attach(journal);
-    broker.attach(second);
-    broker.attach(third);
+    broker.attach(midd);
+    broker.attach(tiny);
+    broker.attach(huge);
 
     THEN("the journal vector clock is empty")
     {
-      REQUIRE(journal->clock() == Clock{});
+      REQUIRE(midd->clock() == Clock{});
     }
     WHEN("adding a entry with the journal ID")
     {
-      journal->append(1000);
+      midd->append(1000);
       THEN("the clock is updated")
       {
-        REQUIRE(journal->clock() == Clock{{kId, 1}});
+        REQUIRE(midd->clock() == Clock{{midd->id(), 1}});
       }
 
       AND_WHEN("adding an entry with an different journal ID")
       {
-        second->append(200);
+        tiny->append(200);
         THEN("the clock is updated")
         {
-          REQUIRE(journal->clock() == Clock{{kId, 1}, {0xAA, 1}});
+          REQUIRE(midd->clock() == Clock{{midd->id(), 1}, {tiny->id(), 1}});
         }
         AND_WHEN("another journal replaces a transaction")
         {
-          third->replace(300, {{kId, 1}});
+          huge->replace(300, {{midd->id(), 1}});
           THEN("the actor's id is incremented")
           {
-            REQUIRE(journal->clock() == Clock{{kId, 1}, {0xAA, 1}, {0xFF, 1}});
+            REQUIRE(midd->clock() ==
+                    Clock{{midd->id(), 1}, {tiny->id(), 1}, {huge->id(), 1}});
           }
           AND_WHEN("an entry is deleted")
           {
-            journal->erase({{kId, 1}});
+            midd->erase({{midd->id(), 1}});
             THEN("the actor's is incremented")
             {
-              REQUIRE(
-                  journal->clock() == Clock{{kId, 2}, {0xAA, 1}, {0xFF, 1}});
+              REQUIRE(midd->clock() ==
+                      Clock{{midd->id(), 2}, {tiny->id(), 1}, {huge->id(), 1}});
             }
           }
         }
