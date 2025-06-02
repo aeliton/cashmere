@@ -1,5 +1,5 @@
 ﻿---
-AlignAfterOpenBracket: DontAlign
+AlignAfterOpenBracket: BlockIndent
 AlignEscapedNewlines: Left
 AlignTrailingComments: 'true'
 AllowShortBlocksOnASingleLine: 'false'
@@ -22,6 +22,8 @@ BraceWrapping:
 BreakBeforeTernaryOperators: 'true'
 BreakConstructorInitializers: BeforeComma
 ConstructorInitializerIndentWidth: '2'
+ColumnLimit: '80'
+ContinuationIndentWidth: '2'
 Cpp11BracedListStyle: 'true'
 FixNamespaceComments: 'false'
 IndentCaseLabels: 'true'

@@ -43,7 +43,8 @@ SCENARIO("the broker listens to journal transactions")
         THEN("the broker has the updated clock version of the journal")
         {
           REQUIRE(
-              broker.versions() == std::map<Id, Clock>{{0xAA, {{0xAA, 1}}}});
+            broker.versions() == std::map<Id, Clock>{{0xAA, {{0xAA, 1}}}}
+          );
         }
       }
 
@@ -81,7 +82,8 @@ SCENARIO("the broker listens to journal transactions")
     THEN("the broker initializes the version of the journal")
     {
       REQUIRE(
-          broker.versions() == std::map<Id, Clock>{{0xAA, Clock{{0xAA, 1}}}});
+        broker.versions() == std::map<Id, Clock>{{0xAA, Clock{{0xAA, 1}}}}
+      );
     }
   }
 }
@@ -112,7 +114,8 @@ SCENARIO("a broker with multiple journals attached")
         THEN("the broker show only versions of attached journals")
         {
           REQUIRE(
-              broker.versions() == std::map<Id, Clock>{{0xBB, {{0xAA, 1}}}});
+            broker.versions() == std::map<Id, Clock>{{0xBB, {{0xAA, 1}}}}
+          );
         }
       }
     }
@@ -137,9 +140,13 @@ SCENARIO("a broker synchronizes journal entries")
         broker.attach(another);
         THEN("the second broker get's all transactions from the first")
         {
-          REQUIRE(another->entries() ==
-                  JournalEntries{{Clock{{0xAA, 1}}, Entry{0xAA, 10, {}}},
-                      {Clock{{0xAA, 2}}, Entry{0xAA, 20, {}}}});
+          REQUIRE(
+            another->entries() ==
+            JournalEntries{
+              {Clock{{0xAA, 1}}, Entry{0xAA, 10, {}}},
+              {Clock{{0xAA, 2}}, Entry{0xAA, 20, {}}}
+            }
+          );
         }
       }
     }

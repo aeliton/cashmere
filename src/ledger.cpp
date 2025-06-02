@@ -33,8 +33,8 @@ Amount Ledger::balance() const
   Amount result = 0;
   std::map<Clock, ClockEntry> rows;
 
-  auto existingKeyNeedsReplace = [&rows](const Clock& k, const Clock& c,
-                                     const Entry& e) -> bool {
+  auto existingKeyNeedsReplace =
+    [&rows](const Clock& k, const Clock& c, const Entry& e) -> bool {
     if (rows.find(k) == rows.end()) {
       return false;
     }

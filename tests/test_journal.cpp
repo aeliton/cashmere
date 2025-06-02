@@ -93,7 +93,7 @@ SCENARIO("zero values in clocks are ignored")
     }
 
     const auto validClockWithZeroes =
-        Clock{{0xAA, 1}, {0xbaad, 0}, {0xcafe, 0}};
+      Clock{{0xAA, 1}, {0xbaad, 0}, {0xcafe, 0}};
 
     WHEN("querying with extra ids with count zero")
     {
