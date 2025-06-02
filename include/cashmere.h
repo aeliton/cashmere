@@ -18,8 +18,11 @@
 
 #include <cstdint>
 
+namespace Cashmere
+{
 using Amount = int64_t;
 using Id = uint64_t;
 using Time = uint64_t;
+}
 
 #endif
