@@ -13,69 +13,68 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "broker.h"
+#include "journal.h"
 #include <catch2/catch_all.hpp>
 
 using namespace Cashmere;
 
-struct ThreeJournals
-{
-  JournalPtr tiny;
-  JournalPtr midd;
-  JournalPtr huge;
-  ThreeJournals()
-    : tiny(std::make_shared<Journal>(0xAA))
-    , midd(std::make_shared<Journal>(0xDD))
-    , huge(std::make_shared<Journal>(0xFF))
-  {
-  }
-};
+using Entry = Journal::Entry;
 
-SCENARIO_METHOD(ThreeJournals, "journal clock updates when entries are changed")
+SCENARIO("journal clock updates when entries are changed")
 {
   GIVEN("an empty journal object")
   {
-    Broker broker;
-    broker.attach(midd);
-    broker.attach(tiny);
-    broker.attach(huge);
+    auto journal = std::make_shared<Journal>(0xAA);
 
     THEN("the journal vector clock is empty")
     {
-      REQUIRE(midd->clock() == Clock{});
+      REQUIRE(journal->clock() == Clock{});
     }
-    WHEN("adding a entry with the journal ID")
+
+    WHEN("query for an inexisting transaction")
     {
-      midd->append(1000);
+      THEN("the invalid entry is returned")
+      {
+        REQUIRE_FALSE(journal->query(Clock{{0xAA, 0}}).valid());
+      }
+    }
+
+    WHEN("appending an entry")
+    {
+      journal->append(1000);
       THEN("the clock is updated")
       {
-        REQUIRE(midd->clock() == Clock{{midd->id(), 1}});
+        REQUIRE(journal->clock() == Clock{{0xAA, 1}});
+        AND_THEN("the entry is queryable")
+        {
+          REQUIRE(journal->query({{0xAA, 1}}) == Entry{0xAA, 1000, {}});
+        }
       }
 
-      AND_WHEN("adding an entry with an different journal ID")
+      WHEN("inserting a transaction using an existing clock")
       {
-        tiny->append(200);
+        const bool success = journal->insert({{0xAA, 1}}, {0xAA, -1, {}});
+        THEN("it should fail")
+        {
+          REQUIRE_FALSE(success);
+        }
+      }
+
+      AND_WHEN("appending a second entry")
+      {
+        journal->append(333);
         THEN("the clock is updated")
         {
-          REQUIRE(midd->clock() == Clock{{midd->id(), 1}, {tiny->id(), 1}});
+          REQUIRE(journal->clock() == Clock{{0xAA, 2}});
         }
-        AND_WHEN("another journal replaces a transaction")
+      }
+
+      AND_WHEN("inserting an entry from another journal")
+      {
+        journal->insert({{0xFF, 1}}, {0xFF, 200, {}});
+        THEN("the clock is updated to show the incoming entry")
         {
-          huge->replace(300, {{midd->id(), 1}});
-          THEN("the actor's id is incremented")
-          {
-            REQUIRE(midd->clock() ==
-                    Clock{{midd->id(), 1}, {tiny->id(), 1}, {huge->id(), 1}});
-          }
-          AND_WHEN("an entry is deleted")
-          {
-            midd->erase({{midd->id(), 1}});
-            THEN("the actor's is incremented")
-            {
-              REQUIRE(midd->clock() ==
-                      Clock{{midd->id(), 2}, {tiny->id(), 1}, {huge->id(), 1}});
-            }
-          }
+          REQUIRE(journal->clock() == Clock{{0xAA, 1}, {0xFF, 1}});
         }
       }
     }
@@ -86,24 +85,24 @@ SCENARIO("zero values in clocks are ignored")
 {
   GIVEN("a journal with a transaction")
   {
-    Journal journal;
-    const auto id = journal.id();
+    Journal journal(0xAA);
 
     journal.append(1000);
 
     THEN("querying the transaction suceeds")
     {
-      REQUIRE(journal.query({{id, 1}}).value == 1000);
+      REQUIRE(journal.query({{0xAA, 1}}).value == 1000);
     }
 
-    const auto validClockWithZeroes = Clock{{id, 1}, {0xbaad, 0}, {0xcafe, 0}};
+    const auto validClockWithZeroes =
+        Clock{{0xAA, 1}, {0xbaad, 0}, {0xcafe, 0}};
 
     WHEN("querying with extra ids with count zero")
     {
       const auto result = journal.query(validClockWithZeroes);
       THEN("the clock's zeroed entries are ignored")
       {
-        REQUIRE(result == Journal::Entry{id, 1000, {}});
+        REQUIRE(result == Journal::Entry{0xAA, 1000, {}});
       }
     }
 
@@ -115,10 +114,10 @@ SCENARIO("zero values in clocks are ignored")
 
       AND_WHEN("querying the recorded entry")
       {
-        const auto result = journal.query({{id, 2}});
+        const auto result = journal.query({{0xAA, 2}});
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Journal::Entry{id, 500, {{id, 1}}});
+          REQUIRE(result == Journal::Entry{0xAA, 500, {{0xAA, 1}}});
         }
       }
     }
@@ -128,13 +127,13 @@ SCENARIO("zero values in clocks are ignored")
 
       WHEN("a conflicting transaction is received")
       {
-        journal.insert({{0xAA, 0}, {0xBB, 0}, {0xCC, 1}}, {id, 206, {}});
+        journal.insert({{0xAA, 0}, {0xBB, 0}, {0xCC, 1}}, {0xAA, 206, {}});
         AND_WHEN("querying the inserted entry")
         {
           const auto result = journal.query({{0xCC, 1}});
           THEN("the zeroed entries are ignored")
           {
-            REQUIRE(result == Journal::Entry{id, 206, {}});
+            REQUIRE(result == Journal::Entry{0xAA, 206, {}});
           }
         }
       }
@@ -148,29 +147,11 @@ SCENARIO("zero values in clocks are ignored")
 
       AND_WHEN("querying the recorded entry")
       {
-        const auto result = journal.query({{id, 2}});
+        const auto result = journal.query({{0xAA, 2}});
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Journal::Entry{id, 0, {{id, 1}}});
+          REQUIRE(result == Journal::Entry{0xAA, 0, {{0xAA, 1}}});
         }
-      }
-    }
-  }
-}
-
-SCENARIO("concurrent transactions update clock")
-{
-  GIVEN("a journal with a transaction")
-  {
-    Journal journal;
-    journal.append(10);
-    WHEN("a conflicting transaction is received")
-    {
-      journal.insert(
-          {{journal.id(), 1}, {0xAA, 1}}, {0xAA, 20, {{journal.id(), 1}}});
-      THEN("the clock is updated")
-      {
-        REQUIRE(journal.clock() == Clock{{journal.id(), 1}, {0xAA, 1}});
       }
     }
   }
