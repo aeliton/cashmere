@@ -49,15 +49,15 @@ bool Broker::detach(Id journalId)
   return true;
 }
 
-void Broker::onClockUpdate(Id journalId, Clock clock, Journal::Entry entry)
+void Broker::onClockUpdate(Clock clock, Journal::Entry entry)
 {
-  const auto sender = _attached[journalId].lock();
+  const auto sender = _attached[entry.journalId].lock();
   if (!sender) {
     return;
   }
-  _versions[journalId] = clock;
+  _versions[entry.journalId] = clock;
   for (auto& [id, weakJournalPtr] : _attached) {
-    if (id == journalId) {
+    if (id == entry.journalId) {
       continue;
     }
     const auto journal = weakJournalPtr.lock();

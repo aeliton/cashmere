@@ -30,7 +30,7 @@ public:
   bool attach(JournalPtr journal);
   bool detach(Id journalId);
 
-  void onClockUpdate(Id journalId, Clock clock, Journal::Entry entry);
+  void onClockUpdate(Clock clock, Journal::Entry entry);
 
   std::map<Id, Clock> versions() const;
 

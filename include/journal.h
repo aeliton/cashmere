@@ -44,7 +44,7 @@ public:
       return alters.size() > 0 && alters.begin()->first != 0UL;
     }
   };
-  using ClockChangeSignal = Signal<void(Id, Clock, Journal::Entry)>;
+  using ClockChangeSignal = Signal<void(Clock, Journal::Entry)>;
   using ClockChangeSlot = ClockChangeSignal::Slot;
 
   using JournalEntries = std::map<Clock, Entry>;
