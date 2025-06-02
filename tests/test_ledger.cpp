@@ -173,7 +173,8 @@ SCENARIO("ledger process concurrent transactions")
       }
       AND_WHEN("another journal with a bigger id also conflicts")
       {
-        journal->insert({{0xAA, 1}, {0xCC, 1}}, {0xCC, 1000, fixMe});
+        broker.attach(another);
+        another->replace(1000, fixMe);
         THEN("device with bigger ID takes precedence in concurrent edits")
         {
           REQUIRE(ledger.balance() == 1000);
