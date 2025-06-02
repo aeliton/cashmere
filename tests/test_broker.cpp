@@ -103,7 +103,7 @@ SCENARIO("a broker with multiple journals attached")
         REQUIRE(b->clock() == Clock{{0xAA, 1}});
         AND_THEN("the entry is retrievable the second journal")
         {
-          REQUIRE(b->query({{0xAA, 1}}) == Journal::Entry{0xAA, 10, {}});
+          REQUIRE(b->query({{0xAA, 1}}) == Entry{0xAA, 10, {}});
         }
       }
       AND_WHEN("a journal detaches")
@@ -138,9 +138,8 @@ SCENARIO("a broker synchronizes journal entries")
         THEN("the second broker get's all transactions from the first")
         {
           REQUIRE(another->entries() ==
-                  Journal::JournalEntries{
-                      {Clock{{0xAA, 1}}, Journal::Entry{0xAA, 10, {}}},
-                      {Clock{{0xAA, 2}}, Journal::Entry{0xAA, 20, {}}}});
+                  JournalEntries{{Clock{{0xAA, 1}}, Entry{0xAA, 10, {}}},
+                      {Clock{{0xAA, 2}}, Entry{0xAA, 20, {}}}});
         }
       }
     }

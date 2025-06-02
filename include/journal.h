@@ -16,39 +16,22 @@
 #ifndef CASHEMERE_JOURNAL_H
 #define CASHEMERE_JOURNAL_H
 
-#include <map>
 #include <memory>
 #include <signal/signal.h>
 
-#include "cashmere.h"
-#include "clock.h"
+#include "entry.h"
 #include "random.h"
 
 namespace Cashmere
 {
 
+using ClockChangeSignal = Signal<void(Clock, Entry)>;
+using ClockChangeSlot = ClockChangeSignal::Slot;
+using JournalEntries = std::map<Clock, Entry>;
+
 class Journal
 {
 public:
-  struct Entry
-  {
-    Id journalId;
-    Amount value;
-    Clock alters;
-    friend bool operator==(const Entry& l, const Entry& r)
-    {
-      return std::tie(l.value, l.alters) == std::tie(r.value, r.alters);
-    }
-    bool valid() const
-    {
-      return alters.size() > 0 && alters.begin()->first != 0UL;
-    }
-  };
-  using ClockChangeSignal = Signal<void(Clock, Journal::Entry)>;
-  using ClockChangeSlot = ClockChangeSignal::Slot;
-
-  using JournalEntries = std::map<Clock, Entry>;
-
   Journal();
   explicit Journal(Id id);
 

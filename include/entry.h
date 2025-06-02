@@ -13,30 +13,27 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_BROKER_H
-#define CASHMERE_BROKER_H
+#ifndef CASHMERE_ENTRY_H
+#define CASHMERE_ENTRY_H
 
-#include "journal.h"
-#include <unordered_map>
+#include "clock.h"
 
 namespace Cashmere
 {
 
-class Broker
+struct Entry
 {
-public:
-  Broker();
-
-  bool attach(JournalPtr journal);
-  bool detach(Id journalId);
-
-  void onClockUpdate(Clock clock, Entry entry);
-
-  std::map<Id, Clock> versions() const;
-
-private:
-  std::unordered_map<Id, std::weak_ptr<Journal>> _attached;
-  std::map<Id, Clock> _versions;
+  Id journalId;
+  Amount value;
+  Clock alters;
+  friend bool operator==(const Entry& l, const Entry& r)
+  {
+    return std::tie(l.value, l.alters) == std::tie(r.value, r.alters);
+  }
+  bool valid() const
+  {
+    return alters.size() > 0 && alters.begin()->first != 0UL;
+  }
 };
 
 }

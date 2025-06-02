@@ -81,7 +81,7 @@ bool Journal::erase(Clock time)
   return append({_id, 0, time});
 }
 
-Journal::Entry Journal::query(Clock time) const
+Entry Journal::query(Clock time) const
 {
   if (_entries.find(time) == _entries.end()) {
     return {0, 0, {{0UL, 0}}};
@@ -90,12 +90,12 @@ Journal::Entry Journal::query(Clock time) const
   return _entries.at(time);
 }
 
-const Journal::JournalEntries& Journal::entries() const
+const JournalEntries& Journal::entries() const
 {
   return _entries;
 }
 
-Journal::ClockChangeSignal& Journal::clockChanged()
+ClockChangeSignal& Journal::clockChanged()
 {
   return _clockChanged;
 }

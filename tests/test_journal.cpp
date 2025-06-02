@@ -18,8 +18,6 @@
 
 using namespace Cashmere;
 
-using Entry = Journal::Entry;
-
 SCENARIO("journal clock updates when entries are changed")
 {
   GIVEN("an empty journal object")
@@ -102,7 +100,7 @@ SCENARIO("zero values in clocks are ignored")
       const auto result = journal.query(validClockWithZeroes);
       THEN("the clock's zeroed entries are ignored")
       {
-        REQUIRE(result == Journal::Entry{0xAA, 1000, {}});
+        REQUIRE(result == Entry{0xAA, 1000, {}});
       }
     }
 
@@ -117,7 +115,7 @@ SCENARIO("zero values in clocks are ignored")
         const auto result = journal.query({{0xAA, 2}});
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Journal::Entry{0xAA, 500, {{0xAA, 1}}});
+          REQUIRE(result == Entry{0xAA, 500, {{0xAA, 1}}});
         }
       }
     }
@@ -133,7 +131,7 @@ SCENARIO("zero values in clocks are ignored")
           const auto result = journal.query({{0xCC, 1}});
           THEN("the zeroed entries are ignored")
           {
-            REQUIRE(result == Journal::Entry{0xAA, 206, {}});
+            REQUIRE(result == Entry{0xAA, 206, {}});
           }
         }
       }
@@ -150,7 +148,7 @@ SCENARIO("zero values in clocks are ignored")
         const auto result = journal.query({{0xAA, 2}});
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Journal::Entry{0xAA, 0, {{0xAA, 1}}});
+          REQUIRE(result == Entry{0xAA, 0, {{0xAA, 1}}});
         }
       }
     }

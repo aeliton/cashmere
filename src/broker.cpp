@@ -60,7 +60,7 @@ bool Broker::detach(Id journalId)
   return true;
 }
 
-void Broker::onClockUpdate(Clock clock, Journal::Entry entry)
+void Broker::onClockUpdate(Clock clock, Entry entry)
 {
   const auto sender = _attached[entry.journalId].lock();
   if (!sender) {
