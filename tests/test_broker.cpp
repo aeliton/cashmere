@@ -118,3 +118,31 @@ SCENARIO("a broker with multiple journals attached")
     }
   }
 }
+
+SCENARIO("a broker synchronizes journal entries")
+{
+  GIVEN("an empty broker")
+  {
+    Broker broker;
+    WHEN("attaching journal with transactions")
+    {
+      auto journal = std::make_shared<Journal>(0xAA);
+      journal->append(10);
+      journal->append(20);
+      broker.attach(journal);
+
+      AND_WHEN("attaching a new journal")
+      {
+        auto another = std::make_shared<Journal>(0xBB);
+        broker.attach(another);
+        THEN("the second broker get's all transactions from the first")
+        {
+          REQUIRE(another->entries() ==
+                  Journal::JournalEntries{
+                      {Clock{{0xAA, 1}}, Journal::Entry{0xAA, 10, {}}},
+                      {Clock{{0xAA, 2}}, Journal::Entry{0xAA, 20, {}}}});
+        }
+      }
+    }
+  }
+}

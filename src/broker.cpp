@@ -29,6 +29,17 @@ bool Broker::attach(JournalPtr journal)
 {
   Id journalId = journal->id();
 
+  for (auto& [id, j] : _attached) {
+    if (auto other = j.lock()) {
+      for (auto& [clock, entry] : other->entries()) {
+        journal->insert(clock, entry);
+      }
+      for (auto& [clock, entry] : journal->entries()) {
+        other->insert(clock, entry);
+      }
+    }
+  }
+
   _attached[journalId] = journal;
   if (auto clock = journal->clock(); clock.size() > 0) {
     _versions[journal->id()] = clock;

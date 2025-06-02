@@ -135,49 +135,66 @@ SCENARIO("ledger process concurrent transactions")
     constexpr Id kBB = 0xBB;
     constexpr Id kCC = 0xCC;
 
-    auto journal = std::make_shared<Journal>(kBB);
-    auto smaller = std::make_shared<Journal>(kAA);
-    auto another = std::make_shared<Journal>(kCC);
+    auto small = std::make_shared<Journal>(kAA);
+    auto medium = std::make_shared<Journal>(kBB);
+    auto big = std::make_shared<Journal>(kCC);
 
     Broker broker;
-    broker.attach(journal);
-    broker.attach(smaller);
-    broker.attach(another);
+    broker.attach(medium);
+    broker.attach(small);
+    broker.attach(big);
 
-    journal->append(1);
+    medium->append(1);
 
     const Clock fixMe = {{0xBB, 1}};
 
-    Ledger ledger(journal);
+    Ledger ledgerSmall(small);
+    Ledger ledgerMedium(medium);
+    Ledger ledgerBig(big);
 
     WHEN("a journal with a bigger ID replaces the entry")
     {
-      broker.detach(smaller->id());
-      broker.detach(another->id());
-      journal->replace(10, fixMe);
-      REQUIRE(smaller->clock() == Clock{{kBB, 1}});
+      broker.detach(small->id());
+      broker.detach(big->id());
+      medium->replace(10, fixMe);
 
       AND_WHEN("the journal with smaller ID replaces the same entry")
       {
-        broker.attach(smaller);
-        smaller->replace(100, fixMe);
+        small->replace(100, fixMe);
+        REQUIRE(small->clock() == Clock{{kAA, 1}, {kBB, 1}});
 
-        REQUIRE(smaller->clock() == Clock{{kAA, 1}, {kBB, 1}});
-        REQUIRE(journal->clock() == Clock{{kAA, 1}, {kBB, 2}});
-        REQUIRE(another->clock() == Clock{{kBB, 1}});
+        broker.attach(small);
+
+        REQUIRE(small->clock() == Clock{{kAA, 1}, {kBB, 2}});
+        REQUIRE(medium->clock() == Clock{{kAA, 1}, {kBB, 2}});
+        REQUIRE(big->clock() == Clock{{kBB, 1}});
 
         THEN("device with bigger ID takes precedence in concurrent edits")
         {
-          REQUIRE(ledger.balance() == 10);
+          REQUIRE(ledgerSmall.balance() == 10);
+          REQUIRE(ledgerMedium.balance() == 10);
+          REQUIRE(ledgerBig.balance() == 1);
         }
       }
       AND_WHEN("another journal with a bigger id also conflicts")
       {
-        broker.attach(another);
-        another->replace(1000, fixMe);
+        broker.attach(big);
+        big->replace(1000, fixMe);
         THEN("device with bigger ID takes precedence in concurrent edits")
         {
-          REQUIRE(ledger.balance() == 1000);
+          REQUIRE(ledgerSmall.balance() == 1);
+          REQUIRE(ledgerMedium.balance() == 1000);
+          REQUIRE(ledgerBig.balance() == 1000);
+        }
+        AND_WHEN("attaching the last remaining offline journal")
+        {
+          broker.attach(small);
+          THEN("all ledgers converge")
+          {
+            REQUIRE(ledgerSmall.balance() == 1000);
+            REQUIRE(ledgerMedium.balance() == 1000);
+            REQUIRE(ledgerBig.balance() == 1000);
+          }
         }
       }
     }
