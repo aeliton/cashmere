@@ -21,6 +21,8 @@ namespace Cashmere
 
 Random Journal::_random{};
 
+JournalBase::~JournalBase() = default;
+
 Journal::Journal()
   : Journal(_random.next())
 {
@@ -32,6 +34,8 @@ Journal::Journal(Id id)
   , _clock({})
 {
 }
+
+Journal::~Journal() {}
 
 const Id Journal::id() const
 {

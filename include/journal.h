@@ -29,10 +29,18 @@ using ClockChangeSignal = Signal<void(Clock, Entry)>;
 using ClockChangeSlot = ClockChangeSignal::Slot;
 using JournalEntries = std::map<Clock, Entry>;
 
-class Journal
+class JournalBase
+{
+public:
+  virtual ~JournalBase() = 0;
+  virtual const JournalEntries& entries() const = 0;
+};
+
+class Journal : public JournalBase
 {
 public:
   Journal();
+  ~Journal();
   explicit Journal(Id id);
 
   const Id id() const;
@@ -49,7 +57,7 @@ public:
 
   Entry query(Clock time) const;
 
-  const JournalEntries& entries() const;
+  const JournalEntries& entries() const override;
 
   ClockChangeSignal& clockChanged();
 
@@ -62,6 +70,7 @@ private:
   ClockChangeSignal _clockChanged;
 };
 
+using JournalBasePtr = std::shared_ptr<JournalBase>;
 using JournalPtr = std::shared_ptr<Journal>;
 
 }

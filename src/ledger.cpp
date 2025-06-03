@@ -23,12 +23,17 @@ struct ClockEntry
   Entry entry;
 };
 
-Ledger::Ledger(JournalPtr journal)
+Ledger::Ledger(JournalBasePtr journal)
   : _journal(journal)
 {
 }
 
 Amount Ledger::balance() const
+{
+  return balance(_journal->entries());
+}
+
+Amount Ledger::balance(const JournalEntries& entries)
 {
   Amount result = 0;
   std::map<Clock, ClockEntry> rows;
@@ -47,7 +52,7 @@ Amount Ledger::balance() const
     return rows[k].entry.journalId < e.journalId;
   };
 
-  for (auto& [clock, entry] : _journal->entries()) {
+  for (auto& [clock, entry] : entries) {
     const bool isInsert = entry.alters.empty();
     if (isInsert && rows.find(clock) != rows.end()) {
       continue;

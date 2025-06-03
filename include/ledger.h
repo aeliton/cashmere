@@ -25,12 +25,13 @@ class Ledger
 {
 public:
   Ledger() = delete;
-  explicit Ledger(JournalPtr journal);
+  explicit Ledger(JournalBasePtr journal);
 
   Amount balance() const;
+  static Amount balance(const JournalEntries& entries);
 
 private:
-  JournalPtr _journal;
+  JournalBasePtr _journal;
 };
 
 }
