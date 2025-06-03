@@ -18,61 +18,90 @@
 
 using namespace Cashmere;
 
+TEST_CASE("clock starts empty for newly created journals", "[journal]")
+{
+  Journal journal;
+  REQUIRE(journal.clock().empty());
+}
+
+TEST_CASE("invalid/inexisting queries returns invalid", "[journal]")
+{
+  SECTION("inexisting entry")
+  {
+    Journal journal;
+    REQUIRE_FALSE(journal.query(Clock{{0xAA, 1}}).valid());
+  }
+
+  SECTION("all zeroes clock")
+  {
+    Journal journal;
+    REQUIRE_FALSE(journal.query(Clock{{0xAA, 0}, {0xBB, 0}}).valid());
+  }
+}
+
+SCENARIO("attempt inserting a transaction using an existing clock")
+{
+  GIVEN("an empty journal with a single transaction")
+  {
+    Journal journal(0xAA);
+    journal.append(10);
+    WHEN("the same clock is used to insert a transaction")
+    {
+      const bool success = journal.insert({{0xAA, 1}}, {0xAA, 10, {}});
+      THEN("it should fail")
+      {
+        REQUIRE_FALSE(success);
+      }
+    }
+  }
+}
+
 SCENARIO("journal clock updates when entries are changed")
 {
   GIVEN("an empty journal object")
   {
-    auto journal = std::make_shared<Journal>(0xAA);
-
-    THEN("the journal vector clock is empty")
-    {
-      REQUIRE(journal->clock() == Clock{});
-    }
-
-    WHEN("query for an inexisting transaction")
-    {
-      THEN("the invalid entry is returned")
-      {
-        REQUIRE_FALSE(journal->query(Clock{{0xAA, 0}}).valid());
-      }
-    }
+    Journal journal(0xAA);
 
     WHEN("appending an entry")
     {
-      journal->append(1000);
+      journal.append(1000);
       THEN("the clock is updated")
       {
-        REQUIRE(journal->clock() == Clock{{0xAA, 1}});
-        AND_THEN("the entry is queryable")
-        {
-          REQUIRE(journal->query({{0xAA, 1}}) == Entry{0xAA, 1000, {}});
-        }
+        REQUIRE(journal.clock() == Clock{{0xAA, 1}});
       }
 
-      WHEN("inserting a transaction using an existing clock")
+      THEN("the entry is queryable")
       {
-        const bool success = journal->insert({{0xAA, 1}}, {0xAA, -1, {}});
-        THEN("it should fail")
-        {
-          REQUIRE_FALSE(success);
-        }
+        REQUIRE(journal.query(Clock{{0xAA, 1}}) == Entry{0xAA, 1000, {}});
       }
 
       AND_WHEN("appending a second entry")
       {
-        journal->append(333);
+        journal.append(333);
+
         THEN("the clock is updated")
         {
-          REQUIRE(journal->clock() == Clock{{0xAA, 2}});
+          REQUIRE(journal.clock() == Clock{{0xAA, 2}});
+        }
+
+        THEN("the second entry is queryable")
+        {
+          REQUIRE(journal.query(Clock{{0xAA, 2}}) == Entry{0xAA, 333, {}});
         }
       }
 
-      AND_WHEN("inserting an entry from another journal")
+      AND_WHEN("inserting a second entry from another journal")
       {
-        journal->insert({{0xFF, 1}}, {0xFF, 200, {}});
+        journal.insert({{0xFF, 1}}, {0xFF, 200, {}});
+
         THEN("the clock is updated to show the incoming entry")
         {
-          REQUIRE(journal->clock() == Clock{{0xAA, 1}, {0xFF, 1}});
+          REQUIRE(journal.clock() == Clock{{0xAA, 1}, {0xFF, 1}});
+        }
+
+        THEN("the second entry is queryable")
+        {
+          REQUIRE(journal.query(Clock{{0xFF, 1}}) == Entry{0xFF, 200, {}});
         }
       }
     }
@@ -92,12 +121,12 @@ SCENARIO("zero values in clocks are ignored")
       REQUIRE(journal.query({{0xAA, 1}}).value == 1000);
     }
 
-    const auto validClockWithZeroes =
-      Clock{{0xAA, 1}, {0xbaad, 0}, {0xcafe, 0}};
+    const auto validClockWithZeroes = Clock{{0xAA, 1}, {0x11, 0}, {0x22, 0}};
 
     WHEN("querying with extra ids with count zero")
     {
       const auto result = journal.query(validClockWithZeroes);
+
       THEN("the clock's zeroed entries are ignored")
       {
         REQUIRE(result == Entry{0xAA, 1000, {}});
@@ -113,6 +142,7 @@ SCENARIO("zero values in clocks are ignored")
       AND_WHEN("querying the recorded entry")
       {
         const auto result = journal.query({{0xAA, 2}});
+
         THEN("the zeroed entries are ignored")
         {
           REQUIRE(result == Entry{0xAA, 500, {{0xAA, 1}}});
@@ -122,17 +152,22 @@ SCENARIO("zero values in clocks are ignored")
 
     WHEN("inserting a transaction using a clock with zeroed id counts")
     {
+      const auto clock = Clock{{0xAA, 0}, {0xBB, 0}, {0xCC, 1}};
 
-      WHEN("a conflicting transaction is received")
+      bool success = journal.insert(clock, {0xAA, 206, {}});
+
+      THEN("it succeeds")
       {
-        journal.insert({{0xAA, 0}, {0xBB, 0}, {0xCC, 1}}, {0xAA, 206, {}});
-        AND_WHEN("querying the inserted entry")
+        REQUIRE(success);
+      }
+
+      AND_WHEN("querying the inserted entry")
+      {
+        const auto result = journal.query({{0xCC, 1}});
+
+        THEN("the zeroed entries are ignored")
         {
-          const auto result = journal.query({{0xCC, 1}});
-          THEN("the zeroed entries are ignored")
-          {
-            REQUIRE(result == Entry{0xAA, 206, {}});
-          }
+          REQUIRE(result == Entry{0xAA, 206, {}});
         }
       }
     }
@@ -149,57 +184,6 @@ SCENARIO("zero values in clocks are ignored")
         THEN("the zeroed entries are ignored")
         {
           REQUIRE(result == Entry{0xAA, 0, {{0xAA, 1}}});
-        }
-      }
-    }
-  }
-}
-
-SCENARIO("adds and edits transactions")
-{
-  GIVEN("an empty journal")
-  {
-    constexpr Id kId0 = 0xbadcafe;
-    auto journal = std::make_shared<Journal>(kId0);
-
-    THEN("the journal won't have any transaction")
-    {
-      REQUIRE(journal->entries().size() == 0);
-    }
-    THEN("the journal's clock value is empty")
-    {
-      REQUIRE(journal->clock() == Clock{});
-    }
-
-    WHEN("adding the first transaction")
-    {
-      constexpr uint64_t kTransactionValue = 500;
-      const bool result = journal->append(kTransactionValue);
-      THEN("it must succeed")
-      {
-        REQUIRE(result);
-      }
-      AND_THEN("the transaction value matches the transaction added")
-      {
-        REQUIRE(journal->query(Clock{{kId0, 1UL}}).value == kTransactionValue);
-      }
-      AND_WHEN("adding a second transaction")
-      {
-        journal->append(200);
-        THEN("the second transaction is retrievable")
-        {
-          REQUIRE(journal->query(Clock{{kId0, 2}}).value == 200);
-        }
-      }
-
-      WHEN("adding a transaction with another ID")
-      {
-        REQUIRE(
-          journal->insert(Clock{{kId0, 1}, {0xFF, 1}}, Entry{0xFF, 900, {}})
-        );
-        THEN("the transaction is retrievable")
-        {
-          REQUIRE(journal->query(Clock{{kId0, 1UL}, {0xFF, 1UL}}).value == 900);
         }
       }
     }
