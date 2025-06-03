@@ -17,26 +17,30 @@
 #define CASHMERE_BROKER_H
 
 #include "journal.h"
+#include <set>
 #include <unordered_map>
 
 namespace Cashmere
 {
 
+using VersionMap = std::map<Id, Clock>;
 class Broker
 {
 public:
   Broker();
 
-  bool attach(JournalPtr journal);
+  bool attach(JournalBasePtr journal);
   bool detach(Id journalId);
 
   void onClockUpdate(Clock clock, Entry entry);
 
-  std::map<Id, Clock> versions() const;
+  std::set<Id> attachedIds() const;
+
+  VersionMap versions() const;
 
 private:
-  std::unordered_map<Id, std::weak_ptr<Journal>> _attached;
-  std::map<Id, Clock> _versions;
+  std::unordered_map<Id, std::weak_ptr<JournalBase>> _attached;
+  VersionMap _versions;
 };
 
 }

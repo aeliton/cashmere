@@ -33,7 +33,13 @@ class JournalBase
 {
 public:
   virtual ~JournalBase() = 0;
+  virtual const Id id() const = 0;
+  virtual Clock clock() const = 0;
+  virtual bool insert(Clock clock, Entry value) = 0;
+  virtual bool append(Entry value) = 0;
+  virtual bool contains(Clock clock) const = 0;
   virtual const JournalEntries& entries() const = 0;
+  virtual ClockChangeSignal& clockChanged() = 0;
 };
 
 class Journal : public JournalBase
@@ -43,23 +49,24 @@ public:
   ~Journal();
   explicit Journal(Id id);
 
-  const Id id() const;
+  const Id id() const override;
   const Id bookId() const;
-  Clock clock() const;
+  Clock clock() const override;
 
   bool append(Amount value);
-  bool append(Entry value);
-  bool insert(Clock clock, Entry value);
+  bool append(Entry value) override;
+  bool insert(Clock clock, Entry value) override;
 
   bool replace(Amount value, const Clock& clock);
 
   bool erase(Clock time);
 
+  bool contains(Clock clock) const override;
   Entry query(Clock time) const;
 
   const JournalEntries& entries() const override;
 
-  ClockChangeSignal& clockChanged();
+  ClockChangeSignal& clockChanged() override;
 
 private:
   static Random _random;

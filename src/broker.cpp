@@ -20,12 +20,12 @@ namespace Cashmere
 
 Broker::Broker() {}
 
-std::map<Id, Clock> Broker::versions() const
+VersionMap Broker::versions() const
 {
   return _versions;
 }
 
-bool Broker::attach(JournalPtr journal)
+bool Broker::attach(JournalBasePtr journal)
 {
   Id journalId = journal->id();
 
@@ -62,10 +62,6 @@ bool Broker::detach(Id journalId)
 
 void Broker::onClockUpdate(Clock clock, Entry entry)
 {
-  const auto sender = _attached[entry.journalId].lock();
-  if (!sender) {
-    return;
-  }
   _versions[entry.journalId] = clock;
   for (auto& [id, weakJournalPtr] : _attached) {
     if (id == entry.journalId) {
@@ -78,6 +74,12 @@ void Broker::onClockUpdate(Clock clock, Entry entry)
     journal->insert(clock, entry);
     _versions[journal->id()] = journal->clock();
   }
+}
+
+std::set<Id> Broker::attachedIds() const
+{
+  auto it = std::views::keys(_attached);
+  return {it.begin(), it.end()};
 }
 
 }

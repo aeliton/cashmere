@@ -13,141 +13,136 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "broker.h"
 #include <catch2/catch_all.hpp>
+
+#include "broker.h"
+#include "fixtures.h"
+
+namespace Catch
+{
+template<>
+struct StringMaker<Cashmere::VersionMap>
+{
+  static std::string convert(Cashmere::VersionMap const& m)
+  {
+    if (m.empty()) {
+      return "{ }";
+    }
+    std::stringstream ss;
+    ss << "{";
+    auto it = m.cbegin();
+    ss << "{" << it->first << ", " << it->second << "}";
+    for (++it; it != m.cend(); it++) {
+      ss << ", {" << it->first << ", " << it->second << "}";
+    }
+    return ss.str();
+  }
+};
+}
 
 using namespace Cashmere;
 
-SCENARIO("the broker listens to journal transactions")
+SCENARIO_METHOD(SingleEntryMock, "broker attach records id and clock")
 {
-  GIVEN("an empty journal")
+  GIVEN("a broker with an attached journal")
   {
-    auto journal = std::make_shared<Journal>(0xAA);
-    Broker broker;
+    const bool success = broker.attach(mock);
 
-    REQUIRE(broker.versions().empty());
+    REQUIRE(success);
 
-    WHEN("attaching the journal to the broker")
+    THEN("the broker has the updated clock version of the journal")
     {
-      broker.attach(journal);
+      REQUIRE(broker.versions() == VersionMap{{0xAA, Clock{{mock->id(), 1}}}});
+    }
 
-      THEN("the versions remain empty as the journal has no transactions")
+    AND_WHEN("the journal is detached")
+    {
+      const bool success = broker.detach(mock->id());
+
+      THEN("the operation succeeds")
+      {
+        REQUIRE(success);
+      }
+
+      AND_THEN("the broker versions becames empty again")
       {
         REQUIRE(broker.versions().empty());
       }
 
-      WHEN("the journal adds an entry")
+      AND_WHEN("attempting to detach a non-attached journal")
       {
-        journal->append(10);
+        const bool success = broker.detach(mock->id());
 
-        THEN("the broker has the updated clock version of the journal")
+        THEN("the operation fails")
         {
-          REQUIRE(
-            broker.versions() == std::map<Id, Clock>{{0xAA, {{0xAA, 1}}}}
-          );
+          REQUIRE_FALSE(success);
         }
       }
-
-      AND_WHEN("the journal is detached")
-      {
-        const bool success = broker.detach(0xAA);
-        THEN("the operation succeeds")
-        {
-          REQUIRE(success);
-        }
-        AND_THEN("the broker versions becames empty again")
-        {
-          REQUIRE(broker.versions().empty());
-        }
-        AND_WHEN("attempting to detach a non-attached journal")
-        {
-          const bool success = broker.detach(0xAA);
-          THEN("the operation fails")
-          {
-            REQUIRE_FALSE(success);
-          }
-        }
-      }
-    }
-  }
-
-  GIVEN("journal with pre-existing transactions")
-  {
-    auto journal = std::make_shared<Journal>(0xAA);
-    journal->append(10);
-
-    Broker broker;
-    broker.attach(journal);
-
-    THEN("the broker initializes the version of the journal")
-    {
-      REQUIRE(
-        broker.versions() == std::map<Id, Clock>{{0xAA, Clock{{0xAA, 1}}}}
-      );
     }
   }
 }
 
-SCENARIO("a broker with multiple journals attached")
+SCENARIO_METHOD(EmptyMock, "journal get entries via broker")
 {
-  Broker broker;
-  GIVEN("two journals")
+  GIVEN("a broker with a journal attatched")
   {
-    const auto a = std::make_shared<Journal>(0xAA);
-    const auto b = std::make_shared<Journal>(0xBB);
-    broker.attach(a);
-    broker.attach(b);
-    WHEN("one journal adds an entry")
+    broker.attach(mock);
+
+    ClockChangeSignal emitter;
+    emitter.connect(&broker, &Broker::onClockUpdate);
+
+    WHEN("an entry is signaled to the broker")
     {
-      a->append(10);
-      THEN("the other journal gets the transaction via the broker")
+      emitter(Clock{{0xFF, 1}}, Entry{0xFF, 9, Clock{}});
+
+      THEN("insert is called on the attached journal")
       {
-        REQUIRE(b->clock() == Clock{{0xAA, 1}});
-        AND_THEN("the entry is retrievable the second journal")
-        {
-          REQUIRE(b->query({{0xAA, 1}}) == Entry{0xAA, 10, {}});
-        }
+        REQUIRE(mock->_insertArgs == InsertArgs{{{0xFF, 1}}, {0xFF, 9, {}}});
       }
+
       AND_WHEN("a journal detaches")
       {
-        broker.detach(0xAA);
+        broker.detach(mock->id());
+
         THEN("the broker show only versions of attached journals")
         {
-          REQUIRE(
-            broker.versions() == std::map<Id, Clock>{{0xBB, {{0xAA, 1}}}}
-          );
+          REQUIRE(broker.versions() == VersionMap{{0xFF, {{0xFF, 1}}}});
         }
       }
     }
   }
 }
 
-SCENARIO("a broker synchronizes journal entries")
+SCENARIO_METHOD(TwoSingleEntryMocks, "a broker synchronizes journal entries")
 {
-  GIVEN("an empty broker")
+  GIVEN("a empty broker")
   {
-    Broker broker;
+    REQUIRE(broker.attachedIds() == std::set<Id>{});
+
     WHEN("attaching journal with transactions")
     {
-      auto journal = std::make_shared<Journal>(0xAA);
-      journal->append(10);
-      journal->append(20);
-      broker.attach(journal);
+      broker.attach(aa);
+      broker.attach(bb);
 
-      AND_WHEN("attaching a new journal")
+      THEN("the journal ids are listed as attached")
       {
-        auto another = std::make_shared<Journal>(0xBB);
-        broker.attach(another);
-        THEN("the second broker get's all transactions from the first")
-        {
-          REQUIRE(
-            another->entries() ==
-            JournalEntries{
-              {Clock{{0xAA, 1}}, Entry{0xAA, 10, {}}},
-              {Clock{{0xAA, 2}}, Entry{0xAA, 20, {}}}
-            }
-          );
-        }
+        REQUIRE(broker.attachedIds() == std::set<Id>{0xAA, 0xBB});
+      }
+
+      THEN("::insert() is called once for each journal")
+      {
+        REQUIRE(aa->_insertCount == 1);
+        REQUIRE(bb->_insertCount == 1);
+      }
+
+      THEN("::insert() is called with the other journal's entry")
+      {
+        REQUIRE(
+          aa->_insertArgs == InsertArgs{Clock{{0xBB, 1}}, Entry{0xBB, 2, {}}}
+        );
+        REQUIRE(
+          bb->_insertArgs == InsertArgs{Clock{{0xAA, 1}}, Entry{0xBB, 1, {}}}
+        );
       }
     }
   }

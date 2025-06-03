@@ -84,6 +84,10 @@ bool Journal::erase(Clock time)
 {
   return append({_id, 0, time});
 }
+bool Journal::contains(Clock time) const
+{
+  return _entries.find(time) != _entries.cend();
+}
 
 Entry Journal::query(Clock time) const
 {
