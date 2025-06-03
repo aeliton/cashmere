@@ -154,3 +154,54 @@ SCENARIO("zero values in clocks are ignored")
     }
   }
 }
+
+SCENARIO("adds and edits transactions")
+{
+  GIVEN("an empty journal")
+  {
+    constexpr Id kId0 = 0xbadcafe;
+    auto journal = std::make_shared<Journal>(kId0);
+
+    THEN("the journal won't have any transaction")
+    {
+      REQUIRE(journal->entries().size() == 0);
+    }
+    THEN("the journal's clock value is empty")
+    {
+      REQUIRE(journal->clock() == Clock{});
+    }
+
+    WHEN("adding the first transaction")
+    {
+      constexpr uint64_t kTransactionValue = 500;
+      const bool result = journal->append(kTransactionValue);
+      THEN("it must succeed")
+      {
+        REQUIRE(result);
+      }
+      AND_THEN("the transaction value matches the transaction added")
+      {
+        REQUIRE(journal->query(Clock{{kId0, 1UL}}).value == kTransactionValue);
+      }
+      AND_WHEN("adding a second transaction")
+      {
+        journal->append(200);
+        THEN("the second transaction is retrievable")
+        {
+          REQUIRE(journal->query(Clock{{kId0, 2}}).value == 200);
+        }
+      }
+
+      WHEN("adding a transaction with another ID")
+      {
+        REQUIRE(
+          journal->insert(Clock{{kId0, 1}, {0xFF, 1}}, Entry{0xFF, 900, {}})
+        );
+        THEN("the transaction is retrievable")
+        {
+          REQUIRE(journal->query(Clock{{kId0, 1UL}, {0xFF, 1UL}}).value == 900);
+        }
+      }
+    }
+  }
+}

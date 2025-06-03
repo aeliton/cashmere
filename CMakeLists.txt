@@ -54,7 +54,6 @@ target_sources(tests PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_transaction.cpp
 )
 target_link_libraries(tests PRIVATE
   Catch2::Catch2WithMain
