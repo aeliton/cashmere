@@ -20,8 +20,6 @@
 
 namespace Cashmere
 {
-using InsertArgs = std::tuple<Clock, Entry>;
-
 struct JournalMock : public JournalBase
 {
   JournalMock(Id id)
@@ -69,7 +67,7 @@ struct JournalMock : public JournalBase
   JournalEntries _entries;
   ClockChangeSignal _signal;
   size_t _insertCount = 0;
-  InsertArgs _insertArgs = {};
+  ClockEntry _insertArgs = {};
 };
 
 using JournalMockPtr = std::shared_ptr<JournalMock>;

@@ -17,12 +17,6 @@
 
 namespace Cashmere
 {
-struct ClockEntry
-{
-  Clock clock;
-  Entry entry;
-};
-
 Ledger::Ledger(JournalBasePtr journal)
   : _journal(journal)
 {

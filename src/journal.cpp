@@ -107,4 +107,5 @@ ClockChangeSignal& Journal::clockChanged()
 {
   return _clockChanged;
 }
+
 }

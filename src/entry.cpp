@@ -13,36 +13,14 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_ENTRY_H
-#define CASHMERE_ENTRY_H
-
-#include "clock.h"
+#include "entry.h"
 
 namespace Cashmere
 {
 
-struct Entry
+const bool ClockEntry::operator==(const ClockEntry& other) const
 {
-  Id journalId;
-  Amount value;
-  Clock alters;
-  friend bool operator==(const Entry& l, const Entry& r)
-  {
-    return std::tie(l.value, l.alters) == std::tie(r.value, r.alters);
-  }
-  bool valid() const
-  {
-    return alters.size() > 0 && alters.begin()->first != 0UL;
-  }
-};
-
-struct ClockEntry
-{
-  Clock clock;
-  Entry entry;
-  const bool operator==(const ClockEntry& other) const;
-};
-
+  return clock == other.clock && entry == other.entry;
 }
 
-#endif
+}
