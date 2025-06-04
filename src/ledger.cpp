@@ -75,16 +75,18 @@ Ledger::replaces(const ClockEntry& existing, const ClockEntry& incoming)
 Ledger::ActionClock
 Ledger::action(const ReplaceEntryMap& rows, const ClockEntry& incoming)
 {
-  const auto& [clock, entry] = incoming;
-  const bool isInsert = entry.alters.empty();
-  if (isInsert && rows.find(clock) != rows.end()) {
+  if (incoming.entry.alters.empty()) {
+    if (rows.find(incoming.clock) == rows.end()) {
+      return {Action::Insert, {incoming.clock}};
+    }
     return {Action::Ignore, {}};
   }
-  const auto key = isInsert ? clock : entry.alters;
-  if (rows.find(key) == rows.end()) {
-    return {Action::Insert, key};
+
+  if (rows.find(incoming.entry.alters) == rows.end()) {
+    return {Action::Insert, incoming.entry.alters};
   }
-  return replaces(rows.at(key), incoming);
+
+  return replaces(rows.at(incoming.entry.alters), incoming);
 }
 
 }
