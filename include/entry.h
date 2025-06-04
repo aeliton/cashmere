@@ -43,6 +43,8 @@ struct ClockEntry
   const bool operator==(const ClockEntry& other) const;
 };
 
+using ClockEntryMap = std::map<Clock, ClockEntry>;
+
 }
 
 #endif

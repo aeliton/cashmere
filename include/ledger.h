@@ -31,7 +31,10 @@ public:
   static Amount balance(const JournalEntries& entries);
 
 private:
+  explicit Ledger(const JournalEntries& entries);
   JournalBasePtr _journal;
+  Amount _balance;
+  ClockEntryMap _rows;
 };
 
 }
