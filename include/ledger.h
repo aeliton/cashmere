@@ -36,8 +36,9 @@ public:
   Amount balance() const;
   static Amount balance(const ClockEntryList& entries);
 
-  std::tuple<Action, Clock> action(const ClockEntry& incoming) const;
-  bool replaces(const ClockEntry& existing, const ClockEntry& incoming) const;
+  static std::tuple<Action, Clock>
+  action(const ReplaceEntryMap& rows, const ClockEntry& incoming);
+  static bool replaces(const ClockEntry& existing, const ClockEntry& incoming);
 
 private:
   explicit Ledger(const ClockEntryList& entries);

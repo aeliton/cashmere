@@ -28,7 +28,7 @@ Ledger::Ledger(const ClockEntryList& entries)
   , _balance(0)
 {
   for (auto& clockEntry : entries) {
-    auto [act, what] = action(clockEntry);
+    auto [act, what] = action(_rows, clockEntry);
     switch (act) {
       case Action::Replace:
         _balance -= _rows.at(what).entry.value;
@@ -55,7 +55,6 @@ Amount Ledger::balance(const ClockEntryList& entries)
 }
 
 bool Ledger::replaces(const ClockEntry& existing, const ClockEntry& incoming)
-  const
 {
   if (existing.clock.smallerThan(incoming.clock)) {
     return true;
@@ -66,21 +65,22 @@ bool Ledger::replaces(const ClockEntry& existing, const ClockEntry& incoming)
   return existing.entry.journalId < incoming.entry.journalId;
 }
 
-std::tuple<Ledger::Action, Clock> Ledger::action(const ClockEntry& incoming
-) const
+std::tuple<Ledger::Action, Clock>
+Ledger::action(const ReplaceEntryMap& rows, const ClockEntry& incoming)
 {
   const auto& [clock, entry] = incoming;
   const bool isInsert = entry.alters.empty();
-  if (isInsert && _rows.find(clock) != _rows.end()) {
+  if (isInsert && rows.find(clock) != rows.end()) {
     return {Action::Ignore, {}};
   }
   const auto key = isInsert ? clock : entry.alters;
-  if (_rows.find(key) == _rows.end()) {
+  if (rows.find(key) == rows.end()) {
     return {Action::Insert, key};
   }
-  if (replaces(_rows.at(key), {clock, entry})) {
+  if (replaces(rows.at(key), {clock, entry})) {
     return {Action::Replace, key};
   }
   return {Action::Ignore, {}};
 }
+
 }
