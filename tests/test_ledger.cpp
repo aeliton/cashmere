@@ -18,6 +18,18 @@
 
 using namespace Cashmere;
 
+using Action = Ledger::Action;
+using ActionClock = Ledger::ActionClock;
+
+TEST_CASE("insert type transaction are ignored")
+{
+  ClockEntry existing = {{{0xAA, 1}}, {0xAA, 1, {}}};
+  ClockEntry incoming = {{{0xAA, 1}, {0xBB, 1}}, {0xBB, 10, {}}};
+  REQUIRE(
+    Ledger::replaces(existing, incoming) == ActionClock{Action::Ignore, {}}
+  );
+}
+
 TEST_CASE("same journal has two appends", "[balance]")
 {
   const auto entries = ClockEntryList{

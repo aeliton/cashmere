@@ -54,18 +54,25 @@ Amount Ledger::balance(const ClockEntryList& entries)
   return ledger.balance();
 }
 
-bool Ledger::replaces(const ClockEntry& existing, const ClockEntry& incoming)
+Ledger::ActionClock
+Ledger::replaces(const ClockEntry& existing, const ClockEntry& incoming)
 {
+  if (incoming.entry.alters.empty()) {
+    return {Action::Ignore, {}};
+  }
   if (existing.clock.smallerThan(incoming.clock)) {
-    return true;
+    return {Action::Replace, incoming.entry.alters};
   }
   if (incoming.clock.smallerThan(existing.clock)) {
-    return false;
+    return {Action::Ignore, {}};
   }
-  return existing.entry.journalId < incoming.entry.journalId;
+  if (existing.entry.journalId < incoming.entry.journalId) {
+    return {Action::Replace, incoming.entry.alters};
+  }
+  return {Action::Ignore, {}};
 }
 
-std::tuple<Ledger::Action, Clock>
+Ledger::ActionClock
 Ledger::action(const ReplaceEntryMap& rows, const ClockEntry& incoming)
 {
   const auto& [clock, entry] = incoming;
@@ -77,10 +84,7 @@ Ledger::action(const ReplaceEntryMap& rows, const ClockEntry& incoming)
   if (rows.find(key) == rows.end()) {
     return {Action::Insert, key};
   }
-  if (replaces(rows.at(key), {clock, entry})) {
-    return {Action::Replace, key};
-  }
-  return {Action::Ignore, {}};
+  return replaces(rows.at(key), incoming);
 }
 
 }

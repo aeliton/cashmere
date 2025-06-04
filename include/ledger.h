@@ -30,15 +30,17 @@ public:
     Insert,
     Replace
   };
+  using ActionClock = std::tuple<Ledger::Action, Clock>;
   Ledger() = delete;
   explicit Ledger(JournalBasePtr journal);
 
   Amount balance() const;
   static Amount balance(const ClockEntryList& entries);
 
-  static std::tuple<Action, Clock>
+  static ActionClock
   action(const ReplaceEntryMap& rows, const ClockEntry& incoming);
-  static bool replaces(const ClockEntry& existing, const ClockEntry& incoming);
+  static ActionClock
+  replaces(const ClockEntry& existing, const ClockEntry& incoming);
 
 private:
   explicit Ledger(const ClockEntryList& entries);
