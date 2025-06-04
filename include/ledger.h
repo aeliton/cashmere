@@ -38,11 +38,10 @@ public:
 
   std::tuple<Action, Clock>
   action(const Clock& clock, const Entry& entry) const;
+  bool replaces(const ClockEntry& existing, const ClockEntry& incoming) const;
 
 private:
   explicit Ledger(const JournalEntries& entries);
-  bool
-  existingKeyNeedsReplace(const Clock& k, const Clock& c, const Entry& e) const;
   JournalBasePtr _journal;
   Amount _balance;
   ClockEntryMap _rows;
