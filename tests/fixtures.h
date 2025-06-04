@@ -31,6 +31,9 @@ struct JournalMock : public JournalBase
     , _clock(c)
     , _entries(e)
   {
+    _entriesSignaler.connect([this](const Clock& clock) {
+      _entriesArgs.push_back(clock);
+    });
   }
   const Id id() const override
   {
@@ -42,6 +45,7 @@ struct JournalMock : public JournalBase
   }
   ClockEntryList entries(const Clock& from = {}) const override
   {
+    _entriesSignaler(from);
     return _entries;
   }
   virtual bool insert(const Clock& clock, const Entry& entry) override
@@ -65,7 +69,9 @@ struct JournalMock : public JournalBase
   const Clock _clock;
   const ClockEntryList _entries;
   ClockChangeSignal _signal;
+  Signal<void(const Clock&)> _entriesSignaler;
   ClockEntryList _insertArgs = {};
+  ClockList _entriesArgs = {};
 };
 
 using JournalMockPtr = std::shared_ptr<JournalMock>;

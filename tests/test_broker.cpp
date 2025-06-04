@@ -76,9 +76,11 @@ SCENARIO_METHOD(SingleEntryMock, "broker attach records id and clock")
         REQUIRE(success);
       }
 
-      AND_THEN("the broker versions becames empty again")
+      AND_THEN("the broker versions are kept")
       {
-        REQUIRE(broker.versions().empty());
+        REQUIRE(
+          broker.versions() == VersionMap{{0xAA, Clock{{mock->id(), 1}}}}
+        );
       }
 
       AND_WHEN("attempting to detach a non-attached journal")
@@ -112,16 +114,6 @@ SCENARIO_METHOD(EmptyMock, "journal get entries via broker")
         REQUIRE(
           mock->_insertArgs == ClockEntryList{{{{0xFF, 1}}, {0xFF, 9, {}}}}
         );
-      }
-
-      AND_WHEN("a journal detaches")
-      {
-        broker.detach(mock->id());
-
-        THEN("the broker show only versions of attached journals")
-        {
-          REQUIRE(broker.versions() == VersionMap{{0xFF, {{0xFF, 1}}}});
-        }
       }
     }
   }
@@ -159,6 +151,46 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "a broker synchronizes journal entries")
           bb->_insertArgs ==
           ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xBB, 1, {}}}}
         );
+      }
+    }
+  }
+}
+
+SCENARIO_METHOD(TwoSingleEntryMocks, "Broker sends only new transactions")
+{
+  GIVEN("a broker with two journals attached")
+  {
+    broker.attach(aa);
+    broker.attach(bb);
+
+    REQUIRE(broker.attachedIds().size() == 2);
+
+    const size_t aaEntriesArgsSize = aa->_entriesArgs.size();
+    const size_t bbEntriesArgsSize = bb->_entriesArgs.size();
+
+    WHEN("a journal disconnects")
+    {
+      broker.detach(bb->id());
+
+      REQUIRE(broker.attachedIds() == std::set<Id>{aa->id()});
+
+      AND_WHEN("the attached journal inserts an entry")
+      {
+        aa->insert(Clock{{aa->id(), 2}}, Entry{aa->id(), 20, Clock{}});
+        AND_WHEN("the detached journal is re-attached")
+        {
+          broker.attach(bb);
+          THEN("the broker calls for new entries once on each journal")
+          {
+            REQUIRE(aa->_entriesArgs.size() == aaEntriesArgsSize + 1);
+            REQUIRE(bb->_entriesArgs.size() == bbEntriesArgsSize + 1);
+          }
+          THEN("the broker requests entries that came after the last one seen")
+          {
+            REQUIRE(bb->_entriesArgs.back() == Clock{{bb->id(), 1}});
+            REQUIRE(aa->_entriesArgs.back() == Clock{{bb->id(), 1}});
+          }
+        }
       }
     }
   }

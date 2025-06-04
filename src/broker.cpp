@@ -28,13 +28,14 @@ VersionMap Broker::versions() const
 bool Broker::attach(JournalBasePtr journal)
 {
   Id journalId = journal->id();
+  auto& lastVersion = _versions[journalId];
 
   for (auto& [id, j] : _attached) {
     if (auto other = j.lock()) {
-      for (auto& [clock, entry] : other->entries()) {
+      for (auto& [clock, entry] : other->entries(lastVersion)) {
         journal->insert(clock, entry);
       }
-      for (auto& [clock, entry] : journal->entries()) {
+      for (auto& [clock, entry] : journal->entries(lastVersion)) {
         other->insert(clock, entry);
       }
     }
@@ -55,7 +56,6 @@ bool Broker::detach(Id journalId)
   if (_attached.find(journalId) == _attached.end()) {
     return false;
   }
-  _versions.erase(journalId);
   _attached.erase(journalId);
   return true;
 }

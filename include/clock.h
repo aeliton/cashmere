@@ -16,6 +16,7 @@
 #ifndef CASHMERE_CLOCK_H
 #define CASHMERE_CLOCK_H
 
+#include <list>
 #include <map>
 #include <ostream>
 
@@ -35,5 +36,7 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const Clock& clock);
+
+using ClockList = std::list<Clock>;
 }
 #endif
