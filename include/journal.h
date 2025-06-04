@@ -61,7 +61,7 @@ public:
   bool erase(Clock time);
 
   bool contains(const Clock& clock) const override;
-  Entry query(Clock time) const;
+  Entry entry(Clock time) const;
 
   ClockEntryList entries() const override;
 

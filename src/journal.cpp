@@ -89,7 +89,7 @@ bool Journal::contains(const Clock& time) const
   return _entries.find(time) != _entries.cend();
 }
 
-Entry Journal::query(Clock time) const
+Entry Journal::entry(Clock time) const
 {
   if (_entries.find(time) == _entries.end()) {
     return {0, 0, {{0UL, 0}}};

@@ -29,13 +29,13 @@ TEST_CASE("invalid/inexisting queries returns invalid", "[journal]")
   SECTION("inexisting entry")
   {
     Journal journal;
-    REQUIRE_FALSE(journal.query(Clock{{0xAA, 1}}).valid());
+    REQUIRE_FALSE(journal.entry(Clock{{0xAA, 1}}).valid());
   }
 
   SECTION("all zeroes clock")
   {
     Journal journal;
-    REQUIRE_FALSE(journal.query(Clock{{0xAA, 0}, {0xBB, 0}}).valid());
+    REQUIRE_FALSE(journal.entry(Clock{{0xAA, 0}, {0xBB, 0}}).valid());
   }
 }
 
@@ -72,7 +72,7 @@ SCENARIO("journal clock updates when entries are changed")
 
       THEN("the entry is queryable")
       {
-        REQUIRE(journal.query(Clock{{0xAA, 1}}) == Entry{0xAA, 1000, {}});
+        REQUIRE(journal.entry(Clock{{0xAA, 1}}) == Entry{0xAA, 1000, {}});
       }
 
       AND_WHEN("appending a second entry")
@@ -86,7 +86,7 @@ SCENARIO("journal clock updates when entries are changed")
 
         THEN("the second entry is queryable")
         {
-          REQUIRE(journal.query(Clock{{0xAA, 2}}) == Entry{0xAA, 333, {}});
+          REQUIRE(journal.entry(Clock{{0xAA, 2}}) == Entry{0xAA, 333, {}});
         }
       }
 
@@ -101,7 +101,7 @@ SCENARIO("journal clock updates when entries are changed")
 
         THEN("the second entry is queryable")
         {
-          REQUIRE(journal.query(Clock{{0xFF, 1}}) == Entry{0xFF, 200, {}});
+          REQUIRE(journal.entry(Clock{{0xFF, 1}}) == Entry{0xFF, 200, {}});
         }
       }
     }
@@ -118,14 +118,14 @@ SCENARIO("zero values in clocks are ignored")
 
     THEN("querying the transaction suceeds")
     {
-      REQUIRE(journal.query({{0xAA, 1}}).value == 1000);
+      REQUIRE(journal.entry({{0xAA, 1}}).value == 1000);
     }
 
     const auto validClockWithZeroes = Clock{{0xAA, 1}, {0x11, 0}, {0x22, 0}};
 
     WHEN("querying with extra ids with count zero")
     {
-      const auto result = journal.query(validClockWithZeroes);
+      const auto result = journal.entry(validClockWithZeroes);
 
       THEN("the clock's zeroed entries are ignored")
       {
@@ -141,7 +141,7 @@ SCENARIO("zero values in clocks are ignored")
 
       AND_WHEN("querying the recorded entry")
       {
-        const auto result = journal.query({{0xAA, 2}});
+        const auto result = journal.entry({{0xAA, 2}});
 
         THEN("the zeroed entries are ignored")
         {
@@ -163,7 +163,7 @@ SCENARIO("zero values in clocks are ignored")
 
       AND_WHEN("querying the inserted entry")
       {
-        const auto result = journal.query({{0xCC, 1}});
+        const auto result = journal.entry({{0xCC, 1}});
 
         THEN("the zeroed entries are ignored")
         {
@@ -180,7 +180,7 @@ SCENARIO("zero values in clocks are ignored")
 
       AND_WHEN("querying the recorded entry")
       {
-        const auto result = journal.query({{0xAA, 2}});
+        const auto result = journal.entry({{0xAA, 2}});
         THEN("the zeroed entries are ignored")
         {
           REQUIRE(result == Entry{0xAA, 0, {{0xAA, 1}}});
