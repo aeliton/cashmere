@@ -98,9 +98,13 @@ Entry Journal::query(Clock time) const
   return _entries.at(time);
 }
 
-const JournalEntries& Journal::entries() const
+ClockEntryList Journal::entries() const
 {
-  return _entries;
+  ClockEntryList list;
+  for (const auto& [clock, entry] : _entries) {
+    list.push_back({clock, entry});
+  }
+  return list;
 }
 
 ClockChangeSignal& Journal::clockChanged()

@@ -23,18 +23,18 @@ Ledger::Ledger(JournalBasePtr journal)
   _journal = journal;
 }
 
-Ledger::Ledger(const JournalEntries& entries)
+Ledger::Ledger(const ClockEntryList& entries)
   : _journal(nullptr)
   , _balance(0)
 {
-  for (auto& [clock, entry] : entries) {
-    auto [act, what] = action({clock, entry});
+  for (auto& clockEntry : entries) {
+    auto [act, what] = action(clockEntry);
     switch (act) {
       case Action::Replace:
         _balance -= _rows.at(what).entry.value;
         [[fallthrough]];
       case Action::Insert:
-        _rows[what] = {clock, entry};
+        _rows[what] = clockEntry;
         _balance += _rows.at(what).entry.value;
         break;
       case Action::Ignore:
@@ -48,7 +48,7 @@ Amount Ledger::balance() const
   return _balance;
 }
 
-Amount Ledger::balance(const JournalEntries& entries)
+Amount Ledger::balance(const ClockEntryList& entries)
 {
   Ledger ledger(entries);
   return ledger.balance();

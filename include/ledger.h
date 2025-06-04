@@ -34,16 +34,16 @@ public:
   explicit Ledger(JournalBasePtr journal);
 
   Amount balance() const;
-  static Amount balance(const JournalEntries& entries);
+  static Amount balance(const ClockEntryList& entries);
 
   std::tuple<Action, Clock> action(const ClockEntry& incoming) const;
   bool replaces(const ClockEntry& existing, const ClockEntry& incoming) const;
 
 private:
-  explicit Ledger(const JournalEntries& entries);
+  explicit Ledger(const ClockEntryList& entries);
   JournalBasePtr _journal;
   Amount _balance;
-  ClockEntryMap _rows;
+  ReplaceEntryMap _rows;
 };
 
 }

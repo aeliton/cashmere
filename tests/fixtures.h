@@ -26,7 +26,7 @@ struct JournalMock : public JournalBase
     : _id(id)
   {
   }
-  JournalMock(Id id, Clock c, JournalEntries e)
+  JournalMock(Id id, Clock c, ClockEntryList e)
     : _id(id)
     , _clock(c)
     , _entries(e)
@@ -40,7 +40,7 @@ struct JournalMock : public JournalBase
   {
     return _clock;
   }
-  const JournalEntries& entries() const override
+  ClockEntryList entries() const override
   {
     return _entries;
   }
@@ -56,15 +56,15 @@ struct JournalMock : public JournalBase
   }
   virtual bool contains(const Clock& clock) const override
   {
-    return _entries.find(clock) != _entries.cend();
+    return false;
   }
   ClockChangeSignal& clockChanged() override
   {
     return _signal;
   }
-  Id _id;
-  Clock _clock;
-  JournalEntries _entries;
+  const Id _id;
+  const Clock _clock;
+  const ClockEntryList _entries;
   ClockChangeSignal _signal;
   size_t _insertCount = 0;
   ClockEntry _insertArgs = {};
@@ -77,11 +77,6 @@ struct SingleEntry : public JournalMock
   SingleEntry(Id id, Amount amount)
     : JournalMock(id, {{id, 1}}, {{Clock{{id, 1}}, Entry{id, amount, Clock{}}}})
   {
-  }
-  virtual bool append(const Entry&) override
-  {
-    _signal(_clock, _entries[_clock]);
-    return true;
   }
 };
 

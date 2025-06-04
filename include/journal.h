@@ -27,7 +27,6 @@ namespace Cashmere
 
 using ClockChangeSignal = Signal<void(Clock, Entry)>;
 using ClockChangeSlot = ClockChangeSignal::Slot;
-using JournalEntries = std::map<Clock, Entry>;
 
 class JournalBase
 {
@@ -38,7 +37,7 @@ public:
   virtual bool insert(const Clock& clock, const Entry& entry) = 0;
   virtual bool append(const Entry& entry) = 0;
   virtual bool contains(const Clock& clock) const = 0;
-  virtual const JournalEntries& entries() const = 0;
+  virtual ClockEntryList entries() const = 0;
   virtual ClockChangeSignal& clockChanged() = 0;
 };
 
@@ -64,7 +63,7 @@ public:
   bool contains(const Clock& clock) const override;
   Entry query(Clock time) const;
 
-  const JournalEntries& entries() const override;
+  ClockEntryList entries() const override;
 
   ClockChangeSignal& clockChanged() override;
 
@@ -72,7 +71,7 @@ private:
   static Random _random;
   const Id _bookId;
   const Id _id;
-  JournalEntries _entries;
+  ClockEntryMap _entries;
   Clock _clock;
   ClockChangeSignal _clockChanged;
 };

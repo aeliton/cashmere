@@ -20,7 +20,7 @@ using namespace Cashmere;
 
 TEST_CASE("same journal has two appends", "[balance]")
 {
-  const auto entries = JournalEntries{
+  const auto entries = ClockEntryList{
     {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
     {Clock{{0xFF, 2}}, Entry{0xFF, 200, Clock{}}}
   };
@@ -29,7 +29,7 @@ TEST_CASE("same journal has two appends", "[balance]")
 
 TEST_CASE("a different node edit's another node's entry", "[balance]")
 {
-  const auto entries = JournalEntries{
+  const auto entries = ClockEntryList{
     {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
     {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}}
   };
@@ -40,7 +40,7 @@ TEST_CASE("greater clock edit transactions wins", "[balance]")
 {
   SECTION("samve id edits")
   {
-    const auto entries = JournalEntries{
+    const auto entries = ClockEntryList{
       {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
       {Clock{{0xFF, 2}}, Entry{0xFF, 200, Clock{}}},
       {Clock{{0xFF, 3}}, Entry{0xFF, 0, Clock{{0xFF, 2}}}}
@@ -50,7 +50,7 @@ TEST_CASE("greater clock edit transactions wins", "[balance]")
 
   SECTION("smaller id edits bigger id once")
   {
-    const auto entries = JournalEntries{
+    const auto entries = ClockEntryList{
       {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
       {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}},
     };
@@ -59,7 +59,7 @@ TEST_CASE("greater clock edit transactions wins", "[balance]")
 
   SECTION("smaller id edits bigger id twice")
   {
-    const auto entries = JournalEntries{
+    const auto entries = ClockEntryList{
       {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
       {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}},
       {Clock{{0xAA, 2}, {0xFF, 1}}, Entry{0xAA, 25, Clock{{0xFF, 1}}}}
@@ -69,7 +69,7 @@ TEST_CASE("greater clock edit transactions wins", "[balance]")
 
   SECTION("smaller id edits bigger id once after previous edit")
   {
-    const auto entries = JournalEntries{
+    const auto entries = ClockEntryList{
       {Clock{{0xFF, 1}}, Entry{0xFF, 100, Clock{}}},
       {Clock{{0xFF, 2}}, Entry{0xFF, 200, Clock{{0xFF, 1}}}},
       {Clock{{0xAA, 1}, {0xFF, 2}}, Entry{0xAA, 300, Clock{{0xFF, 1}}}}
@@ -82,7 +82,7 @@ TEST_CASE("greater id wins on conflicting edits", "[balance]")
 {
   SECTION("processing smaller id conflict first")
   {
-    const auto entries = JournalEntries{
+    const auto entries = ClockEntryList{
       {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
       {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}},
       {Clock{{0xFF, 2}}, Entry{0xFF, 10, Clock{{0xFF, 1}}}}
@@ -92,7 +92,7 @@ TEST_CASE("greater id wins on conflicting edits", "[balance]")
 
   SECTION("processing greater id conflict first")
   {
-    const auto entries = JournalEntries{
+    const auto entries = ClockEntryList{
       {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
       {Clock{{0xFF, 2}}, Entry{0xFF, 10, Clock{{0xFF, 1}}}},
       {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}}

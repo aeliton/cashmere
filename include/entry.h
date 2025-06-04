@@ -18,6 +18,8 @@
 
 #include "clock.h"
 
+#include <list>
+
 namespace Cashmere
 {
 
@@ -43,7 +45,9 @@ struct ClockEntry
   const bool operator==(const ClockEntry& other) const;
 };
 
-using ClockEntryMap = std::map<Clock, ClockEntry>;
+using ClockEntryMap = std::map<Clock, Entry>;
+using ReplaceEntryMap = std::map<Clock, ClockEntry>;
+using ClockEntryList = std::list<ClockEntry>;
 
 }
 
