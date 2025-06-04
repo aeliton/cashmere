@@ -46,7 +46,7 @@ class Journal : public JournalBase
 public:
   Journal();
   ~Journal();
-  explicit Journal(Id id);
+  explicit Journal(Id id, const ClockEntryMap& entries = {});
 
   const Id id() const override;
   const Id bookId() const;

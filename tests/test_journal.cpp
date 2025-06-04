@@ -189,3 +189,20 @@ SCENARIO("zero values in clocks are ignored")
     }
   }
 }
+
+TEST_CASE("entries retrieval", "[entries]")
+{
+  const ClockEntryMap entries = {
+    {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
+    {Clock{{0xBB, 1}}, Entry{0xBB, 10, {}}},
+    {Clock{{0xAA, 2}, {0xBB, 1}}, Entry{0xAA, 2, Clock{{0xBB, 1}}}},
+    {Clock{{0xCC, 1}}, Entry{0xCC, 100, {}}},
+  };
+  Journal journal(0xAA, entries);
+
+  const ClockEntryList expected{
+    {Clock{{0xAA, 2}, {0xBB, 1}}, Entry{0xAA, 2, Clock{{0xBB, 1}}}},
+    {Clock{{0xCC, 1}}, Entry{0xCC, 100, {}}}
+  };
+  REQUIRE(journal.entries(Clock{{0xAA, 2}, {0xBB, 1}}) == expected);
+}

@@ -28,10 +28,11 @@ Journal::Journal()
 {
 }
 
-Journal::Journal(Id id)
+Journal::Journal(Id id, const ClockEntryMap& entries)
   : _bookId(_random.next())
   , _id(id)
   , _clock({})
+  , _entries(entries)
 {
 }
 
@@ -102,7 +103,9 @@ ClockEntryList Journal::entries(const Clock& from) const
 {
   ClockEntryList list;
   for (const auto& [clock, entry] : _entries) {
-    list.push_back({clock, entry});
+    if (clock.concurrent(from) || from.smallerThan(clock)) {
+      list.push_back({clock, entry});
+    }
   }
   return list;
 }
