@@ -28,7 +28,7 @@ Ledger::Ledger(const ClockEntryList& entries)
   , _balance(0)
 {
   for (auto& clockEntry : entries) {
-    auto [act, what] = action(_rows, clockEntry);
+    auto [act, what] = Evaluate(_rows, clockEntry);
     switch (act) {
       case Action::Replace:
         _balance -= _rows.at(what).entry.value;
@@ -48,14 +48,14 @@ Amount Ledger::balance() const
   return _balance;
 }
 
-Amount Ledger::balance(const ClockEntryList& entries)
+Amount Ledger::Balance(const ClockEntryList& entries)
 {
   Ledger ledger(entries);
   return ledger.balance();
 }
 
 Ledger::ActionClock
-Ledger::replaces(const ClockEntry& existing, const ClockEntry& incoming)
+Ledger::Replaces(const ClockEntry& existing, const ClockEntry& incoming)
 {
   if (incoming.entry.alters.empty()) {
     return {Action::Ignore, {}};
@@ -73,7 +73,7 @@ Ledger::replaces(const ClockEntry& existing, const ClockEntry& incoming)
 }
 
 Ledger::ActionClock
-Ledger::action(const ReplaceEntryMap& rows, const ClockEntry& incoming)
+Ledger::Evaluate(const ReplaceEntryMap& rows, const ClockEntry& incoming)
 {
   if (incoming.entry.alters.empty()) {
     if (rows.find(incoming.clock) == rows.end()) {
@@ -86,7 +86,7 @@ Ledger::action(const ReplaceEntryMap& rows, const ClockEntry& incoming)
     return {Action::Insert, incoming.entry.alters};
   }
 
-  return replaces(rows.at(incoming.entry.alters), incoming);
+  return Replaces(rows.at(incoming.entry.alters), incoming);
 }
 
 }

@@ -33,25 +33,33 @@ TEST_CASE("insert type transaction are ignored", "[replaces]")
   ClockEntry existing = {{{0xAA, 1}}, {0xAA, 1, {}}};
   ClockEntry incoming = {{{0xAA, 1}, {0xBB, 1}}, {0xBB, 10, {}}};
   REQUIRE(
-    Ledger::replaces(existing, incoming) == ActionClock{Action::Ignore, {}}
+    Ledger::Replaces(existing, incoming) == ActionClock{Action::Ignore, {}}
   );
 }
 
-TEST_CASE_METHOD(ExistingRows, "ignore old insert type entry", "[action]")
+TEST_CASE_METHOD(ExistingRows, "ignore old insert type entry", "[Evaluate]")
 {
   ClockEntry incoming = {{{0xAA, 1}}, {0xAA, 1, {}}};
-  REQUIRE(Ledger::action(rows, incoming) == ActionClock{Action::Ignore, {}});
+  REQUIRE(Ledger::Evaluate(rows, incoming) == ActionClock{Action::Ignore, {}});
 }
 
-TEST_CASE_METHOD(ExistingRows, "insert if not present", "[action]") {
-  SECTION("insert type entry") {
+TEST_CASE_METHOD(ExistingRows, "insert if not present", "[Evaluate]")
+{
+  SECTION("insert type entry")
+  {
     const ClockEntry incoming = {{{0xAA, 2}}, {0xAA, 20, {}}};
-    REQUIRE(Ledger::action(rows, incoming) == ActionClock{Action::Insert, {{0xAA, 2}}});
-
+    REQUIRE(
+      Ledger::Evaluate(rows, incoming) ==
+      ActionClock{Action::Insert, {{0xAA, 2}}}
+    );
   }
-  SECTION("edit type entry") {
+  SECTION("edit type entry")
+  {
     const ClockEntry incoming = {{{0xBB, 1}}, {0xBB, 20, {{0xAA, 2}}}};
-    REQUIRE(Ledger::action(rows, incoming) == ActionClock{Action::Insert, {{0xAA, 2}}});
+    REQUIRE(
+      Ledger::Evaluate(rows, incoming) ==
+      ActionClock{Action::Insert, {{0xAA, 2}}}
+    );
   }
 }
 
@@ -61,7 +69,7 @@ TEST_CASE("same journal has two appends", "[balance]")
     {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
     {Clock{{0xFF, 2}}, Entry{0xFF, 200, Clock{}}}
   };
-  REQUIRE(Ledger::balance(entries) == 500);
+  REQUIRE(Ledger::Balance(entries) == 500);
 }
 
 TEST_CASE("a different node edit's another node's entry", "[balance]")
@@ -70,7 +78,7 @@ TEST_CASE("a different node edit's another node's entry", "[balance]")
     {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
     {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}}
   };
-  REQUIRE(Ledger::balance(entries) == 50);
+  REQUIRE(Ledger::Balance(entries) == 50);
 }
 
 TEST_CASE("greater clock edit transactions wins", "[balance]")
@@ -82,7 +90,7 @@ TEST_CASE("greater clock edit transactions wins", "[balance]")
       {Clock{{0xFF, 2}}, Entry{0xFF, 200, Clock{}}},
       {Clock{{0xFF, 3}}, Entry{0xFF, 0, Clock{{0xFF, 2}}}}
     };
-    REQUIRE(Ledger::balance(entries) == 300);
+    REQUIRE(Ledger::Balance(entries) == 300);
   }
 
   SECTION("smaller id edits bigger id once")
@@ -91,7 +99,7 @@ TEST_CASE("greater clock edit transactions wins", "[balance]")
       {Clock{{0xFF, 1}}, Entry{0xFF, 300, Clock{}}},
       {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}},
     };
-    REQUIRE(Ledger::balance(entries) == 50);
+    REQUIRE(Ledger::Balance(entries) == 50);
   }
 
   SECTION("smaller id edits bigger id twice")
@@ -101,7 +109,7 @@ TEST_CASE("greater clock edit transactions wins", "[balance]")
       {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}},
       {Clock{{0xAA, 2}, {0xFF, 1}}, Entry{0xAA, 25, Clock{{0xFF, 1}}}}
     };
-    REQUIRE(Ledger::balance(entries) == 25);
+    REQUIRE(Ledger::Balance(entries) == 25);
   }
 
   SECTION("smaller id edits bigger id once after previous edit")
@@ -111,7 +119,7 @@ TEST_CASE("greater clock edit transactions wins", "[balance]")
       {Clock{{0xFF, 2}}, Entry{0xFF, 200, Clock{{0xFF, 1}}}},
       {Clock{{0xAA, 1}, {0xFF, 2}}, Entry{0xAA, 300, Clock{{0xFF, 1}}}}
     };
-    REQUIRE(Ledger::balance(entries) == 300);
+    REQUIRE(Ledger::Balance(entries) == 300);
   }
 }
 
@@ -124,7 +132,7 @@ TEST_CASE("greater id wins on conflicting edits", "[balance]")
       {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}},
       {Clock{{0xFF, 2}}, Entry{0xFF, 10, Clock{{0xFF, 1}}}}
     };
-    REQUIRE(Ledger::balance(entries) == 10);
+    REQUIRE(Ledger::Balance(entries) == 10);
   }
 
   SECTION("processing greater id conflict first")
@@ -134,6 +142,6 @@ TEST_CASE("greater id wins on conflicting edits", "[balance]")
       {Clock{{0xFF, 2}}, Entry{0xFF, 10, Clock{{0xFF, 1}}}},
       {Clock{{0xAA, 1}, {0xFF, 1}}, Entry{0xAA, 50, Clock{{0xFF, 1}}}}
     };
-    REQUIRE(Ledger::balance(entries) == 10);
+    REQUIRE(Ledger::Balance(entries) == 10);
   }
 }

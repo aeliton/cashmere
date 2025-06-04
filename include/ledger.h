@@ -35,12 +35,12 @@ public:
   explicit Ledger(JournalBasePtr journal);
 
   Amount balance() const;
-  static Amount balance(const ClockEntryList& entries);
 
+  static Amount Balance(const ClockEntryList& entries);
   static ActionClock
-  action(const ReplaceEntryMap& rows, const ClockEntry& incoming);
+  Evaluate(const ReplaceEntryMap& rows, const ClockEntry& incoming);
   static ActionClock
-  replaces(const ClockEntry& existing, const ClockEntry& incoming);
+  Replaces(const ClockEntry& existing, const ClockEntry& incoming);
 
 private:
   explicit Ledger(const ClockEntryList& entries);
