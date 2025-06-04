@@ -46,8 +46,7 @@ struct JournalMock : public JournalBase
   }
   virtual bool insert(const Clock& clock, const Entry& entry) override
   {
-    ++_insertCount;
-    _insertArgs = {clock, entry};
+    _insertArgs.push_back({clock, entry});
     return false;
   }
   virtual bool append(const Entry& value) override
@@ -66,8 +65,7 @@ struct JournalMock : public JournalBase
   const Clock _clock;
   const ClockEntryList _entries;
   ClockChangeSignal _signal;
-  size_t _insertCount = 0;
-  ClockEntry _insertArgs = {};
+  ClockEntryList _insertArgs = {};
 };
 
 using JournalMockPtr = std::shared_ptr<JournalMock>;

@@ -109,7 +109,9 @@ SCENARIO_METHOD(EmptyMock, "journal get entries via broker")
 
       THEN("insert is called on the attached journal")
       {
-        REQUIRE(mock->_insertArgs == ClockEntry{{{0xFF, 1}}, {0xFF, 9, {}}});
+        REQUIRE(
+          mock->_insertArgs == ClockEntryList{{{{0xFF, 1}}, {0xFF, 9, {}}}}
+        );
       }
 
       AND_WHEN("a journal detaches")
@@ -143,17 +145,19 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "a broker synchronizes journal entries")
 
       THEN("::insert() is called once for each journal")
       {
-        REQUIRE(aa->_insertCount == 1);
-        REQUIRE(bb->_insertCount == 1);
+        REQUIRE(aa->_insertArgs.size() == 1);
+        REQUIRE(bb->_insertArgs.size() == 1);
       }
 
       THEN("::insert() is called with the other journal's entry")
       {
         REQUIRE(
-          aa->_insertArgs == ClockEntry{Clock{{0xBB, 1}}, Entry{0xBB, 2, {}}}
+          aa->_insertArgs ==
+          ClockEntryList{{Clock{{0xBB, 1}}, Entry{0xBB, 2, {}}}}
         );
         REQUIRE(
-          bb->_insertArgs == ClockEntry{Clock{{0xAA, 1}}, Entry{0xBB, 1, {}}}
+          bb->_insertArgs ==
+          ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xBB, 1, {}}}}
         );
       }
     }
