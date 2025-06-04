@@ -18,16 +18,41 @@
 
 using namespace Cashmere;
 
+struct ExistingRows
+{
+  const ReplaceEntryMap rows = {
+    {Clock{{0xAA, 1}}, {Clock{{0xBB, 1}}, Entry{0xBB, 100, Clock{{0xAA, 1}}}}}
+  };
+};
+
 using Action = Ledger::Action;
 using ActionClock = Ledger::ActionClock;
 
-TEST_CASE("insert type transaction are ignored")
+TEST_CASE("insert type transaction are ignored", "[replaces]")
 {
   ClockEntry existing = {{{0xAA, 1}}, {0xAA, 1, {}}};
   ClockEntry incoming = {{{0xAA, 1}, {0xBB, 1}}, {0xBB, 10, {}}};
   REQUIRE(
     Ledger::replaces(existing, incoming) == ActionClock{Action::Ignore, {}}
   );
+}
+
+TEST_CASE_METHOD(ExistingRows, "ignore old insert type entry", "[action]")
+{
+  ClockEntry incoming = {{{0xAA, 1}}, {0xAA, 1, {}}};
+  REQUIRE(Ledger::action(rows, incoming) == ActionClock{Action::Ignore, {}});
+}
+
+TEST_CASE_METHOD(ExistingRows, "insert if not present", "[action]") {
+  SECTION("insert type entry") {
+    const ClockEntry incoming = {{{0xAA, 2}}, {0xAA, 20, {}}};
+    REQUIRE(Ledger::action(rows, incoming) == ActionClock{Action::Insert, {{0xAA, 2}}});
+
+  }
+  SECTION("edit type entry") {
+    const ClockEntry incoming = {{{0xBB, 1}}, {0xBB, 20, {{0xAA, 2}}}};
+    REQUIRE(Ledger::action(rows, incoming) == ActionClock{Action::Insert, {{0xAA, 2}}});
+  }
 }
 
 TEST_CASE("same journal has two appends", "[balance]")
