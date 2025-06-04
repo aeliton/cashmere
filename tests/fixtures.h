@@ -103,5 +103,15 @@ struct TwoSingleEntryMocks
   JournalMockPtr bb = std::make_shared<SingleEntry>(0xBB, 2);
 };
 
+struct TwoAttachedSingleEntryOneEmpty : public TwoSingleEntryMocks
+{
+  TwoAttachedSingleEntryOneEmpty()
+  {
+    broker.attach(aa);
+    broker.attach(bb);
+  }
+  JournalMockPtr cc = std::make_shared<JournalMock>(0xCC);
+};
+
 }
 #endif

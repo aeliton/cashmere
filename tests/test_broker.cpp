@@ -200,3 +200,27 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "Broker sends only new transactions")
     }
   }
 }
+
+SCENARIO_METHOD(
+  TwoAttachedSingleEntryOneEmpty,
+  "only one attached journal is requested for entries"
+)
+{
+  GIVEN("a broker with two non-empty journals attatched")
+  {
+    REQUIRE(aa->_entriesArgs.size() == bb->_entriesArgs.size());
+
+    const auto initialCount = aa->_entriesArgs.size() + bb->_entriesArgs.size();
+
+    WHEN("attaching a new journal")
+    {
+      broker.attach(cc);
+
+      THEN("only one of the attached journals is queried for entries")
+      {
+        const auto count = aa->_entriesArgs.size() + bb->_entriesArgs.size();
+        REQUIRE(count == initialCount + 1);
+      }
+    }
+  }
+}
