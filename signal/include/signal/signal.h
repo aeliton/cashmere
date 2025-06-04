@@ -47,6 +47,11 @@ public:
     return _count;
   }
 
+  size_t count() const
+  {
+    return _count - _disconnected;
+  }
+
   template<class Class, class Member = ReturnType (Class::*)(Args...)>
   Connection connect(Class* object, Member&& member)
   {
@@ -59,12 +64,14 @@ public:
       return false;
     }
     _slots.erase(connection);
+    _disconnected++;
     return true;
   }
 
 private:
   std::map<Connection, Slot> _slots;
   Connection _count = 0;
+  size_t _disconnected = 0;
 };
 }
 

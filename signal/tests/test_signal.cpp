@@ -28,6 +28,8 @@ SCENARIO("signal to a single slot")
     Signal<void(int)>::Slot lambda = [&calledWith](int a) { calledWith = a; };
     const Connection conn = signal.connect(lambda);
 
+    REQUIRE(signal.count() == 1);
+
     WHEN("trigerring the signal")
     {
       signal(10);
@@ -42,6 +44,11 @@ SCENARIO("signal to a single slot")
         {
           REQUIRE(success);
         }
+        AND_THEN("the connection count decreases")
+        {
+          REQUIRE(signal.count() == 0);
+        }
+
         AND_WHEN("re-triggering the signal")
         {
           signal(11);
