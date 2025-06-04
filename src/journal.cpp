@@ -98,7 +98,7 @@ Entry Journal::entry(Clock time) const
   return _entries.at(time);
 }
 
-ClockEntryList Journal::entries() const
+ClockEntryList Journal::entries(const Clock& from) const
 {
   ClockEntryList list;
   for (const auto& [clock, entry] : _entries) {

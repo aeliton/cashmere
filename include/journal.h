@@ -37,7 +37,7 @@ public:
   virtual bool insert(const Clock& clock, const Entry& entry) = 0;
   virtual bool append(const Entry& entry) = 0;
   virtual bool contains(const Clock& clock) const = 0;
-  virtual ClockEntryList entries() const = 0;
+  virtual ClockEntryList entries(const Clock& from = {}) const = 0;
   virtual ClockChangeSignal& clockChanged() = 0;
 };
 
@@ -63,7 +63,7 @@ public:
   bool contains(const Clock& clock) const override;
   Entry entry(Clock time) const;
 
-  ClockEntryList entries() const override;
+  ClockEntryList entries(const Clock& from = {}) const override;
 
   ClockChangeSignal& clockChanged() override;
 

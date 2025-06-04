@@ -40,7 +40,7 @@ struct JournalMock : public JournalBase
   {
     return _clock;
   }
-  ClockEntryList entries() const override
+  ClockEntryList entries(const Clock& from = {}) const override
   {
     return _entries;
   }
