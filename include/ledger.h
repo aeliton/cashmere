@@ -24,17 +24,25 @@ namespace Cashmere
 class Ledger
 {
 public:
+  enum class Action
+  {
+    Ignore,
+    Insert,
+    Replace
+  };
   Ledger() = delete;
   explicit Ledger(JournalBasePtr journal);
 
   Amount balance() const;
   static Amount balance(const JournalEntries& entries);
 
+  std::tuple<Action, Clock>
+  action(const Clock& clock, const Entry& entry) const;
+
 private:
   explicit Ledger(const JournalEntries& entries);
   bool
   existingKeyNeedsReplace(const Clock& k, const Clock& c, const Entry& e) const;
-  void processEntry(const Clock& clock, const Entry& entry);
   JournalBasePtr _journal;
   Amount _balance;
   ClockEntryMap _rows;

@@ -28,7 +28,18 @@ Ledger::Ledger(const JournalEntries& entries)
   , _balance(0)
 {
   for (auto& [clock, entry] : entries) {
-    processEntry(clock, entry);
+    auto [act, what] = action(clock, entry);
+    switch (act) {
+      case Action::Replace:
+        _balance -= _rows.at(what).entry.value;
+        [[fallthrough]];
+      case Action::Insert:
+        _rows[what] = {clock, entry};
+        _balance += _rows.at(what).entry.value;
+        break;
+      case Action::Ignore:
+        break;
+    }
   }
 }
 
@@ -59,21 +70,21 @@ bool Ledger::existingKeyNeedsReplace(
   return _rows.at(k).entry.journalId < e.journalId;
 }
 
-void Ledger::processEntry(const Clock& clock, const Entry& entry)
+std::tuple<Ledger::Action, Clock>
+Ledger::action(const Clock& clock, const Entry& entry) const
 {
   const bool isInsert = entry.alters.empty();
   if (isInsert && _rows.find(clock) != _rows.end()) {
-    return;
+    return {Action::Ignore, {}};
   }
   const auto key = isInsert ? clock : entry.alters;
   const bool keyExists = _rows.find(key) != _rows.end();
   if (keyExists) {
     if (!existingKeyNeedsReplace(key, clock, entry)) {
-      return;
+      return {Action::Ignore, {}};
     }
-    _balance -= _rows.at(key).entry.value;
+    return {Action::Replace, key};
   }
-  _rows[key] = {clock, entry};
-  _balance += _rows.at(key).entry.value;
+  return {Action::Insert, key};
 }
 }
