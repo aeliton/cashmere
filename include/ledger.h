@@ -32,6 +32,9 @@ public:
 
 private:
   explicit Ledger(const JournalEntries& entries);
+  bool
+  existingKeyNeedsReplace(const Clock& k, const Clock& c, const Entry& e) const;
+  void processEntry(const Clock& clock, const Entry& entry);
   JournalBasePtr _journal;
   Amount _balance;
   ClockEntryMap _rows;

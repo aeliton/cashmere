@@ -27,35 +27,8 @@ Ledger::Ledger(const JournalEntries& entries)
   : _journal(nullptr)
   , _balance(0)
 {
-  auto existingKeyNeedsReplace =
-    [this](const Clock& k, const Clock& c, const Entry& e) -> bool {
-    if (_rows.find(k) == _rows.end()) {
-      return false;
-    }
-    if (_rows.at(k).clock.smallerThan(c)) {
-      return true;
-    }
-    if (c.smallerThan(_rows.at(k).clock)) {
-      return false;
-    }
-    return _rows[k].entry.journalId < e.journalId;
-  };
-
   for (auto& [clock, entry] : entries) {
-    const bool isInsert = entry.alters.empty();
-    if (isInsert && _rows.find(clock) != _rows.end()) {
-      continue;
-    }
-    const auto key = isInsert ? clock : entry.alters;
-    const bool keyExists = _rows.find(key) != _rows.end();
-    if (keyExists) {
-      if (!existingKeyNeedsReplace(key, clock, entry)) {
-        continue;
-      }
-      _balance -= _rows.at(key).entry.value;
-    }
-    _rows[key] = {clock, entry};
-    _balance += _rows.at(key).entry.value;
+    processEntry(clock, entry);
   }
 }
 
@@ -68,5 +41,39 @@ Amount Ledger::balance(const JournalEntries& entries)
 {
   Ledger ledger(entries);
   return ledger.balance();
+}
+
+bool Ledger::existingKeyNeedsReplace(
+  const Clock& k, const Clock& c, const Entry& e
+) const
+{
+  if (_rows.find(k) == _rows.end()) {
+    return false;
+  }
+  if (_rows.at(k).clock.smallerThan(c)) {
+    return true;
+  }
+  if (c.smallerThan(_rows.at(k).clock)) {
+    return false;
+  }
+  return _rows.at(k).entry.journalId < e.journalId;
+}
+
+void Ledger::processEntry(const Clock& clock, const Entry& entry)
+{
+  const bool isInsert = entry.alters.empty();
+  if (isInsert && _rows.find(clock) != _rows.end()) {
+    return;
+  }
+  const auto key = isInsert ? clock : entry.alters;
+  const bool keyExists = _rows.find(key) != _rows.end();
+  if (keyExists) {
+    if (!existingKeyNeedsReplace(key, clock, entry)) {
+      return;
+    }
+    _balance -= _rows.at(key).entry.value;
+  }
+  _rows[key] = {clock, entry};
+  _balance += _rows.at(key).entry.value;
 }
 }
