@@ -28,7 +28,7 @@ Ledger::Ledger(const JournalEntries& entries)
   , _balance(0)
 {
   for (auto& [clock, entry] : entries) {
-    auto [act, what] = action(clock, entry);
+    auto [act, what] = action({clock, entry});
     switch (act) {
       case Action::Replace:
         _balance -= _rows.at(what).entry.value;
@@ -66,9 +66,10 @@ bool Ledger::replaces(const ClockEntry& existing, const ClockEntry& incoming)
   return existing.entry.journalId < incoming.entry.journalId;
 }
 
-std::tuple<Ledger::Action, Clock>
-Ledger::action(const Clock& clock, const Entry& entry) const
+std::tuple<Ledger::Action, Clock> Ledger::action(const ClockEntry& incoming
+) const
 {
+  const auto& [clock, entry] = incoming;
   const bool isInsert = entry.alters.empty();
   if (isInsert && _rows.find(clock) != _rows.end()) {
     return {Action::Ignore, {}};

@@ -36,8 +36,7 @@ public:
   Amount balance() const;
   static Amount balance(const JournalEntries& entries);
 
-  std::tuple<Action, Clock>
-  action(const Clock& clock, const Entry& entry) const;
+  std::tuple<Action, Clock> action(const ClockEntry& incoming) const;
   bool replaces(const ClockEntry& existing, const ClockEntry& incoming) const;
 
 private:
