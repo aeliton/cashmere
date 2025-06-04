@@ -57,20 +57,20 @@ bool Journal::append(Amount value)
   return append({_id, value, {}});
 }
 
-bool Journal::append(Entry value)
+bool Journal::append(const Entry& entry)
 {
-  _clock[value.journalId]++;
-  insert(_clock, value);
-  _clockChanged(_clock, value);
+  _clock[entry.journalId]++;
+  insert(_clock, entry);
+  _clockChanged(_clock, entry);
   return true;
 }
 
-bool Journal::insert(Clock clock, Entry value)
+bool Journal::insert(const Clock& clock, const Entry& entry)
 {
   if (_entries.find(clock) != _entries.end()) {
     return false;
   }
-  _entries[clock] = value;
+  _entries[clock] = entry;
   _clock = _clock.merge(clock);
   return true;
 }
@@ -84,7 +84,7 @@ bool Journal::erase(Clock time)
 {
   return append({_id, 0, time});
 }
-bool Journal::contains(Clock time) const
+bool Journal::contains(const Clock& time) const
 {
   return _entries.find(time) != _entries.cend();
 }

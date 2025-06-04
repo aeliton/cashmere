@@ -35,9 +35,9 @@ public:
   virtual ~JournalBase() = 0;
   virtual const Id id() const = 0;
   virtual Clock clock() const = 0;
-  virtual bool insert(Clock clock, Entry value) = 0;
-  virtual bool append(Entry value) = 0;
-  virtual bool contains(Clock clock) const = 0;
+  virtual bool insert(const Clock& clock, const Entry& entry) = 0;
+  virtual bool append(const Entry& entry) = 0;
+  virtual bool contains(const Clock& clock) const = 0;
   virtual const JournalEntries& entries() const = 0;
   virtual ClockChangeSignal& clockChanged() = 0;
 };
@@ -54,14 +54,14 @@ public:
   Clock clock() const override;
 
   bool append(Amount value);
-  bool append(Entry value) override;
-  bool insert(Clock clock, Entry value) override;
+  bool append(const Entry& entry) override;
+  bool insert(const Clock& clock, const Entry& entry) override;
 
   bool replace(Amount value, const Clock& clock);
 
   bool erase(Clock time);
 
-  bool contains(Clock clock) const override;
+  bool contains(const Clock& clock) const override;
   Entry query(Clock time) const;
 
   const JournalEntries& entries() const override;

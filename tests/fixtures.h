@@ -44,17 +44,17 @@ struct JournalMock : public JournalBase
   {
     return _entries;
   }
-  virtual bool insert(Clock clock, Entry entry) override
+  virtual bool insert(const Clock& clock, const Entry& entry) override
   {
     ++_insertCount;
     _insertArgs = {clock, entry};
     return false;
   }
-  virtual bool append(Entry value) override
+  virtual bool append(const Entry& value) override
   {
     return false;
   }
-  virtual bool contains(Clock clock) const override
+  virtual bool contains(const Clock& clock) const override
   {
     return _entries.find(clock) != _entries.cend();
   }
@@ -78,7 +78,7 @@ struct SingleEntry : public JournalMock
     : JournalMock(id, {{id, 1}}, {{Clock{{id, 1}}, Entry{id, amount, Clock{}}}})
   {
   }
-  virtual bool append(Entry value) override
+  virtual bool append(const Entry&) override
   {
     _signal(_clock, _entries[_clock]);
     return true;
