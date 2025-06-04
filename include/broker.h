@@ -23,6 +23,12 @@
 namespace Cashmere
 {
 
+struct AttachContext
+{
+  std::weak_ptr<JournalBase> journal;
+  Connection conn;
+};
+
 using VersionMap = std::map<Id, Clock>;
 class Broker
 {
@@ -39,7 +45,7 @@ public:
   VersionMap versions() const;
 
 private:
-  std::unordered_map<Id, std::weak_ptr<JournalBase>> _attached;
+  std::unordered_map<Id, AttachContext> _attached;
   VersionMap _versions;
 };
 

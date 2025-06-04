@@ -83,6 +83,11 @@ SCENARIO_METHOD(SingleEntryMock, "broker attach records id and clock")
         );
       }
 
+      AND_THEN("the broker is removed from clock updates of the journal")
+      {
+        REQUIRE(mock->_signal.count() == 0);
+      }
+
       AND_WHEN("attempting to detach a non-attached journal")
       {
         const bool success = broker.detach(mock->id());

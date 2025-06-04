@@ -30,8 +30,8 @@ bool Broker::attach(JournalBasePtr journal)
   Id journalId = journal->id();
   auto& lastVersion = _versions[journalId];
 
-  for (auto& [id, j] : _attached) {
-    if (auto other = j.lock()) {
+  for (auto& [id, context] : _attached) {
+    if (auto other = context.journal.lock()) {
       for (auto& [clock, entry] : other->entries(lastVersion)) {
         journal->insert(clock, entry);
       }
@@ -41,12 +41,12 @@ bool Broker::attach(JournalBasePtr journal)
     }
   }
 
-  _attached[journalId] = journal;
+  _attached[journalId] = {
+    journal, journal->clockChanged().connect(this, &Broker::onClockUpdate)
+  };
   if (auto clock = journal->clock(); clock.size() > 0) {
     _versions[journal->id()] = clock;
   }
-
-  journal->clockChanged().connect(this, &Broker::onClockUpdate);
 
   return true;
 }
@@ -56,6 +56,10 @@ bool Broker::detach(Id journalId)
   if (_attached.find(journalId) == _attached.end()) {
     return false;
   }
+  auto& [ref, conn] = _attached[journalId];
+  if (auto journal = ref.lock()) {
+    journal->clockChanged().disconnect(conn);
+  }
   _attached.erase(journalId);
   return true;
 }
@@ -63,16 +67,14 @@ bool Broker::detach(Id journalId)
 void Broker::onClockUpdate(Clock clock, Entry entry)
 {
   _versions[entry.journalId] = clock;
-  for (auto& [id, weakJournalPtr] : _attached) {
+  for (auto& [id, context] : _attached) {
     if (id == entry.journalId) {
       continue;
     }
-    const auto journal = weakJournalPtr.lock();
-    if (!journal) {
-      continue;
+    if (const auto journal = context.journal.lock()) {
+      journal->insert(clock, entry);
+      _versions[journal->id()] = journal->clock();
     }
-    journal->insert(clock, entry);
-    _versions[journal->id()] = journal->clock();
   }
 }
 
