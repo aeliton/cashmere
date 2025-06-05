@@ -17,7 +17,6 @@
 #define CASHEMERE_JOURNAL_H
 
 #include <memory>
-#include <signal/signal.h>
 
 #include "entry.h"
 #include "random.h"
@@ -25,18 +24,12 @@
 namespace Cashmere
 {
 
-using ClockChangeSignal = Signal<void(Clock, Entry)>;
-using ClockChangeSlot = ClockChangeSignal::Slot;
-
-class JournalBase
+struct JournalBase : public EntryHandler
 {
-public:
   virtual ~JournalBase() = 0;
   virtual const Id id() const = 0;
   virtual Clock clock() const = 0;
-  virtual bool insert(const Clock& clock, const Entry& entry) = 0;
   virtual ClockEntryList entries(const Clock& from = {}) const = 0;
-  virtual ClockChangeSignal& clockChanged() = 0;
 };
 
 class Journal : public JournalBase

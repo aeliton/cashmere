@@ -19,6 +19,7 @@
 #include "clock.h"
 
 #include <list>
+#include <signal/signal.h>
 
 namespace Cashmere
 {
@@ -48,6 +49,16 @@ struct ClockEntry
 using ClockEntryMap = std::map<Clock, Entry>;
 using ReplaceEntryMap = std::map<Clock, ClockEntry>;
 using ClockEntryList = std::list<ClockEntry>;
+
+using ClockChangeSignal = Signal<void(Clock, Entry)>;
+using ClockChangeSlot = ClockChangeSignal::Slot;
+
+struct EntryHandler
+{
+  virtual ~EntryHandler() = 0;
+  virtual bool insert(const Clock& clock, const Entry& entry) = 0;
+  virtual ClockChangeSignal& clockChanged() = 0;
+};
 
 }
 

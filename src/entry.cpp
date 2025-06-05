@@ -18,6 +18,8 @@
 namespace Cashmere
 {
 
+EntryHandler::~EntryHandler() = default;
+
 const bool ClockEntry::operator==(const ClockEntry& other) const
 {
   return clock == other.clock && entry == other.entry;
