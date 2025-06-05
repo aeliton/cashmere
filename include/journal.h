@@ -35,8 +35,6 @@ public:
   virtual const Id id() const = 0;
   virtual Clock clock() const = 0;
   virtual bool insert(const Clock& clock, const Entry& entry) = 0;
-  virtual bool append(const Entry& entry) = 0;
-  virtual bool contains(const Clock& clock) const = 0;
   virtual ClockEntryList entries(const Clock& from = {}) const = 0;
   virtual ClockChangeSignal& clockChanged() = 0;
 };
@@ -49,23 +47,18 @@ public:
   explicit Journal(Id id, const ClockEntryMap& entries = {});
 
   const Id id() const override;
-  const Id bookId() const;
   Clock clock() const override;
-
-  bool append(Amount value);
-  bool append(const Entry& entry) override;
   bool insert(const Clock& clock, const Entry& entry) override;
-
-  bool replace(Amount value, const Clock& clock);
-
-  bool erase(Clock time);
-
-  bool contains(const Clock& clock) const override;
-  Entry entry(Clock time) const;
-
   ClockEntryList entries(const Clock& from = {}) const override;
-
   ClockChangeSignal& clockChanged() override;
+
+  const Id bookId() const;
+  bool append(Amount value);
+  bool append(const Entry& entry);
+  bool replace(Amount value, const Clock& clock);
+  bool erase(Clock time);
+  bool contains(const Clock& clock) const;
+  Entry entry(Clock time) const;
 
 private:
   static Random _random;

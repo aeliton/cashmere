@@ -53,14 +53,6 @@ struct JournalMock : public JournalBase
     _insertArgs.push_back({clock, entry});
     return false;
   }
-  virtual bool append(const Entry& value) override
-  {
-    return false;
-  }
-  virtual bool contains(const Clock& clock) const override
-  {
-    return false;
-  }
   ClockChangeSignal& clockChanged() override
   {
     return _signal;
