@@ -28,22 +28,18 @@ VersionMap Broker::versions() const
 bool Broker::attach(JournalBasePtr journal)
 {
   Id journalId = journal->id();
+
   auto& lastVersion = _versions[journalId];
 
-  bool sent = false;
   for (auto& [id, context] : _attached) {
     if (auto other = context.journal.lock()) {
-      if (!sent) {
-        for (auto& [clock, entry] : other->entries(lastVersion)) {
-          journal->insert(clock, entry);
-        }
-        sent = true;
-      }
       for (auto& [clock, entry] : journal->entries(lastVersion)) {
         other->insert(clock, entry);
       }
     }
   }
+
+  update(journal, lastVersion);
 
   _attached[journalId] = {
     journal, journal->clockChanged().connect(this, &Broker::onClockUpdate)
@@ -86,6 +82,18 @@ std::set<Id> Broker::attachedIds() const
 {
   auto it = std::views::keys(_attached);
   return {it.begin(), it.end()};
+}
+
+void Broker::update(JournalBasePtr journal, const Clock& from) const
+{
+  for (auto& [id, context] : _attached) {
+    if (auto other = context.journal.lock()) {
+      for (auto& [clock, entry] : other->entries(from)) {
+        journal->insert(clock, entry);
+      }
+      break;
+    }
+  }
 }
 
 }
