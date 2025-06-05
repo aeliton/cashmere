@@ -29,15 +29,15 @@ bool Broker::attach(JournalBasePtr journal)
 {
   const Clock& from = _versions[journal->id()];
 
-  auto entries = journal->entries(from);
+  const auto entries = journal->entries(from);
 
-  for (auto& [id, context] : _attached) {
+  for (const auto& [id, context] : _attached) {
     if (auto attached = context.journal.lock()) {
       update(attached, entries);
     }
   }
 
-  if (auto provider = pickAttached()) {
+  if (const auto provider = pickAttached()) {
     update(journal, provider->entries(from));
   }
 
@@ -55,7 +55,7 @@ bool Broker::detach(Id journalId)
   if (_attached.find(journalId) == _attached.end()) {
     return false;
   }
-  auto& [ref, conn] = _attached[journalId];
+  const auto& [ref, conn] = _attached[journalId];
   if (auto journal = ref.lock()) {
     journal->clockChanged().disconnect(conn);
   }
@@ -66,7 +66,7 @@ bool Broker::detach(Id journalId)
 void Broker::onClockUpdate(Clock clock, Entry entry)
 {
   _versions[entry.journalId] = clock;
-  for (auto& [id, context] : _attached) {
+  for (const auto& [id, context] : _attached) {
     if (id == entry.journalId) {
       continue;
     }
@@ -79,13 +79,13 @@ void Broker::onClockUpdate(Clock clock, Entry entry)
 
 std::set<Id> Broker::attachedIds() const
 {
-  auto it = std::views::keys(_attached);
+  const auto it = std::views::keys(_attached);
   return {it.begin(), it.end()};
 }
 
 JournalBasePtr Broker::pickAttached() const
 {
-  for (auto& [id, context] : _attached) {
+  for (const auto& [id, context] : _attached) {
     if (auto other = context.journal.lock()) {
       return other;
     }
@@ -95,7 +95,7 @@ JournalBasePtr Broker::pickAttached() const
 
 void Broker::update(JournalBasePtr journal, const ClockEntryList& entries) const
 {
-  for (auto& [clock, entry] : entries) {
+  for (const auto& [clock, entry] : entries) {
     journal->insert(clock, entry);
   }
 }
