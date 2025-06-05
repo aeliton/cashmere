@@ -45,7 +45,8 @@ public:
   VersionMap versions() const;
 
 private:
-  void update(JournalBasePtr journal, const Clock& from) const;
+  void update(JournalBasePtr journal, const ClockEntryList& entries) const;
+  JournalBasePtr pickAttached() const;
 
   std::unordered_map<Id, AttachContext> _attached;
   VersionMap _versions;

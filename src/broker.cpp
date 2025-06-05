@@ -35,13 +35,13 @@ bool Broker::attach(JournalBasePtr journal)
 
   for (auto& [id, context] : _attached) {
     if (auto other = context.journal.lock()) {
-      for (auto& [clock, entry] : entries) {
-        other->insert(clock, entry);
-      }
+      update(other, entries);
     }
   }
 
-  update(journal, lastVersion);
+  if (auto provider = pickAttached()) {
+    update(journal, provider->entries(lastVersion));
+  }
 
   _attached[journalId] = {
     journal, journal->clockChanged().connect(this, &Broker::onClockUpdate)
@@ -86,16 +86,20 @@ std::set<Id> Broker::attachedIds() const
   return {it.begin(), it.end()};
 }
 
-void Broker::update(JournalBasePtr journal, const Clock& from) const
+JournalBasePtr Broker::pickAttached() const
 {
   for (auto& [id, context] : _attached) {
     if (auto other = context.journal.lock()) {
-      for (auto& [clock, entry] : other->entries(from)) {
-        journal->insert(clock, entry);
-      }
-      break;
+      return other;
     }
   }
+  return nullptr;
 }
 
+void Broker::update(JournalBasePtr journal, const ClockEntryList& entries) const
+{
+  for (auto& [clock, entry] : entries) {
+    journal->insert(clock, entry);
+  }
+}
 }
