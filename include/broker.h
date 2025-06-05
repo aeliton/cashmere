@@ -36,7 +36,7 @@ public:
   bool attach(JournalBasePtr journal);
   bool detach(Id journalId);
 
-  void onClockUpdate(Clock clock, Entry entry);
+  void onClockUpdate(ClockEntry data);
 
   IdSet attachedIds() const;
 

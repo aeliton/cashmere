@@ -62,7 +62,7 @@ bool Journal::append(const Entry& entry)
 {
   _clock[entry.journalId]++;
   insert(_clock, entry);
-  _clockChanged(_clock, entry);
+  _clockChanged({_clock, entry});
   return true;
 }
 

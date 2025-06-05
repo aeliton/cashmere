@@ -67,15 +67,15 @@ bool Broker::detach(Id journalId)
   return true;
 }
 
-void Broker::onClockUpdate(Clock clock, Entry entry)
+void Broker::onClockUpdate(ClockEntry data)
 {
-  _versions[entry.journalId] = clock;
+  _versions[data.entry.journalId] = data.clock;
   for (const auto& [id, context] : _attached) {
-    if (id == entry.journalId) {
+    if (id == data.entry.journalId) {
       continue;
     }
     if (const auto journal = context.journal.lock()) {
-      journal->insert(clock, entry);
+      journal->insert(data.clock, data.entry);
       _versions[journal->id()] = journal->clock();
     }
   }

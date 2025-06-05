@@ -118,7 +118,7 @@ SCENARIO_METHOD(EmptyMock, "journal get entries via broker")
 
     WHEN("an entry is signaled to the broker")
     {
-      emitter(Clock{{0xFF, 1}}, Entry{0xFF, 9, Clock{}});
+      emitter({Clock{{0xFF, 1}}, Entry{0xFF, 9, Clock{}}});
 
       THEN("insert is called on the attached journal")
       {
