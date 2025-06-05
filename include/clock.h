@@ -38,5 +38,6 @@ public:
 std::ostream& operator<<(std::ostream& os, const Clock& clock);
 
 using ClockList = std::list<Clock>;
+using IdClockMap = std::map<Id, Clock>;
 }
 #endif

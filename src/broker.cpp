@@ -20,7 +20,7 @@ namespace Cashmere
 
 Broker::Broker() {}
 
-VersionMap Broker::versions() const
+IdClockMap Broker::versions() const
 {
   return _versions;
 }
@@ -77,7 +77,7 @@ void Broker::onClockUpdate(Clock clock, Entry entry)
   }
 }
 
-std::set<Id> Broker::attachedIds() const
+IdSet Broker::attachedIds() const
 {
   const auto it = std::views::keys(_attached);
   return {it.begin(), it.end()};

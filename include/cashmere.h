@@ -17,12 +17,15 @@
 #define CASHMERE_CASHMERE_H
 
 #include <cstdint>
+#include <set>
 
 namespace Cashmere
 {
 using Amount = int64_t;
 using Id = uint64_t;
 using Time = uint64_t;
+
+using IdSet = std::set<Id>;
 }
 
 #endif

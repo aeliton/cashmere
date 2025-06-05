@@ -21,6 +21,8 @@
 namespace Cashmere
 {
 
+using ReplaceEntryMap = std::map<Clock, ClockEntry>;
+
 class Ledger
 {
 public:

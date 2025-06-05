@@ -21,9 +21,9 @@
 namespace Catch
 {
 template<>
-struct StringMaker<Cashmere::VersionMap>
+struct StringMaker<Cashmere::IdClockMap>
 {
-  static std::string convert(Cashmere::VersionMap const& m)
+  static std::string convert(Cashmere::IdClockMap const& m)
   {
     if (m.empty()) {
       return "{ }";
@@ -64,7 +64,7 @@ SCENARIO_METHOD(SingleEntryMock, "broker attach records id and clock")
 
     THEN("the broker has the updated clock version of the journal")
     {
-      REQUIRE(broker.versions() == VersionMap{{0xAA, Clock{{mock->id(), 1}}}});
+      REQUIRE(broker.versions() == IdClockMap{{0xAA, Clock{{mock->id(), 1}}}});
     }
 
     AND_WHEN("the journal is detached")
@@ -79,7 +79,7 @@ SCENARIO_METHOD(SingleEntryMock, "broker attach records id and clock")
       AND_THEN("the broker versions are kept")
       {
         REQUIRE(
-          broker.versions() == VersionMap{{0xAA, Clock{{mock->id(), 1}}}}
+          broker.versions() == IdClockMap{{0xAA, Clock{{mock->id(), 1}}}}
         );
       }
 

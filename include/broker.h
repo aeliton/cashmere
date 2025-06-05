@@ -17,7 +17,6 @@
 #define CASHMERE_BROKER_H
 
 #include "journal.h"
-#include <set>
 #include <unordered_map>
 
 namespace Cashmere
@@ -29,7 +28,6 @@ struct AttachContext
   Connection conn;
 };
 
-using VersionMap = std::map<Id, Clock>;
 class Broker
 {
 public:
@@ -40,16 +38,16 @@ public:
 
   void onClockUpdate(Clock clock, Entry entry);
 
-  std::set<Id> attachedIds() const;
+  IdSet attachedIds() const;
 
-  VersionMap versions() const;
+  IdClockMap versions() const;
 
 private:
   void update(JournalBasePtr journal, const ClockEntryList& entries) const;
   JournalBasePtr pickAttached() const;
 
   std::unordered_map<Id, AttachContext> _attached;
-  VersionMap _versions;
+  IdClockMap _versions;
 };
 
 }
