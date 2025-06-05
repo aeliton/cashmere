@@ -23,7 +23,7 @@ namespace Cashmere
 struct JournalMock : public JournalBase
 {
   JournalMock(Id id)
-    : _id(id)
+    : JournalMock(id, {}, {})
   {
   }
   JournalMock(Id id, Clock c, ClockEntryList e)
