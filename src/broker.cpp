@@ -27,28 +27,25 @@ VersionMap Broker::versions() const
 
 bool Broker::attach(JournalBasePtr journal)
 {
-  Id journalId = journal->id();
+  const Clock& from = _versions[journal->id()];
 
-  auto& lastVersion = _versions[journalId];
-
-  auto entries = journal->entries(lastVersion);
+  auto entries = journal->entries(from);
 
   for (auto& [id, context] : _attached) {
-    if (auto other = context.journal.lock()) {
-      update(other, entries);
+    if (auto attached = context.journal.lock()) {
+      update(attached, entries);
     }
   }
 
   if (auto provider = pickAttached()) {
-    update(journal, provider->entries(lastVersion));
+    update(journal, provider->entries(from));
   }
 
-  _attached[journalId] = {
+  _attached[journal->id()] = AttachContext{
     journal, journal->clockChanged().connect(this, &Broker::onClockUpdate)
   };
-  if (auto clock = journal->clock(); clock.size() > 0) {
-    _versions[journal->id()] = clock;
-  }
+
+  _versions[journal->id()] = journal->clock();
 
   return true;
 }
