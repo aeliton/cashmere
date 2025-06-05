@@ -31,9 +31,11 @@ bool Broker::attach(JournalBasePtr journal)
 
   auto& lastVersion = _versions[journalId];
 
+  auto entries = journal->entries(lastVersion);
+
   for (auto& [id, context] : _attached) {
     if (auto other = context.journal.lock()) {
-      for (auto& [clock, entry] : journal->entries(lastVersion)) {
+      for (auto& [clock, entry] : entries) {
         other->insert(clock, entry);
       }
     }

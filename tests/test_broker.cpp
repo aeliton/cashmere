@@ -208,8 +208,6 @@ SCENARIO_METHOD(
 {
   GIVEN("a broker with two non-empty journals attatched")
   {
-    REQUIRE(aa->_entriesArgs.size() == bb->_entriesArgs.size());
-
     const auto initialCount = aa->_entriesArgs.size() + bb->_entriesArgs.size();
 
     WHEN("attaching a new journal")
@@ -220,6 +218,10 @@ SCENARIO_METHOD(
       {
         const auto count = aa->_entriesArgs.size() + bb->_entriesArgs.size();
         REQUIRE(count == initialCount + 1);
+      }
+      AND_THEN("the attached journal has the entries retrieved once")
+      {
+        REQUIRE(cc->_entriesArgs.size() == 1);
       }
     }
   }
