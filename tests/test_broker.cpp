@@ -114,7 +114,7 @@ SCENARIO_METHOD(EmptyMock, "journal get entries via broker")
     broker.attach(mock);
 
     ClockChangeSignal emitter;
-    emitter.connect(&broker, &Broker::onClockUpdate);
+    emitter.connect(&broker, &Broker::insert);
 
     WHEN("an entry is signaled to the broker")
     {
@@ -187,7 +187,7 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "Broker sends only new transactions")
 
       AND_WHEN("the attached journal inserts an entry")
       {
-        aa->insert(Clock{{aa->id(), 2}}, Entry{aa->id(), 20, Clock{}});
+        aa->insert(ClockEntry{{{aa->id(), 2}}, {aa->id(), 20, {}}});
         AND_WHEN("the detached journal is re-attached")
         {
           broker.attach(bb);

@@ -61,18 +61,18 @@ bool Journal::append(Amount value)
 bool Journal::append(const Entry& entry)
 {
   _clock[entry.journalId]++;
-  insert(_clock, entry);
+  insert({_clock, entry});
   _clockChanged({_clock, entry});
   return true;
 }
 
-bool Journal::insert(const Clock& clock, const Entry& entry)
+bool Journal::insert(const ClockEntry& data)
 {
-  if (_entries.find(clock) != _entries.end()) {
+  if (_entries.find(data.clock) != _entries.end()) {
     return false;
   }
-  _entries[clock] = entry;
-  _clock = _clock.merge(clock);
+  _entries[data.clock] = data.entry;
+  _clock = _clock.merge(data.clock);
   return true;
 }
 

@@ -47,7 +47,8 @@ SCENARIO("attempt inserting a transaction using an existing clock")
     journal.append(10);
     WHEN("the same clock is used to insert a transaction")
     {
-      const bool success = journal.insert({{0xAA, 1}}, {0xAA, 10, {}});
+      const auto data = ClockEntry{{{0xAA, 1}}, {0xAA, 10, {}}};
+      const bool success = journal.insert(data);
       THEN("it should fail")
       {
         REQUIRE_FALSE(success);
@@ -92,7 +93,7 @@ SCENARIO("journal clock updates when entries are changed")
 
       AND_WHEN("inserting a second entry from another journal")
       {
-        journal.insert({{0xFF, 1}}, {0xFF, 200, {}});
+        journal.insert(ClockEntry{{{0xFF, 1}}, {0xFF, 200, {}}});
 
         THEN("the clock is updated to show the incoming entry")
         {
@@ -154,7 +155,7 @@ SCENARIO("zero values in clocks are ignored")
     {
       const auto clock = Clock{{0xAA, 0}, {0xBB, 0}, {0xCC, 1}};
 
-      bool success = journal.insert(clock, {0xAA, 206, {}});
+      bool success = journal.insert(ClockEntry{clock, {0xAA, 206, {}}});
 
       THEN("it succeeds")
       {

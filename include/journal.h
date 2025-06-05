@@ -41,7 +41,7 @@ public:
 
   const Id id() const override;
   Clock clock() const override;
-  bool insert(const Clock& clock, const Entry& entry) override;
+  bool insert(const ClockEntry& data) override;
   ClockEntryList entries(const Clock& from = {}) const override;
   ClockChangeSignal& clockChanged() override;
 

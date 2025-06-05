@@ -50,13 +50,13 @@ using ClockEntryMap = std::map<Clock, Entry>;
 using ReplaceEntryMap = std::map<Clock, ClockEntry>;
 using ClockEntryList = std::list<ClockEntry>;
 
-using ClockChangeSignal = Signal<void(ClockEntry)>;
+using ClockChangeSignal = Signal<bool(ClockEntry)>;
 using ClockChangeSlot = ClockChangeSignal::Slot;
 
 struct EntryHandler
 {
   virtual ~EntryHandler() = 0;
-  virtual bool insert(const Clock& clock, const Entry& entry) = 0;
+  virtual bool insert(const ClockEntry& data) = 0;
   virtual ClockChangeSignal& clockChanged() = 0;
 };
 

@@ -46,7 +46,7 @@ bool Broker::attach(JournalBasePtr journal)
   }
 
   _attached[journal->id()] = AttachContext{
-    journal, journal->clockChanged().connect(this, &Broker::onClockUpdate)
+    journal, journal->clockChanged().connect(this, &Broker::insert)
   };
 
   _versions[journal->id()] = journal->clock();
@@ -67,7 +67,7 @@ bool Broker::detach(Id journalId)
   return true;
 }
 
-void Broker::onClockUpdate(ClockEntry data)
+bool Broker::insert(ClockEntry data)
 {
   _versions[data.entry.journalId] = data.clock;
   for (const auto& [id, context] : _attached) {
@@ -75,10 +75,11 @@ void Broker::onClockUpdate(ClockEntry data)
       continue;
     }
     if (const auto journal = context.journal.lock()) {
-      journal->insert(data.clock, data.entry);
+      journal->insert(data);
       _versions[journal->id()] = journal->clock();
     }
   }
+  return false;
 }
 
 IdSet Broker::attachedIds() const
@@ -99,8 +100,8 @@ JournalBasePtr Broker::pickAttached() const
 
 void Broker::update(JournalBasePtr journal, const ClockEntryList& entries) const
 {
-  for (const auto& [clock, entry] : entries) {
-    journal->insert(clock, entry);
+  for (const auto& data : entries) {
+    journal->insert(data);
   }
 }
 }

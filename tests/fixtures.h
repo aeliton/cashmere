@@ -31,8 +31,9 @@ struct JournalMock : public JournalBase
     , _clock(c)
     , _entries(e)
   {
-    _entriesSignaler.connect([this](const Clock& clock) {
+    _entriesSignaler.connect([this](const Clock& clock) -> bool {
       _entriesArgs.push_back(clock);
+      return false;
     });
   }
   const Id id() const override
@@ -48,9 +49,9 @@ struct JournalMock : public JournalBase
     _entriesSignaler(from);
     return _entries;
   }
-  virtual bool insert(const Clock& clock, const Entry& entry) override
+  virtual bool insert(const ClockEntry& data) override
   {
-    _insertArgs.push_back({clock, entry});
+    _insertArgs.push_back(data);
     return false;
   }
   ClockChangeSignal& clockChanged() override
