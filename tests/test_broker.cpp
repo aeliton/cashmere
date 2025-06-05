@@ -54,6 +54,12 @@ struct StringMaker<Cashmere::ClockEntry>
 
 using namespace Cashmere;
 
+TEST_CASE("broker attach ignores nullptr")
+{
+  Broker broker;
+  REQUIRE_FALSE(broker.attach(nullptr));
+}
+
 SCENARIO_METHOD(SingleEntryMock, "broker attach records id and clock")
 {
   GIVEN("a broker with an attached journal")

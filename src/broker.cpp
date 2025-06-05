@@ -27,6 +27,10 @@ IdClockMap Broker::versions() const
 
 bool Broker::attach(JournalBasePtr journal)
 {
+  if (!journal) {
+    return false;
+  }
+
   const Clock& from = _versions[journal->id()];
 
   const auto entries = journal->entries(from);
