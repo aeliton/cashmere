@@ -66,7 +66,7 @@ TEST_CASE("broker without journals has an empty clock")
   REQUIRE(broker.clock() == Clock{});
 }
 
-SCENARIO_METHOD(SingleEntryMock, "Journal is attaches to a Broker")
+SCENARIO_METHOD(BrokerWithSingleEntryMock, "Journal is attaches to a Broker")
 {
   GIVEN("a broker")
   {
@@ -124,7 +124,7 @@ SCENARIO_METHOD(SingleEntryMock, "Journal is attaches to a Broker")
   }
 }
 
-SCENARIO_METHOD(EmptyMock, "journal get entries via broker")
+SCENARIO_METHOD(BrokerWithEmptyMock, "journal get entries via broker")
 {
   GIVEN("a broker with a journal attatched")
   {
@@ -147,7 +147,9 @@ SCENARIO_METHOD(EmptyMock, "journal get entries via broker")
   }
 }
 
-SCENARIO_METHOD(TwoSingleEntryMocks, "a broker synchronizes journal entries")
+SCENARIO_METHOD(
+  BrokerWithTwoSingleEntryMocks, "a broker synchronizes journal entries"
+)
 {
   GIVEN("a empty broker")
   {
@@ -197,7 +199,9 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "a broker synchronizes journal entries")
   }
 }
 
-SCENARIO_METHOD(TwoSingleEntryMocks, "Broker sends only new transactions")
+SCENARIO_METHOD(
+  BrokerWithTwoSingleEntryMocks, "Broker sends only new transactions"
+)
 {
   GIVEN("a broker with two journals attached")
   {
@@ -239,7 +243,7 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "Broker sends only new transactions")
 }
 
 SCENARIO_METHOD(
-  TwoAttachedSingleEntryOneEmpty,
+  BrokerWithTwoAttachedSingleEntryAndOneEmpty,
   "only one attached journal is requested for entries"
 )
 {

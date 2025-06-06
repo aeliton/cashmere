@@ -57,9 +57,14 @@ struct JournalMock : public JournalBase
 
 using JournalMockPtr = std::shared_ptr<JournalMock>;
 
-struct SingleEntry : public JournalMock
+struct SingleEntryMock : public JournalMock
 {
-  SingleEntry(Id id, Amount amount)
+  SingleEntryMock()
+    : SingleEntryMock(0xAA, 10)
+  {
+  }
+
+  SingleEntryMock(Id id, Amount amount)
     : JournalMock(id, {{Clock{{id, 1}}, Entry{id, amount, Clock{}}}})
   {
     assert((clock() == Clock{{id, 1}}));
@@ -67,28 +72,29 @@ struct SingleEntry : public JournalMock
   }
 };
 
-struct EmptyMock
+struct BrokerWithEmptyMock
 {
   Broker broker;
   JournalMockPtr mock = std::make_shared<JournalMock>(0xAA);
 };
 
-struct SingleEntryMock
+struct BrokerWithSingleEntryMock
 {
   Broker broker;
-  JournalMockPtr mock = std::make_shared<SingleEntry>(0xAA, 1);
+  JournalMockPtr mock = std::make_shared<SingleEntryMock>(0xAA, 1);
 };
 
-struct TwoSingleEntryMocks
+struct BrokerWithTwoSingleEntryMocks
 {
   Broker broker;
-  JournalMockPtr aa = std::make_shared<SingleEntry>(0xAA, 1);
-  JournalMockPtr bb = std::make_shared<SingleEntry>(0xBB, 2);
+  JournalMockPtr aa = std::make_shared<SingleEntryMock>(0xAA, 1);
+  JournalMockPtr bb = std::make_shared<SingleEntryMock>(0xBB, 2);
 };
 
-struct TwoAttachedSingleEntryOneEmpty : public TwoSingleEntryMocks
+struct BrokerWithTwoAttachedSingleEntryAndOneEmpty
+  : public BrokerWithTwoSingleEntryMocks
 {
-  TwoAttachedSingleEntryOneEmpty()
+  BrokerWithTwoAttachedSingleEntryAndOneEmpty()
   {
     broker.attach(aa);
     broker.attach(bb);
