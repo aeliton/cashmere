@@ -66,47 +66,58 @@ TEST_CASE("broker without journals has an empty clock")
   REQUIRE(broker.clock() == Clock{});
 }
 
-SCENARIO_METHOD(SingleEntryMock, "Id and Clock are stored during attach")
+SCENARIO_METHOD(SingleEntryMock, "Journal is attaches to a Broker")
 {
-  GIVEN("a broker with an attached journal")
+  GIVEN("a broker")
   {
-    const bool success = broker.attach(mock);
+    REQUIRE(broker.versions() == IdClockMap{});
 
-    REQUIRE(success);
+    REQUIRE(mock->clockChanged().count() == 0);
 
-    THEN("the broker has the updated clock version of the journal")
+    WHEN("a journal is attached to the broker")
     {
-      REQUIRE(broker.versions() == IdClockMap{{0xAA, mock->clock()}});
-    }
+      const bool success = broker.attach(mock);
+      REQUIRE(success);
 
-    AND_WHEN("the journal is detached")
-    {
-      const bool success = broker.detach(mock->id());
-
-      THEN("the operation succeeds")
+      THEN("the broker has its clock updated")
       {
-        REQUIRE(success);
+        REQUIRE(broker.versions() == IdClockMap{{0xAA, mock->clock()}});
       }
 
-      AND_THEN("the broker versions are kept")
+      THEN("the journal has a listener on it's signal object")
       {
-        REQUIRE(
-          broker.versions() == IdClockMap{{0xAA, Clock{{mock->id(), 1}}}}
-        );
+        REQUIRE(mock->clockChanged().count() == 1);
       }
 
-      AND_THEN("the broker is removed from clock updates of the journal")
-      {
-        REQUIRE(mock->clockChanged().count() == 0);
-      }
-
-      AND_WHEN("attempting to detach a non-attached journal")
+      AND_WHEN("the journal is detached")
       {
         const bool success = broker.detach(mock->id());
 
-        THEN("the operation fails")
+        THEN("the operation succeeds")
         {
-          REQUIRE_FALSE(success);
+          REQUIRE(success);
+        }
+
+        THEN("the journal versions are preserved")
+        {
+          REQUIRE(
+            broker.versions() == IdClockMap{{0xAA, Clock{{mock->id(), 1}}}}
+          );
+        }
+
+        THEN("the broker is removed from clock updates of the journal")
+        {
+          REQUIRE(mock->clockChanged().count() == 0);
+        }
+
+        AND_WHEN("attempting to detach a non-attached journal")
+        {
+          const bool success = broker.detach(mock->id());
+
+          THEN("the operation fails")
+          {
+            REQUIRE_FALSE(success);
+          }
         }
       }
     }
