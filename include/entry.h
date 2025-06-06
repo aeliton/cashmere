@@ -53,11 +53,18 @@ using ClockEntryList = std::list<ClockEntry>;
 using ClockChangeSignal = Signal<bool(ClockEntry)>;
 using ClockChangeSlot = ClockChangeSignal::Slot;
 
-struct EntryHandler
+class EntryHandler
 {
+public:
+  explicit EntryHandler(Id id);
+  const Id id() const;
   virtual ~EntryHandler() = 0;
+  virtual Clock clock() const = 0;
   virtual bool insert(const ClockEntry& data) = 0;
   virtual ClockChangeSignal& clockChanged() = 0;
+
+private:
+  const Id _id;
 };
 
 }

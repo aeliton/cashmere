@@ -26,9 +26,8 @@ namespace Cashmere
 
 struct JournalBase : public EntryHandler
 {
+  explicit JournalBase(Id id);
   virtual ~JournalBase() = 0;
-  virtual const Id id() const = 0;
-  virtual Clock clock() const = 0;
   virtual ClockEntryList entries(const Clock& from = {}) const = 0;
 };
 
@@ -39,7 +38,6 @@ public:
   ~Journal();
   explicit Journal(Id id, const ClockEntryMap& entries = {});
 
-  const Id id() const override;
   Clock clock() const override;
   bool insert(const ClockEntry& data) override;
   ClockEntryList entries(const Clock& from = {}) const override;
@@ -56,7 +54,6 @@ public:
 private:
   static Random _random;
   const Id _bookId;
-  const Id _id;
   ClockEntryMap _entries;
   Clock _clock;
   ClockChangeSignal _clockChanged;

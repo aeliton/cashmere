@@ -27,7 +27,7 @@ struct JournalMock : public JournalBase
   {
   }
   JournalMock(Id id, Clock c, ClockEntryList e)
-    : _id(id)
+    : JournalBase(id)
     , _clock(c)
     , _entries(e)
   {
@@ -35,10 +35,6 @@ struct JournalMock : public JournalBase
       _entriesArgs.push_back(clock);
       return false;
     });
-  }
-  const Id id() const override
-  {
-    return _id;
   }
   Clock clock() const override
   {
@@ -58,7 +54,6 @@ struct JournalMock : public JournalBase
   {
     return _signal;
   }
-  const Id _id;
   const Clock _clock;
   const ClockEntryList _entries;
   ClockChangeSignal _signal;

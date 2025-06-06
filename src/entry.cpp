@@ -25,4 +25,14 @@ const bool ClockEntry::operator==(const ClockEntry& other) const
   return clock == other.clock && entry == other.entry;
 }
 
+EntryHandler::EntryHandler(Id id)
+  : _id(id)
+{
+}
+
+const Id EntryHandler::id() const
+{
+  return _id;
+}
+
 }

@@ -29,19 +29,14 @@ Journal::Journal()
 }
 
 Journal::Journal(Id id, const ClockEntryMap& entries)
-  : _bookId(_random.next())
-  , _id(id)
+  : JournalBase(id)
+  , _bookId(_random.next())
   , _clock({})
   , _entries(entries)
 {
 }
 
 Journal::~Journal() {}
-
-const Id Journal::id() const
-{
-  return _id;
-}
 
 const Id Journal::bookId() const
 {
@@ -55,7 +50,7 @@ Clock Journal::clock() const
 
 bool Journal::append(Amount value)
 {
-  return append({_id, value, {}});
+  return append({id(), value, {}});
 }
 
 bool Journal::append(const Entry& entry)
@@ -78,12 +73,12 @@ bool Journal::insert(const ClockEntry& data)
 
 bool Journal::replace(Amount value, const Clock& clock)
 {
-  return append({_id, value, clock});
+  return append({id(), value, clock});
 }
 
 bool Journal::erase(Clock time)
 {
-  return append({_id, 0, time});
+  return append({id(), 0, time});
 }
 bool Journal::contains(const Clock& time) const
 {
@@ -115,4 +110,8 @@ ClockChangeSignal& Journal::clockChanged()
   return _clockChanged;
 }
 
+JournalBase::JournalBase(Id id)
+  : EntryHandler(id)
+{
+}
 }
