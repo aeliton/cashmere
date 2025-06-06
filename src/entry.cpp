@@ -30,7 +30,7 @@ EntryHandler::EntryHandler(Id id)
 {
 }
 
-const Id EntryHandler::id() const
+Id EntryHandler::id() const
 {
   return _id;
 }
@@ -39,5 +39,20 @@ ClockChangeSignal& EntryHandler::clockChanged()
 {
   return _clockChanged;
 }
+
+void EntryHandler::setClock(const Clock& clock)
+{
+  _clock = clock;
+}
+
+void EntryHandler::clockTick(Id id)
+{
+  _clock[id]++;
+};
+
+Clock EntryHandler::clock() const
+{
+  return _clock;
+};
 
 }

@@ -60,7 +60,13 @@ TEST_CASE("broker attach ignores nullptr")
   REQUIRE_FALSE(broker.attach(nullptr));
 }
 
-SCENARIO_METHOD(SingleEntryMock, "broker attach records id and clock")
+TEST_CASE("broker without journals has an empty clock")
+{
+  Broker broker;
+  REQUIRE(broker.clock() == Clock{});
+}
+
+SCENARIO_METHOD(SingleEntryMock, "Id and Clock are stored during attach")
 {
   GIVEN("a broker with an attached journal")
   {
@@ -70,7 +76,7 @@ SCENARIO_METHOD(SingleEntryMock, "broker attach records id and clock")
 
     THEN("the broker has the updated clock version of the journal")
     {
-      REQUIRE(broker.versions() == IdClockMap{{0xAA, Clock{{mock->id(), 1}}}});
+      REQUIRE(broker.versions() == IdClockMap{{0xAA, mock->clock()}});
     }
 
     AND_WHEN("the journal is detached")
@@ -141,6 +147,11 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "a broker synchronizes journal entries")
       broker.attach(aa);
       broker.attach(bb);
 
+      THEN("the broker has it's clock updated")
+      {
+        REQUIRE(broker.clock() == Clock{{0xAA, 1}, {0xBB, 1}});
+      }
+
       THEN("the journal ids are listed as attached")
       {
         REQUIRE(broker.attachedIds() == std::set<Id>{0xAA, 0xBB});
@@ -162,6 +173,14 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "a broker synchronizes journal entries")
           bb->_insertArgs ==
           ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xBB, 1, {}}}}
         );
+      }
+      AND_WHEN("a new entry is inserted in the broker")
+      {
+        broker.insert(ClockEntry{{{0xCC, 1}}, {0xCC, 200, {}}});
+        THEN("the broker clock is updated")
+        {
+          REQUIRE(broker.clock() == Clock{{0xAA, 1}, {0xBB, 1}, {0xCC, 1}});
+        }
       }
     }
   }
@@ -188,6 +207,7 @@ SCENARIO_METHOD(TwoSingleEntryMocks, "Broker sends only new transactions")
       AND_WHEN("the attached journal inserts an entry")
       {
         aa->insert(ClockEntry{{{aa->id(), 2}}, {aa->id(), 20, {}}});
+
         AND_WHEN("the detached journal is re-attached")
         {
           broker.attach(bb);

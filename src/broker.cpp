@@ -54,6 +54,8 @@ bool Broker::attach(JournalBasePtr journal)
 
   _versions[journal->id()] = journal->clock();
 
+  setClock(clock().merge(journal->clock()));
+
   return true;
 }
 
@@ -82,6 +84,7 @@ bool Broker::insert(const ClockEntry& data)
       _versions[journal->id()] = journal->clock();
     }
   }
+  setClock(clock().merge(data.clock));
   return false;
 }
 

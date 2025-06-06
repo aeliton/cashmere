@@ -38,7 +38,6 @@ public:
   ~Journal();
   explicit Journal(Id id, const ClockEntryMap& entries = {});
 
-  Clock clock() const override;
   bool insert(const ClockEntry& data) override;
   ClockEntryList entries(const Clock& from = {}) const override;
 
@@ -54,7 +53,6 @@ private:
   static Random _random;
   const Id _bookId;
   ClockEntryMap _entries;
-  Clock _clock;
 };
 
 using JournalBasePtr = std::shared_ptr<JournalBase>;

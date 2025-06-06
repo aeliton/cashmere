@@ -17,28 +17,27 @@
 #define CASHMERE_TEST_FIXTURES_H
 
 #include "broker.h"
+#include <cassert>
 
 namespace Cashmere
 {
 struct JournalMock : public JournalBase
 {
   JournalMock(Id id)
-    : JournalMock(id, {}, {})
+    : JournalMock(id, {})
   {
   }
-  JournalMock(Id id, Clock c, ClockEntryList e)
+  JournalMock(Id id, ClockEntryList e)
     : JournalBase(id)
-    , _clock(c)
     , _entries(e)
   {
+    if (e.size() > 0) {
+      setClock(e.front().clock);
+    }
     _entriesSignaler.connect([this](const Clock& clock) -> bool {
       _entriesArgs.push_back(clock);
       return false;
     });
-  }
-  Clock clock() const override
-  {
-    return _clock;
   }
   ClockEntryList entries(const Clock& from = {}) const override
   {
@@ -50,7 +49,6 @@ struct JournalMock : public JournalBase
     _insertArgs.push_back(data);
     return false;
   }
-  const Clock _clock;
   const ClockEntryList _entries;
   Signal<void(const Clock&)> _entriesSignaler;
   ClockEntryList _insertArgs = {};
@@ -62,8 +60,10 @@ using JournalMockPtr = std::shared_ptr<JournalMock>;
 struct SingleEntry : public JournalMock
 {
   SingleEntry(Id id, Amount amount)
-    : JournalMock(id, {{id, 1}}, {{Clock{{id, 1}}, Entry{id, amount, Clock{}}}})
+    : JournalMock(id, {{Clock{{id, 1}}, Entry{id, amount, Clock{}}}})
   {
+    assert((clock() == Clock{{id, 1}}));
+    assert(entries().size() == 1);
   }
 };
 
@@ -95,6 +95,5 @@ struct TwoAttachedSingleEntryOneEmpty : public TwoSingleEntryMocks
   }
   JournalMockPtr cc = std::make_shared<JournalMock>(0xCC);
 };
-
 }
 #endif

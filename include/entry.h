@@ -57,14 +57,21 @@ class EntryHandler
 {
 public:
   explicit EntryHandler(Id id);
-  const Id id() const;
   virtual ~EntryHandler() = 0;
-  virtual Clock clock() const = 0;
   virtual bool insert(const ClockEntry& data) = 0;
+
+  Id id() const;
+  Clock clock() const;
+
   ClockChangeSignal& clockChanged();
+
+protected:
+  void setClock(const Clock& clock);
+  void clockTick(Id id);
 
 private:
   const Id _id;
+  Clock _clock;
   ClockChangeSignal _clockChanged;
 };
 

@@ -31,7 +31,6 @@ Journal::Journal()
 Journal::Journal(Id id, const ClockEntryMap& entries)
   : JournalBase(id)
   , _bookId(_random.next())
-  , _clock({})
   , _entries(entries)
 {
 }
@@ -43,11 +42,6 @@ const Id Journal::bookId() const
   return _bookId;
 }
 
-Clock Journal::clock() const
-{
-  return _clock;
-}
-
 bool Journal::append(Amount value)
 {
   return append({id(), value, {}});
@@ -55,9 +49,9 @@ bool Journal::append(Amount value)
 
 bool Journal::append(const Entry& entry)
 {
-  _clock[entry.journalId]++;
-  insert({_clock, entry});
-  clockChanged()({_clock, entry});
+  clockTick(entry.journalId);
+  insert({clock(), entry});
+  clockChanged()({clock(), entry});
   return true;
 }
 
@@ -67,7 +61,7 @@ bool Journal::insert(const ClockEntry& data)
     return false;
   }
   _entries[data.clock] = data.entry;
-  _clock = _clock.merge(data.clock);
+  setClock(clock().merge(data.clock));
   return true;
 }
 

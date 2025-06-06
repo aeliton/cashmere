@@ -34,10 +34,6 @@ public:
   Broker(Id id = 0);
 
   bool insert(const ClockEntry& data) override;
-  Clock clock() const override
-  {
-    return {};
-  };
 
   bool attach(JournalBasePtr journal);
   bool detach(Id journalId);
