@@ -41,7 +41,6 @@ public:
   Clock clock() const override;
   bool insert(const ClockEntry& data) override;
   ClockEntryList entries(const Clock& from = {}) const override;
-  ClockChangeSignal& clockChanged() override;
 
   const Id bookId() const;
   bool append(Amount value);
@@ -56,7 +55,6 @@ private:
   const Id _bookId;
   ClockEntryMap _entries;
   Clock _clock;
-  ClockChangeSignal _clockChanged;
 };
 
 using JournalBasePtr = std::shared_ptr<JournalBase>;

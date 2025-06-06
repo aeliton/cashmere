@@ -28,15 +28,19 @@ struct AttachContext
   Connection conn;
 };
 
-class Broker
+class Broker : public EntryHandler
 {
 public:
-  Broker();
+  Broker(Id id = 0);
+
+  bool insert(const ClockEntry& data) override;
+  Clock clock() const override
+  {
+    return {};
+  };
 
   bool attach(JournalBasePtr journal);
   bool detach(Id journalId);
-
-  bool insert(ClockEntry data);
 
   IdSet attachedIds() const;
 

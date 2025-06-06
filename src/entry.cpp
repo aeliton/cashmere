@@ -35,4 +35,9 @@ const Id EntryHandler::id() const
   return _id;
 }
 
+ClockChangeSignal& EntryHandler::clockChanged()
+{
+  return _clockChanged;
+}
+
 }

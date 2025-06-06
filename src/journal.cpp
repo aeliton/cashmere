@@ -57,7 +57,7 @@ bool Journal::append(const Entry& entry)
 {
   _clock[entry.journalId]++;
   insert({_clock, entry});
-  _clockChanged({_clock, entry});
+  clockChanged()({_clock, entry});
   return true;
 }
 
@@ -103,11 +103,6 @@ ClockEntryList Journal::entries(const Clock& from) const
     }
   }
   return list;
-}
-
-ClockChangeSignal& Journal::clockChanged()
-{
-  return _clockChanged;
 }
 
 JournalBase::JournalBase(Id id)

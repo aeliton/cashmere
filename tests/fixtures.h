@@ -50,13 +50,8 @@ struct JournalMock : public JournalBase
     _insertArgs.push_back(data);
     return false;
   }
-  ClockChangeSignal& clockChanged() override
-  {
-    return _signal;
-  }
   const Clock _clock;
   const ClockEntryList _entries;
-  ClockChangeSignal _signal;
   Signal<void(const Clock&)> _entriesSignaler;
   ClockEntryList _insertArgs = {};
   ClockList _entriesArgs = {};

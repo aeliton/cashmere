@@ -18,7 +18,10 @@
 namespace Cashmere
 {
 
-Broker::Broker() {}
+Broker::Broker(Id id)
+  : EntryHandler(id)
+{
+}
 
 IdClockMap Broker::versions() const
 {
@@ -67,7 +70,7 @@ bool Broker::detach(Id journalId)
   return true;
 }
 
-bool Broker::insert(ClockEntry data)
+bool Broker::insert(const ClockEntry& data)
 {
   _versions[data.entry.journalId] = data.clock;
   for (const auto& [id, context] : _attached) {

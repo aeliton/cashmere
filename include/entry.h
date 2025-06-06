@@ -61,10 +61,11 @@ public:
   virtual ~EntryHandler() = 0;
   virtual Clock clock() const = 0;
   virtual bool insert(const ClockEntry& data) = 0;
-  virtual ClockChangeSignal& clockChanged() = 0;
+  ClockChangeSignal& clockChanged();
 
 private:
   const Id _id;
+  ClockChangeSignal _clockChanged;
 };
 
 }
