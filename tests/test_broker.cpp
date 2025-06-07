@@ -191,7 +191,7 @@ SCENARIO_METHOD(
         );
         REQUIRE(
           bb->_insertArgs ==
-          ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xBB, 1, {}}}}
+          ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}}}
         );
       }
       AND_WHEN("a new entry is inserted in the broker")

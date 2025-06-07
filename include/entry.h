@@ -31,7 +31,8 @@ struct Entry
   Clock alters;
   friend bool operator==(const Entry& l, const Entry& r)
   {
-    return std::tie(l.value, l.alters) == std::tie(r.value, r.alters);
+    return std::tie(l.journalId, l.value, l.alters) ==
+           std::tie(r.journalId, r.value, r.alters);
   }
   bool valid() const
   {
