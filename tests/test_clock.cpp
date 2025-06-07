@@ -24,7 +24,9 @@ TEST_CASE("incomparable clocks")
   REQUIRE(Clock{{0xAA, 2}, {0xBB, 2}}.concurrent(Clock{{0xCC, 1}}));
 }
 
-TEST_CASE("comparable clocks")
+TEST_CASE("comparable clocks", "[clock]")
 {
   REQUIRE(Clock{{0xFF, 2}}.smallerThan(Clock{{0xAA, 1}, {0xFF, 2}}));
+  REQUIRE_FALSE(Clock{{0xAA, 1}}.concurrent(Clock{{0xAA, 1}}));
+  REQUIRE_FALSE(Clock{{0xAA, 1}}.smallerThan(Clock{{0xAA, 1}}));
 }

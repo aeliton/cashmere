@@ -40,12 +40,12 @@ Clock Clock::merge(const Clock& other) const
 
 bool Clock::smallerThan(const Clock& other) const
 {
-  return merge(other) == other;
+  return *this != other && merge(other) == other;
 }
 
 bool Clock::concurrent(const Clock& other) const
 {
-  return !smallerThan(other) && !other.smallerThan(*this);
+  return *this != other && !smallerThan(other) && !other.smallerThan(*this);
 }
 
 std::ostream& operator<<(std::ostream& os, const Clock& clock)
