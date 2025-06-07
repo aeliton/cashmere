@@ -33,6 +33,7 @@ struct JournalMock : public JournalBase
   {
     if (e.size() > 0) {
       setClock(e.front().clock);
+      assert(clock() == e.front().clock);
     }
     _entriesSignaler.connect([this](const Clock& clock) -> bool {
       _entriesArgs.push_back(clock);
@@ -47,7 +48,8 @@ struct JournalMock : public JournalBase
   virtual bool insert(const ClockEntry& data) override
   {
     _insertArgs.push_back(data);
-    return false;
+    setClock(clock().merge(data.clock));
+    return true;
   }
   const ClockEntryList _entries;
   Signal<void(const Clock&)> _entriesSignaler;
@@ -91,13 +93,22 @@ struct BrokerWithTwoSingleEntryMocks
   JournalMockPtr bb = std::make_shared<SingleEntryMock>(0xBB, 2);
 };
 
-struct BrokerWithTwoAttachedSingleEntryAndOneEmpty
+struct BrokerWithTwoAttachedSingleEntryMocks
   : public BrokerWithTwoSingleEntryMocks
 {
-  BrokerWithTwoAttachedSingleEntryAndOneEmpty()
+  BrokerWithTwoAttachedSingleEntryMocks()
   {
     broker.attach(aa);
     broker.attach(bb);
+  }
+};
+
+struct BrokerWithTwoAttachedSingleEntryAndOneEmpty
+  : public BrokerWithTwoAttachedSingleEntryMocks
+{
+  BrokerWithTwoAttachedSingleEntryAndOneEmpty()
+    : BrokerWithTwoAttachedSingleEntryMocks()
+  {
   }
   JournalMockPtr cc = std::make_shared<JournalMock>(0xCC);
 };

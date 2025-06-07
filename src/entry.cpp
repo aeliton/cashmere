@@ -55,4 +55,12 @@ Clock EntryHandler::clock() const
   return _clock;
 };
 
+bool EntryHandler::insert(const ClockEntryList& entries)
+{
+  bool success = true;
+  for (auto& entry : entries) {
+    success &= insert(entry);
+  }
+  return success;
+}
 }

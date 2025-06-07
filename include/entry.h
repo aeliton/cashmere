@@ -59,6 +59,7 @@ public:
   explicit EntryHandler(Id id);
   virtual ~EntryHandler() = 0;
   virtual bool insert(const ClockEntry& data) = 0;
+  virtual bool insert(const ClockEntryList& entries);
 
   Id id() const;
   Clock clock() const;

@@ -43,7 +43,6 @@ public:
   IdClockMap versions() const;
 
 private:
-  void update(JournalBasePtr journal, const ClockEntryList& entries) const;
   JournalBasePtr pickAttached() const;
 
   std::unordered_map<Id, AttachContext> _attached;

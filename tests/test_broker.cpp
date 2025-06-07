@@ -74,6 +74,8 @@ SCENARIO_METHOD(BrokerWithSingleEntryMock, "Journal is attached to a Broker")
 
     REQUIRE(mock->clockChanged().count() == 0);
 
+    REQUIRE(mock->clock() == Clock{{0xAA, 1}});
+
     WHEN("a journal is attached to the broker")
     {
       const bool success = broker.attach(mock);
@@ -81,7 +83,7 @@ SCENARIO_METHOD(BrokerWithSingleEntryMock, "Journal is attached to a Broker")
 
       THEN("the broker has its clock updated")
       {
-        REQUIRE(broker.versions() == IdClockMap{{0xAA, mock->clock()}});
+        REQUIRE(broker.versions() == IdClockMap{{0xAA, Clock{{0xAA, 1}}}});
       }
 
       THEN("the journal has a listener on it's signal object")
@@ -130,17 +132,22 @@ SCENARIO_METHOD(BrokerWithEmptyMock, "journal get entries via broker")
   {
     broker.attach(mock);
 
-    ClockChangeSignal emitter;
-    emitter.connect(&broker, &Broker::insert);
-
-    WHEN("an entry is signaled to the broker")
+    WHEN("an entry is inserted on the broker")
     {
-      emitter({Clock{{0xFF, 1}}, Entry{0xFF, 9, Clock{}}});
+      broker.insert({Clock{{0xFF, 1}}, Entry{0xFF, 9, Clock{}}});
 
       THEN("insert is called on the attached journal")
       {
         REQUIRE(
           mock->_insertArgs == ClockEntryList{{{{0xFF, 1}}, {0xFF, 9, {}}}}
+        );
+      }
+
+      THEN("the broker updates the version of the attached journal")
+      {
+        REQUIRE(
+          broker.versions() ==
+          IdClockMap{{0xAA, Clock{{0xFF, 1}}}, {0xFF, Clock{{0xFF, 1}}}}
         );
       }
     }
@@ -200,41 +207,53 @@ SCENARIO_METHOD(
 }
 
 SCENARIO_METHOD(
-  BrokerWithTwoSingleEntryMocks, "Broker sends only new transactions"
+  BrokerWithTwoSingleEntryMocks,
+  "versions of attached journals are updated when other attaches"
 )
 {
-  GIVEN("a broker with two journals attached")
+  GIVEN("a broker with a single journal attached")
   {
     broker.attach(aa);
-    broker.attach(bb);
 
-    REQUIRE(broker.attachedIds().size() == 2);
+    REQUIRE(broker.versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
 
-    const size_t aaEntriesArgsSize = aa->_entriesArgs.size();
-    const size_t bbEntriesArgsSize = bb->_entriesArgs.size();
-
-    WHEN("a journal disconnects")
+    WHEN("attaching a second journal")
     {
-      broker.detach(bb->id());
+      broker.attach(bb);
+      const size_t aaEntriesArgsSize = aa->_entriesArgs.size();
+      const size_t bbEntriesArgsSize = bb->_entriesArgs.size();
 
-      REQUIRE(broker.attachedIds() == std::set<Id>{aa->id()});
+      REQUIRE(
+        broker.versions() ==
+        IdClockMap{
+          {0xAA, {{0xAA, 1}, {0xBB, 1}}}, {0xBB, {{0xAA, 1}, {0xBB, 1}}}
+        }
+      );
 
-      AND_WHEN("the attached journal inserts an entry")
+      WHEN("a journal disconnects")
       {
-        aa->insert(ClockEntry{{{aa->id(), 2}}, {aa->id(), 20, {}}});
+        broker.detach(bb->id());
 
-        AND_WHEN("the detached journal is re-attached")
+        REQUIRE(broker.attachedIds() == std::set<Id>{aa->id()});
+
+        AND_WHEN("the attached journal inserts an entry")
         {
-          broker.attach(bb);
-          THEN("the broker calls for new entries once on each journal")
+          aa->insert(ClockEntry{{{aa->id(), 2}}, {aa->id(), 20, {}}});
+
+          AND_WHEN("the detached journal is re-attached")
           {
-            REQUIRE(aa->_entriesArgs.size() == aaEntriesArgsSize + 1);
-            REQUIRE(bb->_entriesArgs.size() == bbEntriesArgsSize + 1);
-          }
-          THEN("the broker requests entries that came after the last one seen")
-          {
-            REQUIRE(bb->_entriesArgs.back() == Clock{{bb->id(), 1}});
-            REQUIRE(aa->_entriesArgs.back() == Clock{{bb->id(), 1}});
+            broker.attach(bb);
+            THEN("the broker calls for new entries once on each journal")
+            {
+              REQUIRE(aa->_entriesArgs.size() == aaEntriesArgsSize + 1);
+              REQUIRE(bb->_entriesArgs.size() == bbEntriesArgsSize + 1);
+            }
+            THEN("the broker requests entries that came after the last one seen"
+            )
+            {
+              REQUIRE(bb->_entriesArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
+              REQUIRE(aa->_entriesArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
+            }
           }
         }
       }
