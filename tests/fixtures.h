@@ -48,10 +48,11 @@ struct JournalMock : public JournalBase
   virtual bool insert(const ClockEntry& data) override
   {
     _insertArgs.push_back(data);
+    _entries.push_back(data);
     setClock(clock().merge(data.clock));
     return true;
   }
-  const ClockEntryList _entries;
+  ClockEntryList _entries;
   Signal<void(const Clock&)> _entriesSignaler;
   ClockEntryList _insertArgs = {};
   ClockList _entriesArgs = {};

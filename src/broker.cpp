@@ -36,24 +36,26 @@ bool Broker::attach(JournalBasePtr journal)
 
   const Clock& from = _versions[journal->id()];
 
-  const auto entries = journal->entries(from);
+  const auto entriesJournal = journal->entries(from);
+  ClockEntryList entriesProvider = {};
+  if (const auto provider = pickAttached()) {
+    entriesProvider = provider->entries(from);
+  }
 
   for (const auto& [id, context] : _attached) {
     auto attached = context.journal.lock();
-    if (attached && attached->insert(entries)) {
+    if (attached && attached->insert(entriesJournal)) {
       _versions[attached->id()] = attached->clock();
     }
   }
 
-  if (const auto provider = pickAttached()) {
-    journal->insert(provider->entries(from));
-  }
+  journal->insert(entriesProvider);
+
+  _versions[journal->id()] = journal->clock();
 
   _attached[journal->id()] = AttachContext{
     journal, journal->clockChanged().connect(this, &Broker::insert)
   };
-
-  _versions[journal->id()] = journal->clock();
 
   setClock(clock().merge(journal->clock()));
 

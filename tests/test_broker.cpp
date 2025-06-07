@@ -254,6 +254,23 @@ SCENARIO_METHOD(
               REQUIRE(bb->_entriesArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
               REQUIRE(aa->_entriesArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
             }
+
+            THEN("the attaching journal receives the unseen entry")
+            {
+              REQUIRE(
+                bb->_insertArgs.back() ==
+                ClockEntry{{{0xAA, 2}}, {0xAA, 20, {}}}
+              );
+            }
+            THEN("the versions reflect the exchange of entries")
+            {
+              REQUIRE(
+                broker.versions() ==
+                IdClockMap{
+                  {0xAA, {{0xAA, 2}, {0xBB, 1}}}, {0xBB, {{0xAA, 2}, {0xBB, 1}}}
+                }
+              );
+            }
           }
         }
       }
