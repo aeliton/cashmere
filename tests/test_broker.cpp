@@ -66,7 +66,7 @@ TEST_CASE("broker without journals has an empty clock")
   REQUIRE(broker.clock() == Clock{});
 }
 
-SCENARIO_METHOD(BrokerWithSingleEntryMock, "Journal is attaches to a Broker")
+SCENARIO_METHOD(BrokerWithSingleEntryMock, "Journal is attached to a Broker")
 {
   GIVEN("a broker")
   {
