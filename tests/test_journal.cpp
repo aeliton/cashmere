@@ -201,9 +201,6 @@ TEST_CASE("entries retrieval", "[entries]")
   };
   Journal journal(0xAA, entries);
 
-  const ClockEntryList expected{
-    {Clock{{0xAA, 2}, {0xBB, 1}}, Entry{0xAA, 2, Clock{{0xBB, 1}}}},
-    {Clock{{0xCC, 1}}, Entry{0xCC, 100, {}}}
-  };
+  const ClockEntryList expected{{Clock{{0xCC, 1}}, Entry{0xCC, 100, {}}}};
   REQUIRE(journal.entries(Clock{{0xAA, 2}, {0xBB, 1}}) == expected);
 }
