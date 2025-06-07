@@ -16,7 +16,7 @@
 #ifndef CASHMERE_BROKER_H
 #define CASHMERE_BROKER_H
 
-#include "journal.h"
+#include "entry.h"
 #include <unordered_map>
 
 namespace Cashmere
@@ -24,7 +24,7 @@ namespace Cashmere
 
 struct AttachContext
 {
-  std::weak_ptr<JournalBase> journal;
+  std::weak_ptr<EntryHandler> journal;
   Connection conn;
 };
 
@@ -35,7 +35,7 @@ public:
 
   bool insert(const ClockEntry& data) override;
 
-  bool attach(JournalBasePtr journal);
+  bool attach(EntryHandlerPtr journal);
   bool detach(Id journalId);
 
   IdSet attachedIds() const;
@@ -43,7 +43,7 @@ public:
   IdClockMap versions() const;
 
 private:
-  JournalBasePtr pickAttached() const;
+  EntryHandlerPtr pickAttached() const;
 
   std::unordered_map<Id, AttachContext> _attached;
   IdClockMap _versions;

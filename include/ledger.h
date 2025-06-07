@@ -16,7 +16,7 @@
 #ifndef CASHMERE_LEDGER_H
 #define CASHMERE_LEDGER_H
 
-#include "journal.h"
+#include "entry.h"
 
 namespace Cashmere
 {
@@ -34,7 +34,7 @@ public:
   };
   using ActionClock = std::tuple<Ledger::Action, Clock>;
   Ledger() = delete;
-  explicit Ledger(JournalBasePtr journal);
+  explicit Ledger(EntryHandlerPtr journal);
 
   Amount balance() const;
 
@@ -46,7 +46,7 @@ public:
 
 private:
   explicit Ledger(const ClockEntryList& entries);
-  JournalBasePtr _journal;
+  EntryHandlerPtr _journal;
   Amount _balance;
   ReplaceEntryMap _rows;
 };

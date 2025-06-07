@@ -28,7 +28,7 @@ IdClockMap Broker::versions() const
   return _versions;
 }
 
-bool Broker::attach(JournalBasePtr journal)
+bool Broker::attach(EntryHandlerPtr journal)
 {
   if (!journal) {
     return false;
@@ -97,7 +97,7 @@ IdSet Broker::attachedIds() const
   return {it.begin(), it.end()};
 }
 
-JournalBasePtr Broker::pickAttached() const
+EntryHandlerPtr Broker::pickAttached() const
 {
   for (const auto& [id, context] : _attached) {
     if (auto other = context.journal.lock()) {

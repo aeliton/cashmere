@@ -24,14 +24,7 @@
 namespace Cashmere
 {
 
-struct JournalBase : public EntryHandler
-{
-  explicit JournalBase(Id id);
-  virtual ~JournalBase() = 0;
-  virtual ClockEntryList entries(const Clock& from = {}) const = 0;
-};
-
-class Journal : public JournalBase
+class Journal : public EntryHandler
 {
 public:
   Journal();
@@ -55,7 +48,6 @@ private:
   ClockEntryMap _entries;
 };
 
-using JournalBasePtr = std::shared_ptr<JournalBase>;
 using JournalPtr = std::shared_ptr<Journal>;
 
 }

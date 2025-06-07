@@ -19,10 +19,23 @@
 #include "clock.h"
 
 #include <list>
+#include <memory>
 #include <signal/signal.h>
 
 namespace Cashmere
 {
+
+struct Entry;
+struct ClockEntry;
+class EntryHandler;
+
+using ClockEntryMap = std::map<Clock, Entry>;
+using ReplaceEntryMap = std::map<Clock, ClockEntry>;
+using ClockEntryList = std::list<ClockEntry>;
+
+using ClockChangeSignal = Signal<bool(ClockEntry)>;
+using ClockChangeSlot = ClockChangeSignal::Slot;
+using EntryHandlerPtr = std::shared_ptr<EntryHandler>;
 
 struct Entry
 {
@@ -47,13 +60,6 @@ struct ClockEntry
   const bool operator==(const ClockEntry& other) const;
 };
 
-using ClockEntryMap = std::map<Clock, Entry>;
-using ReplaceEntryMap = std::map<Clock, ClockEntry>;
-using ClockEntryList = std::list<ClockEntry>;
-
-using ClockChangeSignal = Signal<bool(ClockEntry)>;
-using ClockChangeSlot = ClockChangeSignal::Slot;
-
 class EntryHandler
 {
 public:
@@ -61,6 +67,7 @@ public:
   virtual ~EntryHandler() = 0;
   virtual bool insert(const ClockEntry& data) = 0;
   virtual bool insert(const ClockEntryList& entries);
+  virtual ClockEntryList entries(const Clock& from = {}) const;
 
   Id id() const;
   Clock clock() const;

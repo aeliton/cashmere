@@ -21,14 +21,14 @@
 
 namespace Cashmere
 {
-struct JournalMock : public JournalBase
+struct JournalMock : public EntryHandler
 {
   JournalMock(Id id)
     : JournalMock(id, {})
   {
   }
   JournalMock(Id id, ClockEntryList e)
-    : JournalBase(id)
+    : EntryHandler(id)
     , _entries(e)
   {
     if (e.size() > 0) {

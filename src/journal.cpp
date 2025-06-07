@@ -21,15 +21,13 @@ namespace Cashmere
 
 Random Journal::_random{};
 
-JournalBase::~JournalBase() = default;
-
 Journal::Journal()
   : Journal(_random.next())
 {
 }
 
 Journal::Journal(Id id, const ClockEntryMap& entries)
-  : JournalBase(id)
+  : EntryHandler(id)
   , _bookId(_random.next())
   , _entries(entries)
 {
@@ -99,8 +97,4 @@ ClockEntryList Journal::entries(const Clock& from) const
   return list;
 }
 
-JournalBase::JournalBase(Id id)
-  : EntryHandler(id)
-{
-}
 }

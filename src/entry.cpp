@@ -63,4 +63,9 @@ bool EntryHandler::insert(const ClockEntryList& entries)
   }
   return success;
 }
+
+ClockEntryList EntryHandler::entries(const Clock& from) const
+{
+  return {};
+}
 }
