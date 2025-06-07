@@ -177,13 +177,7 @@ SCENARIO_METHOD(
         REQUIRE(broker.attachedIds() == std::set<Id>{0xAA, 0xBB});
       }
 
-      THEN("::insert() is called once for each journal")
-      {
-        REQUIRE(aa->_insertArgs.size() == 1);
-        REQUIRE(bb->_insertArgs.size() == 1);
-      }
-
-      THEN("::insert() is called with the other journal's entry")
+      THEN("each journal receives the other journal's entry once")
       {
         REQUIRE(
           aa->_insertArgs ==
