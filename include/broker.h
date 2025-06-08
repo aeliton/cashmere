@@ -31,7 +31,7 @@ struct AttachContext
 class Broker : public EntryHandler
 {
 public:
-  Broker(Id id = 0);
+  Broker();
 
   bool insert(const ClockEntry& data) override;
 

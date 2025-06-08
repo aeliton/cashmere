@@ -18,8 +18,8 @@
 namespace Cashmere
 {
 
-Broker::Broker(Id id)
-  : EntryHandler(id)
+Broker::Broker()
+  : EntryHandler()
 {
 }
 

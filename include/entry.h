@@ -63,7 +63,7 @@ struct ClockEntry
 class EntryHandler
 {
 public:
-  explicit EntryHandler(Id id);
+  explicit EntryHandler(Id id = 0);
   virtual ~EntryHandler() = 0;
   virtual bool insert(const ClockEntry& data) = 0;
   virtual bool insert(const ClockEntryList& entries);
