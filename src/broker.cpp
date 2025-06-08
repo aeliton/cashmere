@@ -91,7 +91,7 @@ bool Broker::insert(const ClockEntry& data)
   return false;
 }
 
-IdSet Broker::attachedIds() const
+IdSet Broker::provides() const
 {
   const auto it = std::views::keys(_attached);
   return {it.begin(), it.end()};

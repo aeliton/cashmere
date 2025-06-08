@@ -38,7 +38,7 @@ public:
   bool attach(EntryHandlerPtr journal);
   bool detach(Id journalId);
 
-  IdSet attachedIds() const;
+  IdSet provides() const override;
 
   IdClockMap versions() const;
 

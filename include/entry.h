@@ -68,6 +68,7 @@ public:
   virtual bool insert(const ClockEntry& data) = 0;
   virtual bool insert(const ClockEntryList& entries);
   virtual ClockEntryList entries(const Clock& from = {}) const;
+  virtual IdSet provides() const;
 
   Id id() const;
   Clock clock() const;

@@ -68,4 +68,8 @@ ClockEntryList EntryHandler::entries(const Clock& from) const
 {
   return {};
 }
+IdSet EntryHandler::provides() const
+{
+  return {_id};
+}
 }

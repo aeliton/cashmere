@@ -160,7 +160,7 @@ SCENARIO_METHOD(
 {
   GIVEN("a empty broker")
   {
-    REQUIRE(broker.attachedIds() == std::set<Id>{});
+    REQUIRE(broker.provides() == std::set<Id>{});
 
     WHEN("attaching journal with transactions")
     {
@@ -174,7 +174,7 @@ SCENARIO_METHOD(
 
       THEN("the journal ids are listed as attached")
       {
-        REQUIRE(broker.attachedIds() == std::set<Id>{0xAA, 0xBB});
+        REQUIRE(broker.provides() == std::set<Id>{0xAA, 0xBB});
       }
 
       THEN("each journal receives the other journal's entry once")
@@ -228,7 +228,7 @@ SCENARIO_METHOD(
       {
         broker.detach(bb->id());
 
-        REQUIRE(broker.attachedIds() == std::set<Id>{aa->id()});
+        REQUIRE(broker.provides() == std::set<Id>{aa->id()});
 
         AND_WHEN("the attached journal inserts an entry")
         {
