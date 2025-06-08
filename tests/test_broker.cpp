@@ -297,3 +297,29 @@ SCENARIO_METHOD(
     }
   }
 }
+
+SCENARIO_METHOD(
+  BrokerWithAttachedSingleEntryMock, "broker-broker data exchange"
+)
+{
+  GIVEN("an empty broker and a broker with non-empty journal attatched")
+  {
+    auto second = std::make_shared<Broker>();
+
+    REQUIRE(broker.versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+
+    WHEN("attaching the empty broker to other broker")
+    {
+      broker.attach(second);
+
+      THEN("the versions of the agregator broker do not change")
+      {
+        REQUIRE(broker.versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+      }
+      THEN("the attached broker display the journal version")
+      {
+        REQUIRE(second->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+      }
+    }
+  }
+}

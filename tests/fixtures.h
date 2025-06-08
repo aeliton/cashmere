@@ -87,6 +87,17 @@ struct BrokerWithSingleEntryMock
   JournalMockPtr mock = std::make_shared<SingleEntryMock>(0xAA, 1);
 };
 
+struct BrokerWithAttachedSingleEntryMock : public BrokerWithSingleEntryMock
+{
+
+  BrokerWithAttachedSingleEntryMock()
+  {
+    broker.attach(mock);
+  }
+  Broker broker;
+  JournalMockPtr mock = std::make_shared<SingleEntryMock>(0xAA, 1);
+};
+
 struct BrokerWithTwoSingleEntryMocks
 {
   Broker broker;

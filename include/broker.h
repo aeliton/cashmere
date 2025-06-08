@@ -25,6 +25,7 @@ namespace Cashmere
 struct AttachContext
 {
   std::weak_ptr<EntryHandler> journal;
+  Clock version;
   Connection conn;
 };
 
@@ -45,8 +46,8 @@ public:
 private:
   EntryHandlerPtr pickAttached() const;
 
-  std::unordered_map<Id, AttachContext> _attached;
-  IdClockMap _versions;
+  std::vector<AttachContext> _attached;
+  std::unordered_map<Id, size_t> _idToContext;
 };
 
 }

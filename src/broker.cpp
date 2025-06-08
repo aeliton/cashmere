@@ -25,7 +25,11 @@ Broker::Broker()
 
 IdClockMap Broker::versions() const
 {
-  return _versions;
+  IdClockMap out;
+  for (auto& [id, index] : _idToContext) {
+    out[id] = _attached[index].version;
+  }
+  return out;
 }
 
 bool Broker::attach(EntryHandlerPtr journal)
@@ -34,28 +38,37 @@ bool Broker::attach(EntryHandlerPtr journal)
     return false;
   }
 
-  const Clock& from = _versions[journal->id()];
+  Id sample = *journal->provides().begin();
+  const AttachContext context = _idToContext.find(sample) != _idToContext.cend()
+                                  ? _attached[_idToContext.at(sample)]
+                                  : AttachContext{journal, {}, 0};
 
-  const auto entriesJournal = journal->entries(from);
+  const auto entriesJournal = journal->entries(context.version);
   ClockEntryList entriesProvider = {};
   if (const auto provider = pickAttached()) {
-    entriesProvider = provider->entries(from);
+    entriesProvider = provider->entries(context.version);
   }
 
-  for (const auto& [id, context] : _attached) {
-    auto attached = context.journal.lock();
-    if (attached && attached->insert(entriesJournal)) {
-      _versions[attached->id()] = attached->clock();
+  for (auto& context : _attached) {
+    auto journal = context.journal.lock();
+    if (journal && journal->insert(entriesJournal)) {
+      context.version = journal->clock();
     }
   }
 
   journal->insert(entriesProvider);
 
-  _versions[journal->id()] = journal->clock();
-
-  _attached[journal->id()] = AttachContext{
-    journal, journal->clockChanged().connect(this, &Broker::insert)
-  };
+  if (_idToContext.find(sample) == _idToContext.cend()) {
+    for (auto id : journal->provides()) {
+      _idToContext[id] = _attached.size();
+    }
+    _attached.push_back(context);
+    _attached.back().conn =
+      journal->clockChanged().connect(this, &Broker::insert);
+    _attached.back().version = journal->clock();
+  } else {
+    _attached[_idToContext.at(sample)].version = journal->clock();
+  }
 
   setClock(clock().merge(journal->clock()));
 
@@ -64,27 +77,39 @@ bool Broker::attach(EntryHandlerPtr journal)
 
 bool Broker::detach(Id journalId)
 {
-  if (_attached.find(journalId) == _attached.end()) {
+  if (_idToContext.find(journalId) == _idToContext.end()) {
     return false;
   }
-  const auto& [ref, conn] = _attached[journalId];
-  if (auto journal = ref.lock()) {
-    journal->clockChanged().disconnect(conn);
+  auto& context = _attached[_idToContext.at(journalId)];
+  if (auto journal = context.journal.lock()) {
+    journal->clockChanged().disconnect(context.conn);
+    context.journal.reset();
+    return true;
   }
-  _attached.erase(journalId);
-  return true;
+  return false;
 }
 
 bool Broker::insert(const ClockEntry& data)
 {
-  _versions[data.entry.journalId] = data.clock;
-  for (const auto& [id, context] : _attached) {
-    if (id == data.entry.journalId) {
+  if (_idToContext.find(data.entry.journalId) == _idToContext.cend()) {
+    _idToContext[data.entry.journalId] = _attached.size();
+    _attached.push_back(
+      AttachContext{std::weak_ptr<EntryHandler>(), data.clock, 0}
+    );
+  }
+  _attached[_idToContext.at(data.entry.journalId)].version = data.clock;
+
+  for (auto& context : _attached) {
+    auto journal = context.journal.lock();
+    if (!journal) {
       continue;
     }
-    auto journal = context.journal.lock();
-    if (journal && journal->insert(data)) {
-      _versions[journal->id()] = _versions[journal->id()].merge(data.clock);
+    const auto provided = journal->provides();
+    if (provided.find(data.entry.journalId) != provided.cend()) {
+      continue;
+    }
+    if (journal->insert(data)) {
+      context.version = context.version.merge(data.clock);
     }
   }
   setClock(clock().merge(data.clock));
@@ -93,13 +118,19 @@ bool Broker::insert(const ClockEntry& data)
 
 IdSet Broker::provides() const
 {
-  const auto it = std::views::keys(_attached);
-  return {it.begin(), it.end()};
+  IdSet out;
+  for (auto& attached : _attached) {
+    if (auto journal = attached.journal.lock()) {
+      auto provided = journal->provides();
+      out.insert(provided.begin(), provided.end());
+    }
+  }
+  return out;
 }
 
 EntryHandlerPtr Broker::pickAttached() const
 {
-  for (const auto& [id, context] : _attached) {
+  for (const auto& context : _attached) {
     if (auto other = context.journal.lock()) {
       return other;
     }
