@@ -20,6 +20,21 @@
 namespace Cashmere
 {
 
+struct Context
+{
+  Context(std::shared_ptr<EntryHandler> j, const Clock& v, Connection c);
+  std::weak_ptr<EntryHandler> journal;
+  Clock version;
+  Connection conn;
+};
+
+Context::Context(std::shared_ptr<EntryHandler> j, const Clock& v, Connection c)
+  : journal(j)
+  , version(v)
+  , conn(c)
+{
+}
+
 Broker::Broker()
   : EntryHandler()
 {
@@ -136,12 +151,5 @@ EntryHandlerPtr Broker::pickAttached() const
     }
   }
   return nullptr;
-}
-
-Context::Context(std::shared_ptr<EntryHandler> j, const Clock& v, Connection c)
-  : journal(j)
-  , version(v)
-  , conn(c)
-{
 }
 }

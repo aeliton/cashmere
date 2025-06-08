@@ -22,14 +22,7 @@
 namespace Cashmere
 {
 
-struct Context
-{
-  Context(std::shared_ptr<EntryHandler> j, const Clock& v, Connection c);
-  std::weak_ptr<EntryHandler> journal;
-  Clock version;
-  Connection conn;
-};
-
+struct Context;
 using ContextPtr = std::shared_ptr<Context>;
 
 class Broker : public EntryHandler
