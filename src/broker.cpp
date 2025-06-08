@@ -39,9 +39,9 @@ bool Broker::attach(EntryHandlerPtr journal)
   }
 
   Id sample = *journal->provides().begin();
-  const AttachContext context = _idToContext.find(sample) != _idToContext.cend()
-                                  ? _attached[_idToContext.at(sample)]
-                                  : AttachContext{journal, {}, 0};
+  const Context context = _idToContext.find(sample) != _idToContext.cend()
+                            ? _attached[_idToContext.at(sample)]
+                            : Context{journal, {}, 0};
 
   const auto entriesJournal = journal->entries(context.version);
   ClockEntryList entriesProvider = {};
@@ -93,9 +93,7 @@ bool Broker::insert(const ClockEntry& data)
 {
   if (_idToContext.find(data.entry.journalId) == _idToContext.cend()) {
     _idToContext[data.entry.journalId] = _attached.size();
-    _attached.push_back(
-      AttachContext{std::weak_ptr<EntryHandler>(), data.clock, 0}
-    );
+    _attached.push_back(Context{std::weak_ptr<EntryHandler>(), data.clock, 0});
   }
   _attached[_idToContext.at(data.entry.journalId)].version = data.clock;
 
