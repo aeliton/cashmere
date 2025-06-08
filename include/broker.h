@@ -24,10 +24,13 @@ namespace Cashmere
 
 struct Context
 {
+  Context(std::shared_ptr<EntryHandler> j, const Clock& v, Connection c);
   std::weak_ptr<EntryHandler> journal;
   Clock version;
   Connection conn;
 };
+
+using ContextPtr = std::shared_ptr<Context>;
 
 class Broker : public EntryHandler
 {
@@ -46,8 +49,8 @@ public:
 private:
   EntryHandlerPtr pickAttached() const;
 
-  std::vector<Context> _attached;
-  std::unordered_map<Id, size_t> _idToContext;
+  std::vector<ContextPtr> _attached;
+  std::unordered_map<Id, ContextPtr> _idToContext;
 };
 
 }
