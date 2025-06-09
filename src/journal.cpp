@@ -48,19 +48,17 @@ bool Journal::append(Amount value)
 bool Journal::append(const Entry& entry)
 {
   clockTick(entry.journalId);
-  insert({clock(), entry});
-  clockChanged()({clock(), entry});
-  return true;
+  return insert({clock(), entry});
 }
 
-bool Journal::insert(const ClockEntry& data)
+bool Journal::insert(const ClockEntry& data, Port port)
 {
   if (_entries.find(data.clock) != _entries.end()) {
     return false;
   }
   _entries[data.clock] = data.entry;
   setClock(clock().merge(data.clock));
-  return true;
+  return EntryHandler::insert(data, port);
 }
 
 bool Journal::replace(Amount value, const Clock& clock)
@@ -97,4 +95,8 @@ ClockEntryList Journal::entries(const Clock& from) const
   return list;
 }
 
+IdDistanceMap Journal::provides() const
+{
+  return {{id(), 0}};
+}
 }

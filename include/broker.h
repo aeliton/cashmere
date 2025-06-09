@@ -22,29 +22,17 @@
 namespace Cashmere
 {
 
-struct Context;
-using ContextPtr = std::shared_ptr<Context>;
-
 class Broker : public EntryHandler
 {
 public:
   Broker();
 
-  bool insert(const ClockEntry& data) override;
-
-  bool attach(EntryHandlerPtr journal);
-  bool detach(Id journalId);
-
-  IdSet provides() const override;
-
-  IdClockMap versions() const;
-
 private:
-  EntryHandlerPtr pickAttached() const;
-
   std::vector<ContextPtr> _attached;
   std::unordered_map<Id, ContextPtr> _idToContext;
 };
+
+using BrokerPtr = std::shared_ptr<Broker>;
 
 }
 

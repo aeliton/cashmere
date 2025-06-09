@@ -25,16 +25,16 @@ struct StringMaker<Cashmere::IdClockMap>
 {
   static std::string convert(Cashmere::IdClockMap const& m)
   {
-    if (m.empty()) {
-      return "{ }";
-    }
     std::stringstream ss;
-    ss << "{";
-    auto it = m.cbegin();
-    ss << "{" << it->first << ", " << it->second << "}";
-    for (++it; it != m.cend(); it++) {
-      ss << ", {" << it->first << ", " << it->second << "}";
+    ss << "IdClockMap{";
+    if (m.size() > 0) {
+      auto it = m.cbegin();
+      ss << "{" << it->first << ", " << it->second << "}";
+      for (++it; it != m.cend(); it++) {
+        ss << ", {" << it->first << ", " << it->second << "}";
+      }
     }
+    ss << "}";
     return ss.str();
   }
 };
@@ -47,6 +47,25 @@ struct StringMaker<Cashmere::ClockEntry>
     std::stringstream ss;
     ss << "{ Clock" << m.clock << "}, Entry{" << m.entry.journalId << ", "
        << m.entry.value << ", " << "Clock" << m.entry.alters << " }";
+    return ss.str();
+  }
+};
+
+template<>
+struct StringMaker<Cashmere::IdDistanceMap>
+{
+  static std::string convert(Cashmere::IdDistanceMap const& m)
+  {
+    std::stringstream ss;
+    ss << "IdDistanceMap{";
+    if (m.size() > 0) {
+      auto it = m.cbegin();
+      ss << "{" << it->first << ", " << it->second << "}";
+      for (++it; it != m.cend(); it++) {
+        ss << ", {" << it->first << ", " << it->second << "}";
+      }
+    }
+    ss << "}";
     return ss.str();
   }
 };
@@ -70,30 +89,23 @@ SCENARIO_METHOD(BrokerWithSingleEntryMock, "Journal is attached to a Broker")
 {
   GIVEN("a broker")
   {
-    REQUIRE(broker.versions() == IdClockMap{});
-
-    REQUIRE(mock->clockChanged().count() == 0);
+    REQUIRE(broker->versions() == IdClockMap{});
 
     REQUIRE(mock->clock() == Clock{{0xAA, 1}});
 
     WHEN("a journal is attached to the broker")
     {
-      const bool success = broker.attach(mock);
+      const bool success = broker->attach(mock);
       REQUIRE(success);
 
       THEN("the broker has its clock updated")
       {
-        REQUIRE(broker.versions() == IdClockMap{{0xAA, Clock{{0xAA, 1}}}});
-      }
-
-      THEN("the journal has a listener on it's signal object")
-      {
-        REQUIRE(mock->clockChanged().count() == 1);
+        REQUIRE(broker->versions() == IdClockMap{{0xAA, Clock{{0xAA, 1}}}});
       }
 
       AND_WHEN("the journal is detached")
       {
-        const bool success = broker.detach(mock->id());
+        const bool success = broker->detach(1);
 
         THEN("the operation succeeds")
         {
@@ -103,18 +115,13 @@ SCENARIO_METHOD(BrokerWithSingleEntryMock, "Journal is attached to a Broker")
         THEN("the journal versions are preserved")
         {
           REQUIRE(
-            broker.versions() == IdClockMap{{0xAA, Clock{{mock->id(), 1}}}}
+            broker->versions() == IdClockMap{{0xAA, Clock{{mock->id(), 1}}}}
           );
-        }
-
-        THEN("the broker is removed from clock updates of the journal")
-        {
-          REQUIRE(mock->clockChanged().count() == 0);
         }
 
         AND_WHEN("attempting to detach a non-attached journal")
         {
-          const bool success = broker.detach(mock->id());
+          const bool success = broker->detach(mock->id());
 
           THEN("the operation fails")
           {
@@ -130,11 +137,11 @@ SCENARIO_METHOD(BrokerWithEmptyMock, "journal get entries via broker")
 {
   GIVEN("a broker with a journal attatched")
   {
-    broker.attach(mock);
+    broker->attach(mock);
 
     WHEN("an entry is inserted on the broker")
     {
-      broker.insert({Clock{{0xFF, 1}}, Entry{0xFF, 9, Clock{}}});
+      broker->insert({Clock{{0xFF, 1}}, Entry{0xFF, 9, Clock{}}});
 
       THEN("insert is called on the attached journal")
       {
@@ -146,7 +153,7 @@ SCENARIO_METHOD(BrokerWithEmptyMock, "journal get entries via broker")
       THEN("the broker updates the version of the attached journal")
       {
         REQUIRE(
-          broker.versions() ==
+          broker->versions() ==
           IdClockMap{{0xAA, Clock{{0xFF, 1}}}, {0xFF, Clock{{0xFF, 1}}}}
         );
       }
@@ -160,21 +167,21 @@ SCENARIO_METHOD(
 {
   GIVEN("a empty broker")
   {
-    REQUIRE(broker.provides() == std::set<Id>{});
+    REQUIRE(broker->provides() == IdDistanceMap{});
 
     WHEN("attaching journal with transactions")
     {
-      broker.attach(aa);
-      broker.attach(bb);
+      broker->attach(aa);
+      broker->attach(bb);
 
       THEN("the broker has it's clock updated")
       {
-        REQUIRE(broker.clock() == Clock{{0xAA, 1}, {0xBB, 1}});
+        REQUIRE(broker->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
       }
 
       THEN("the journal ids are listed as attached")
       {
-        REQUIRE(broker.provides() == std::set<Id>{0xAA, 0xBB});
+        REQUIRE(broker->provides() == IdDistanceMap{{0xAA, 1}, {0xBB, 1}});
       }
 
       THEN("each journal receives the other journal's entry once")
@@ -190,10 +197,10 @@ SCENARIO_METHOD(
       }
       AND_WHEN("a new entry is inserted in the broker")
       {
-        broker.insert(ClockEntry{{{0xCC, 1}}, {0xCC, 200, {}}});
+        broker->insert(ClockEntry{{{0xCC, 1}}, {0xCC, 200, {}}});
         THEN("the broker clock is updated")
         {
-          REQUIRE(broker.clock() == Clock{{0xAA, 1}, {0xBB, 1}, {0xCC, 1}});
+          REQUIRE(broker->clock() == Clock{{0xAA, 1}, {0xBB, 1}, {0xCC, 1}});
         }
       }
     }
@@ -207,28 +214,29 @@ SCENARIO_METHOD(
 {
   GIVEN("a broker with a single journal attached")
   {
-    broker.attach(aa);
+    broker->attach(aa);
 
-    REQUIRE(broker.versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+    REQUIRE(broker->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
 
     WHEN("attaching a second journal")
     {
-      broker.attach(bb);
+      broker->attach(bb);
       const size_t aaEntriesArgsSize = aa->_entriesArgs.size();
       const size_t bbEntriesArgsSize = bb->_entriesArgs.size();
 
       REQUIRE(
-        broker.versions() ==
+        broker->versions() ==
         IdClockMap{
           {0xAA, {{0xAA, 1}, {0xBB, 1}}}, {0xBB, {{0xAA, 1}, {0xBB, 1}}}
         }
       );
 
-      WHEN("a journal disconnects")
+      AND_WHEN("a journal disconnects")
       {
-        broker.detach(bb->id());
+        const bool success = broker->detach(2);
+        REQUIRE(success);
 
-        REQUIRE(broker.provides() == std::set<Id>{aa->id()});
+        REQUIRE(broker->provides() == IdDistanceMap{{aa->id(), 1}});
 
         AND_WHEN("the attached journal inserts an entry")
         {
@@ -236,7 +244,7 @@ SCENARIO_METHOD(
 
           AND_WHEN("the detached journal is re-attached")
           {
-            broker.attach(bb);
+            broker->attach(bb);
             THEN("the broker calls for new entries once on each journal")
             {
               REQUIRE(aa->_entriesArgs.size() == aaEntriesArgsSize + 1);
@@ -252,14 +260,16 @@ SCENARIO_METHOD(
             THEN("the attaching journal receives the unseen entry")
             {
               REQUIRE(
-                bb->_insertArgs.back() ==
-                ClockEntry{{{0xAA, 2}}, {0xAA, 20, {}}}
+                std::find(
+                  bb->_insertArgs.cbegin(), bb->_insertArgs.cend(),
+                  ClockEntry{{{0xAA, 2}}, {0xAA, 20, {}}}
+                ) != bb->_insertArgs.cend()
               );
             }
             THEN("the versions reflect the exchange of entries")
             {
               REQUIRE(
-                broker.versions() ==
+                broker->versions() ==
                 IdClockMap{
                   {0xAA, {{0xAA, 2}, {0xBB, 1}}}, {0xBB, {{0xAA, 2}, {0xBB, 1}}}
                 }
@@ -283,7 +293,7 @@ SCENARIO_METHOD(
 
     WHEN("attaching a new journal")
     {
-      broker.attach(cc);
+      broker->attach(cc);
 
       THEN("only one of the attached journals is queried for entries")
       {
@@ -306,15 +316,15 @@ SCENARIO_METHOD(
   {
     auto second = std::make_shared<Broker>();
 
-    REQUIRE(broker.versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+    REQUIRE(broker->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
 
     WHEN("attaching the empty broker to other broker")
     {
-      broker.attach(second);
+      broker->attach(second);
 
       THEN("the versions of the agregator broker do not change")
       {
-        REQUIRE(broker.versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+        REQUIRE(broker->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
       }
       THEN("the attached broker display the journal version")
       {

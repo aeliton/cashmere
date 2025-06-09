@@ -20,8 +20,8 @@ using namespace Cashmere;
 
 TEST_CASE("clock starts empty for newly created journals", "[journal]")
 {
-  Journal journal;
-  REQUIRE(journal.clock().empty());
+  JournalPtr journal = std::make_shared<Journal>();
+  REQUIRE(journal->clock().empty());
 }
 
 TEST_CASE("invalid/inexisting queries returns invalid", "[journal]")
@@ -207,5 +207,5 @@ TEST_CASE("entries retrieval", "[entries]")
 
 TEST_CASE_METHOD(Journal, "journal provides data from itself", "[provides]")
 {
-  REQUIRE(provides() == IdSet{id()});
+  REQUIRE(provides() == IdDistanceMap{{id(), 0}});
 }

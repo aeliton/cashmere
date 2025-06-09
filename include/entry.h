@@ -32,10 +32,26 @@ class EntryHandler;
 using ClockEntryMap = std::map<Clock, Entry>;
 using ReplaceEntryMap = std::map<Clock, ClockEntry>;
 using ClockEntryList = std::list<ClockEntry>;
+using Port = int64_t;
 
 using ClockChangeSignal = Signal<bool(ClockEntry)>;
 using ClockChangeSlot = ClockChangeSignal::Slot;
 using EntryHandlerPtr = std::shared_ptr<EntryHandler>;
+
+struct Context;
+using ContextPtr = std::shared_ptr<Context>;
+
+using IdDistanceMap = std::unordered_map<Id, int64_t>;
+
+struct Context
+{
+  Context(std::shared_ptr<EntryHandler> j, const Clock& v, Connection c);
+  std::weak_ptr<EntryHandler> journal;
+  Clock version;
+  Port conn;
+  IdDistanceMap provides;
+  int64_t distance;
+};
 
 struct Entry
 {
@@ -60,29 +76,34 @@ struct ClockEntry
   const bool operator==(const ClockEntry& other) const;
 };
 
-class EntryHandler
+class EntryHandler : public std::enable_shared_from_this<EntryHandler>
 {
 public:
   explicit EntryHandler(Id id = 0);
   virtual ~EntryHandler() = 0;
-  virtual bool insert(const ClockEntry& data) = 0;
-  virtual bool insert(const ClockEntryList& entries);
+  virtual bool insert(const ClockEntry& data, Port sender = 0);
+  virtual bool insert(const ClockEntryList& entries, Port sender = 0);
   virtual ClockEntryList entries(const Clock& from = {}) const;
-  virtual IdSet provides() const;
+  virtual IdDistanceMap provides() const;
 
   Id id() const;
   Clock clock() const;
 
-  ClockChangeSignal& clockChanged();
+  bool attach(EntryHandlerPtr other);
+  bool detach(Port port);
+  virtual IdClockMap versions() const;
+
+  EntryHandlerPtr ptr();
 
 protected:
   void setClock(const Clock& clock);
   void clockTick(Id id);
+  Port attach(EntryHandlerPtr source, Port port);
 
 private:
   const Id _id;
-  Clock _clock;
-  ClockChangeSignal _clockChanged;
+  std::vector<ContextPtr> _contexts;
+  std::unordered_map<Id, ContextPtr> _contextMap;
 };
 
 }

@@ -45,12 +45,16 @@ struct JournalMock : public EntryHandler
     _entriesSignaler(from);
     return _entries;
   }
-  virtual bool insert(const ClockEntry& data) override
+  bool insert(const ClockEntry& data, Port sender = 0) override
   {
     _insertArgs.push_back(data);
     _entries.push_back(data);
     setClock(clock().merge(data.clock));
     return true;
+  }
+  IdDistanceMap provides() const override
+  {
+    return {{id(), 0}};
   }
   ClockEntryList _entries;
   Signal<void(const Clock&)> _entriesSignaler;
@@ -77,13 +81,23 @@ struct SingleEntryMock : public JournalMock
 
 struct BrokerWithEmptyMock
 {
-  Broker broker;
+  BrokerPtr broker = std::make_shared<Broker>();
   JournalMockPtr mock = std::make_shared<JournalMock>(0xAA);
+};
+
+struct BrokerWithAttachedEmptyMockAndOneEmpty : BrokerWithEmptyMock
+{
+  BrokerWithAttachedEmptyMockAndOneEmpty()
+    : BrokerWithEmptyMock()
+  {
+    broker->attach(attached);
+  }
+  JournalMockPtr attached = std::make_shared<JournalMock>(0xFF);
 };
 
 struct BrokerWithSingleEntryMock
 {
-  Broker broker;
+  BrokerPtr broker = std::make_shared<Broker>();
   JournalMockPtr mock = std::make_shared<SingleEntryMock>(0xAA, 1);
 };
 
@@ -92,15 +106,14 @@ struct BrokerWithAttachedSingleEntryMock : public BrokerWithSingleEntryMock
 
   BrokerWithAttachedSingleEntryMock()
   {
-    broker.attach(mock);
+    broker->attach(mock);
   }
-  Broker broker;
   JournalMockPtr mock = std::make_shared<SingleEntryMock>(0xAA, 1);
 };
 
 struct BrokerWithTwoSingleEntryMocks
 {
-  Broker broker;
+  BrokerPtr broker = std::make_shared<Broker>();
   JournalMockPtr aa = std::make_shared<SingleEntryMock>(0xAA, 1);
   JournalMockPtr bb = std::make_shared<SingleEntryMock>(0xBB, 2);
 };
@@ -110,8 +123,8 @@ struct BrokerWithTwoAttachedSingleEntryMocks
 {
   BrokerWithTwoAttachedSingleEntryMocks()
   {
-    broker.attach(aa);
-    broker.attach(bb);
+    broker->attach(aa);
+    broker->attach(bb);
   }
 };
 

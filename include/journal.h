@@ -16,6 +16,7 @@
 #ifndef CASHEMERE_JOURNAL_H
 #define CASHEMERE_JOURNAL_H
 
+#include <cassert>
 #include <memory>
 
 #include "entry.h"
@@ -31,8 +32,9 @@ public:
   ~Journal();
   explicit Journal(Id id, const ClockEntryMap& entries = {});
 
-  bool insert(const ClockEntry& data) override;
   ClockEntryList entries(const Clock& from = {}) const override;
+
+  bool insert(const ClockEntry& data, Port port = 0) override;
 
   const Id bookId() const;
   bool append(Amount value);
@@ -42,6 +44,8 @@ public:
   bool contains(const Clock& clock) const;
   Entry entry(Clock time) const;
 
+  IdDistanceMap provides() const override;
+
 private:
   static Random _random;
   const Id _bookId;
@@ -49,7 +53,6 @@ private:
 };
 
 using JournalPtr = std::shared_ptr<Journal>;
-
 }
 
 #endif
