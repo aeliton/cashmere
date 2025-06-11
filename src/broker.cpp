@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "broker.h"
+#include <cassert>
 
 namespace Cashmere
 {
@@ -57,8 +58,10 @@ Clock Broker::clock() const
 ClockEntryList Broker::entries(const Clock& from) const
 {
   for (const auto& context : _contexts) {
-    if (context->provides.size() == 1 &&
-        context->provides.begin()->second.distance == 0) {
+    if (!context->containsEntries()) {
+      continue;
+    }
+    if (auto journal = context->journal.lock()) {
       return context->journal.lock()->entries(from);
     }
   }
@@ -70,10 +73,9 @@ IdDistanceMap Broker::provides() const
   IdDistanceMap out;
   for (auto& ctx : _contexts) {
     if (ctx->journal.lock()) {
-      for (auto& [id, dist] : ctx->provides) {
-        out[id].distance = dist.distance + 1;
-        out[id].version = dist.version;
-      }
+      auto provides = ctx->provides;
+      out.merge(provides);
+      assert(provides.empty());
     }
   }
   return out;
@@ -112,7 +114,7 @@ bool Broker::attach(BrokerPtr other)
 
   if (other->insert(thisEntries, remote)) {
     _contexts[local]->version = other->clock();
-    _contexts[local]->provides = other->provides();
+    _contexts[local]->provides = UpdateProvides(other->provides());
   }
   insert(otherEntries, local);
 
@@ -122,7 +124,7 @@ bool Broker::attach(BrokerPtr other)
 Port Broker::attach(BrokerPtr source, Port port)
 {
   _contexts.push_back(std::make_shared<Context>(source, source->clock(), port));
-  _contexts.back()->provides = source->provides();
+  _contexts.back()->provides = UpdateProvides(source->provides());
   for (auto& [id, dist] : _contexts.back()->provides) {
     _contextMap[id] = _contexts.back();
   }
@@ -175,7 +177,7 @@ bool Broker::insert(const ClockEntry& data, Port port)
     if (auto journal = ctx->journal.lock()) {
       if (journal->insert(data, ctx->conn)) {
         ctx->version = journal->clock();
-        ctx->provides = journal->provides();
+        ctx->provides = UpdateProvides(journal->provides());
       }
     }
   }
@@ -194,4 +196,11 @@ IdClockMap Broker::versions() const
   return out;
 }
 
+IdDistanceMap Broker::UpdateProvides(IdDistanceMap provides)
+{
+  for (auto& [id, data] : provides) {
+    ++data.distance;
+  }
+  return provides;
+}
 }

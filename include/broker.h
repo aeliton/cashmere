@@ -25,6 +25,7 @@ namespace Cashmere
 
 class Broker;
 using BrokerPtr = std::shared_ptr<Broker>;
+using BrokerWeakPtr = std::weak_ptr<Broker>;
 struct Context;
 using ContextPtr = std::shared_ptr<Context>;
 
@@ -47,10 +48,18 @@ using IdDistanceMap = std::map<Id, JournalData>;
 struct Context
 {
   Context(std::shared_ptr<Broker> j, const Clock& v, Connection c);
-  std::weak_ptr<Broker> journal;
+  BrokerWeakPtr journal;
   Clock version;
   Port conn;
   IdDistanceMap provides;
+
+  bool containsEntries() const
+  {
+    if (provides.size() != 1) {
+      return false;
+    }
+    return provides.begin()->second.distance == 1;
+  }
 };
 
 class Broker : public std::enable_shared_from_this<Broker>
@@ -78,6 +87,8 @@ protected:
   Port attach(BrokerPtr source, Port port);
 
 private:
+  static IdDistanceMap UpdateProvides(IdDistanceMap provides);
+
   const Id _id;
   std::vector<ContextPtr> _contexts;
   std::unordered_map<Id, ContextPtr> _contextMap;
