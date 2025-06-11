@@ -60,9 +60,11 @@ struct StringMaker<Cashmere::IdDistanceMap>
     ss << "IdDistanceMap{";
     if (m.size() > 0) {
       auto it = m.cbegin();
-      ss << "{" << it->first << ", " << it->second.distance << "}";
+      ss << "{" << it->first << ", { .distance: " << it->second.distance
+         << ", .version: " << it->second.version << " }";
       for (++it; it != m.cend(); it++) {
-        ss << ", {" << it->first << ", " << it->second.distance << "}";
+        ss << ", {" << it->first << ", { .distance: " << it->second.distance
+           << ", .version: " << it->second.version << " }";
       }
     }
     ss << "}";
@@ -184,8 +186,11 @@ SCENARIO_METHOD(
         REQUIRE(
           broker->provides() ==
           IdDistanceMap{
-            {0xAA, JournalData{.distance = 1}},
-            {0xBB, JournalData{.distance = 1}}
+            {0xAA,
+             JournalData{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}
+            },
+            {0xBB,
+             JournalData{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}
           }
         );
       }
@@ -223,6 +228,10 @@ SCENARIO_METHOD(
     broker->attach(aa);
 
     REQUIRE(broker->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+    REQUIRE(
+      broker->provides() ==
+      IdDistanceMap{{0xAA, {.distance = 1, .version = Clock{{0xAA, 1}}}}}
+    );
 
     WHEN("attaching a second journal")
     {
@@ -243,7 +252,10 @@ SCENARIO_METHOD(
         REQUIRE(success);
 
         REQUIRE(
-          broker->provides() == IdDistanceMap{{aa->id(), {.distance = 1}}}
+          broker->provides() ==
+          IdDistanceMap{
+            {0xAA, {.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}
+          }
         );
 
         AND_WHEN("the attached journal inserts an entry")

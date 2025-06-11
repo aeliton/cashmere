@@ -97,6 +97,6 @@ ClockEntryList Journal::entries(const Clock& from) const
 
 IdDistanceMap Journal::provides() const
 {
-  return {{id(), {.distance = 0}}};
+  return {{id(), {.distance = 0, .version = clock()}}};
 }
 }

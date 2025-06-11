@@ -44,13 +44,14 @@ using ContextPtr = std::shared_ptr<Context>;
 struct JournalData
 {
   int64_t distance;
+  Clock version;
   friend bool operator==(const JournalData& l, const JournalData& r)
   {
-    return std::tie(l.distance) == std::tie(r.distance);
+    return std::tie(l.distance, l.version) == std::tie(r.distance, r.version);
   }
   friend bool operator<(const JournalData& l, const JournalData& r)
   {
-    return std::tie(l.distance) < std::tie(r.distance);
+    return std::tie(l.distance, l.version) < std::tie(r.distance, r.version);
   }
 };
 

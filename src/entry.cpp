@@ -57,7 +57,7 @@ void EntryHandler::clockTick(Id id)
 Clock EntryHandler::clock() const
 {
   return _contexts.front()->version;
-};
+}
 
 ClockEntryList EntryHandler::entries(const Clock& from) const
 {
@@ -77,6 +77,7 @@ IdDistanceMap EntryHandler::provides() const
     if (ctx->journal.lock()) {
       for (auto& [id, dist] : ctx->provides) {
         out[id].distance = dist.distance + 1;
+        out[id].version = dist.version;
       }
     }
   }
@@ -116,6 +117,7 @@ bool EntryHandler::attach(EntryHandlerPtr other)
 
   if (other->insert(thisEntries, remote)) {
     _contexts[local]->version = other->clock();
+    _contexts[local]->provides = other->provides();
   }
   insert(otherEntries, local);
 
@@ -170,6 +172,7 @@ bool EntryHandler::insert(const ClockEntry& data, Port port)
   if (_contextMap.find(data.entry.journalId) == _contextMap.cend()) {
     _contextMap[data.entry.journalId] = ctx;
     ctx->provides[data.entry.journalId].distance = 0;
+    ctx->provides[data.entry.journalId].version = data.clock;
   }
 
   for (size_t i = 0; i < _contexts.size(); ++i) {
@@ -180,6 +183,7 @@ bool EntryHandler::insert(const ClockEntry& data, Port port)
     if (auto journal = ctx->journal.lock()) {
       if (journal->insert(data, ctx->conn)) {
         ctx->version = journal->clock();
+        ctx->provides = journal->provides();
       }
     }
   }
@@ -190,9 +194,12 @@ bool EntryHandler::insert(const ClockEntry& data, Port port)
 IdClockMap EntryHandler::versions() const
 {
   IdClockMap out;
-  for (auto& [id, context] : _contextMap) {
-    out[id] = context->version;
+  for (auto& context : _contexts) {
+    for (auto& [id, data] : context->provides) {
+      out[id] = data.version;
+    }
   }
   return out;
 }
+
 }

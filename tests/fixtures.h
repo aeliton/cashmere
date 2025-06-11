@@ -54,7 +54,7 @@ struct JournalMock : public EntryHandler
   }
   IdDistanceMap provides() const override
   {
-    return {{id(), {.distance = 0}}};
+    return {{id(), {.distance = 0, .version = clock()}}};
   }
   ClockEntryList _entries;
   Signal<void(const Clock&)> _entriesSignaler;
