@@ -41,7 +41,20 @@ using EntryHandlerPtr = std::shared_ptr<EntryHandler>;
 struct Context;
 using ContextPtr = std::shared_ptr<Context>;
 
-using IdDistanceMap = std::unordered_map<Id, int64_t>;
+struct JournalData
+{
+  int64_t distance;
+  friend bool operator==(const JournalData& l, const JournalData& r)
+  {
+    return std::tie(l.distance) == std::tie(r.distance);
+  }
+  friend bool operator<(const JournalData& l, const JournalData& r)
+  {
+    return std::tie(l.distance) < std::tie(r.distance);
+  }
+};
+
+using IdDistanceMap = std::map<Id, JournalData>;
 
 struct Context
 {
@@ -50,7 +63,6 @@ struct Context
   Clock version;
   Port conn;
   IdDistanceMap provides;
-  int64_t distance;
 };
 
 struct Entry

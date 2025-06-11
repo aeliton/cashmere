@@ -207,5 +207,5 @@ TEST_CASE("entries retrieval", "[entries]")
 
 TEST_CASE_METHOD(Journal, "journal provides data from itself", "[provides]")
 {
-  REQUIRE(provides() == IdDistanceMap{{id(), 0}});
+  REQUIRE(provides() == IdDistanceMap{{id(), JournalData{.distance = 0}}});
 }

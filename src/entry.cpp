@@ -23,7 +23,6 @@ Context::Context(std::shared_ptr<EntryHandler> j, const Clock& v, Connection c)
   , version(v)
   , conn(c)
   , provides({})
-  , distance(-1)
 {
 }
 
@@ -64,7 +63,7 @@ ClockEntryList EntryHandler::entries(const Clock& from) const
 {
   for (const auto& context : _contexts) {
     if (context->provides.size() == 1 &&
-        context->provides.begin()->second == 0) {
+        context->provides.begin()->second.distance == 0) {
       return context->journal.lock()->entries(from);
     }
   }
@@ -77,7 +76,7 @@ IdDistanceMap EntryHandler::provides() const
   for (auto& ctx : _contexts) {
     if (ctx->journal.lock()) {
       for (auto& [id, dist] : ctx->provides) {
-        out[id] = dist + 1;
+        out[id].distance = dist.distance + 1;
       }
     }
   }
@@ -170,7 +169,7 @@ bool EntryHandler::insert(const ClockEntry& data, Port port)
 
   if (_contextMap.find(data.entry.journalId) == _contextMap.cend()) {
     _contextMap[data.entry.journalId] = ctx;
-    ctx->provides[data.entry.journalId] = 0;
+    ctx->provides[data.entry.journalId].distance = 0;
   }
 
   for (size_t i = 0; i < _contexts.size(); ++i) {

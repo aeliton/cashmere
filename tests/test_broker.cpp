@@ -60,9 +60,9 @@ struct StringMaker<Cashmere::IdDistanceMap>
     ss << "IdDistanceMap{";
     if (m.size() > 0) {
       auto it = m.cbegin();
-      ss << "{" << it->first << ", " << it->second << "}";
+      ss << "{" << it->first << ", " << it->second.distance << "}";
       for (++it; it != m.cend(); it++) {
-        ss << ", {" << it->first << ", " << it->second << "}";
+        ss << ", {" << it->first << ", " << it->second.distance << "}";
       }
     }
     ss << "}";
@@ -181,7 +181,13 @@ SCENARIO_METHOD(
 
       THEN("the journal ids are listed as attached")
       {
-        REQUIRE(broker->provides() == IdDistanceMap{{0xAA, 1}, {0xBB, 1}});
+        REQUIRE(
+          broker->provides() ==
+          IdDistanceMap{
+            {0xAA, JournalData{.distance = 1}},
+            {0xBB, JournalData{.distance = 1}}
+          }
+        );
       }
 
       THEN("each journal receives the other journal's entry once")
@@ -236,7 +242,9 @@ SCENARIO_METHOD(
         const bool success = broker->detach(2);
         REQUIRE(success);
 
-        REQUIRE(broker->provides() == IdDistanceMap{{aa->id(), 1}});
+        REQUIRE(
+          broker->provides() == IdDistanceMap{{aa->id(), {.distance = 1}}}
+        );
 
         AND_WHEN("the attached journal inserts an entry")
         {
