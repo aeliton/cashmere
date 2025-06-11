@@ -57,7 +57,6 @@ bool Journal::insert(const ClockEntry& data, Port port)
     return false;
   }
   _entries[data.clock] = data.entry;
-  setClock(clock().merge(data.clock));
   return EntryHandler::insert(data, port);
 }
 

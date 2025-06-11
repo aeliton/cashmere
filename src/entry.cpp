@@ -169,11 +169,8 @@ bool EntryHandler::insert(const ClockEntry& data, Port port)
   }
   auto& ctx = _contexts[port];
 
-  if (_contextMap.find(data.entry.journalId) == _contextMap.cend()) {
-    _contextMap[data.entry.journalId] = ctx;
-    ctx->provides[data.entry.journalId].distance = 0;
-    ctx->provides[data.entry.journalId].version = data.clock;
-  }
+  ctx->provides[data.entry.journalId].version =
+    ctx->provides[data.entry.journalId].version.merge(data.clock);
 
   for (size_t i = 0; i < _contexts.size(); ++i) {
     auto ctx = _contexts[i];

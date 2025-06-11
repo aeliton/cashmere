@@ -17,24 +17,23 @@
 #define CASHMERE_TEST_FIXTURES_H
 
 #include "broker.h"
+#include "journal.h"
 #include <cassert>
 
 namespace Cashmere
 {
-struct JournalMock : public EntryHandler
+struct JournalMock : public Journal
 {
   JournalMock(Id id)
     : JournalMock(id, {})
   {
   }
   JournalMock(Id id, ClockEntryList e)
-    : EntryHandler(id)
-    , _entries(e)
+    : Journal(id)
   {
-    if (e.size() > 0) {
-      setClock(e.front().clock);
-      assert(clock() == e.front().clock);
-    }
+    EntryHandler::insert(e);
+    _insertArgs.clear();
+    _entriesArgs.clear();
     _entriesSignaler.connect([this](const Clock& clock) -> bool {
       _entriesArgs.push_back(clock);
       return false;
@@ -43,20 +42,13 @@ struct JournalMock : public EntryHandler
   ClockEntryList entries(const Clock& from = {}) const override
   {
     _entriesSignaler(from);
-    return _entries;
+    return Journal::entries(from);
   }
   bool insert(const ClockEntry& data, Port sender = 0) override
   {
     _insertArgs.push_back(data);
-    _entries.push_back(data);
-    setClock(clock().merge(data.clock));
-    return true;
+    return Journal::insert(data, sender);
   }
-  IdDistanceMap provides() const override
-  {
-    return {{id(), {.distance = 0, .version = clock()}}};
-  }
-  ClockEntryList _entries;
   Signal<void(const Clock&)> _entriesSignaler;
   ClockEntryList _insertArgs = {};
   ClockList _entriesArgs = {};

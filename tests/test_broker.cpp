@@ -260,7 +260,17 @@ SCENARIO_METHOD(
 
         AND_WHEN("the attached journal inserts an entry")
         {
-          aa->insert(ClockEntry{{{aa->id(), 2}}, {aa->id(), 20, {}}});
+          const bool success =
+            aa->insert(ClockEntry{{{0xAA, 2}}, {0xAA, 20, {}}});
+
+          REQUIRE(success);
+
+          REQUIRE(
+            broker->versions() ==
+            IdClockMap{
+              {0xAA, {{0xAA, 2}, {0xBB, 1}}}, {0xBB, {{0xAA, 1}, {0xBB, 1}}}
+            }
+          );
 
           AND_WHEN("the detached journal is re-attached")
           {
