@@ -17,7 +17,7 @@
 
 namespace Cashmere
 {
-Ledger::Ledger(EntryHandlerPtr journal)
+Ledger::Ledger(BrokerPtr journal)
   : Ledger(journal->entries())
 {
   _journal = journal;

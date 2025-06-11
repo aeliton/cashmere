@@ -17,186 +17,19 @@
 
 namespace Cashmere
 {
-
-Context::Context(std::shared_ptr<EntryHandler> j, const Clock& v, Connection c)
-  : journal(j)
-  , version(v)
-  , conn(c)
-  , provides({})
-{
-}
-
-EntryHandler::~EntryHandler() = default;
-
 const bool ClockEntry::operator==(const ClockEntry& other) const
 {
   return clock == other.clock && entry == other.entry;
 }
 
-EntryHandler::EntryHandler(Id id)
-  : _id(id)
+bool Entry::valid() const
 {
-  _contexts.push_back(std::make_shared<Context>(nullptr, Clock{}, 0));
+  return alters.size() > 0 && alters.begin()->first != 0UL;
 }
-
-Id EntryHandler::id() const
+const bool Entry::operator==(const Entry& other) const
 {
-  return _id;
-}
-
-void EntryHandler::setClock(const Clock& clock)
-{
-  _contexts.front()->version = clock;
-}
-
-void EntryHandler::clockTick(Id id)
-{
-  _contexts.front()->version[id]++;
-};
-
-Clock EntryHandler::clock() const
-{
-  return _contexts.front()->version;
-}
-
-ClockEntryList EntryHandler::entries(const Clock& from) const
-{
-  for (const auto& context : _contexts) {
-    if (context->provides.size() == 1 &&
-        context->provides.begin()->second.distance == 0) {
-      return context->journal.lock()->entries(from);
-    }
-  }
-  return {};
-}
-
-IdDistanceMap EntryHandler::provides() const
-{
-  IdDistanceMap out;
-  for (auto& ctx : _contexts) {
-    if (ctx->journal.lock()) {
-      for (auto& [id, dist] : ctx->provides) {
-        out[id].distance = dist.distance + 1;
-        out[id].version = dist.version;
-      }
-    }
-  }
-  return out;
-}
-
-bool EntryHandler::attach(EntryHandlerPtr other)
-{
-  if (!other) {
-    return false;
-  }
-  Port local = _contexts.size();
-  for (size_t i = 1; i < _contexts.size(); ++i) {
-    if (_contexts[i]->provides.empty()) {
-      continue;
-    }
-    auto provides = other->provides();
-    if (provides.find(_contexts[i]->provides.begin()->first) !=
-        provides.end()) {
-      local = i;
-      break;
-    }
-  }
-
-  ClockEntryList otherEntries;
-  ClockEntryList thisEntries;
-  auto remote = other->attach(ptr(), local);
-  if (local == _contexts.size()) {
-    otherEntries = other->entries();
-    thisEntries = this->entries();
-    attach(other, remote);
-  } else {
-    _contexts[local]->journal = other;
-    otherEntries = other->entries(_contexts[local]->version);
-    thisEntries = this->entries(_contexts[local]->version);
-  }
-
-  if (other->insert(thisEntries, remote)) {
-    _contexts[local]->version = other->clock();
-    _contexts[local]->provides = other->provides();
-  }
-  insert(otherEntries, local);
-
-  return true;
-}
-
-Port EntryHandler::attach(EntryHandlerPtr source, Port port)
-{
-  _contexts.push_back(std::make_shared<Context>(source, source->clock(), port));
-  _contexts.back()->provides = source->provides();
-  for (auto& [id, dist] : _contexts.back()->provides) {
-    _contextMap[id] = _contexts.back();
-  }
-
-  return _contexts.size() - 1;
-}
-
-bool EntryHandler::detach(Port port)
-{
-  if (port < 0 || _contexts.size() <= port) {
-    return false;
-  }
-  auto& context = _contexts.at(port);
-  if (auto handler = context->journal.lock()) {
-    context->journal.reset();
-    return true;
-  }
-  return false;
-}
-
-EntryHandlerPtr EntryHandler::ptr()
-{
-  return this->shared_from_this();
-}
-
-bool EntryHandler::insert(const ClockEntryList& entries, Port port)
-{
-  bool success = true;
-  for (auto& entry : entries) {
-    success &= insert(entry, port);
-  }
-  return success;
-};
-
-bool EntryHandler::insert(const ClockEntry& data, Port port)
-{
-  if (port < 0 || port >= _contexts.size()) {
-    return false;
-  }
-  auto& ctx = _contexts[port];
-
-  ctx->provides[data.entry.journalId].version =
-    ctx->provides[data.entry.journalId].version.merge(data.clock);
-
-  for (size_t i = 0; i < _contexts.size(); ++i) {
-    auto ctx = _contexts[i];
-    if (ctx->provides.find(data.entry.journalId) != ctx->provides.cend()) {
-      continue;
-    }
-    if (auto journal = ctx->journal.lock()) {
-      if (journal->insert(data, ctx->conn)) {
-        ctx->version = journal->clock();
-        ctx->provides = journal->provides();
-      }
-    }
-  }
-  setClock(clock().merge(data.clock));
-  return true;
-}
-
-IdClockMap EntryHandler::versions() const
-{
-  IdClockMap out;
-  for (auto& context : _contexts) {
-    for (auto& [id, data] : context->provides) {
-      out[id] = data.version;
-    }
-  }
-  return out;
+  return std::tie(journalId, value, alters) ==
+         std::tie(other.journalId, other.value, other.alters);
 }
 
 }

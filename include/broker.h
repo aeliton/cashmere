@@ -17,22 +17,71 @@
 #define CASHMERE_BROKER_H
 
 #include "entry.h"
+#include <memory>
 #include <unordered_map>
 
 namespace Cashmere
 {
 
-class Broker : public EntryHandler
-{
-public:
-  Broker();
+class Broker;
+using BrokerPtr = std::shared_ptr<Broker>;
+struct Context;
+using ContextPtr = std::shared_ptr<Context>;
 
-private:
-  std::vector<ContextPtr> _attached;
-  std::unordered_map<Id, ContextPtr> _idToContext;
+struct JournalData
+{
+  int64_t distance;
+  Clock version;
+  friend bool operator==(const JournalData& l, const JournalData& r)
+  {
+    return std::tie(l.distance, l.version) == std::tie(r.distance, r.version);
+  }
+  friend bool operator<(const JournalData& l, const JournalData& r)
+  {
+    return std::tie(l.distance, l.version) < std::tie(r.distance, r.version);
+  }
 };
 
-using BrokerPtr = std::shared_ptr<Broker>;
+using IdDistanceMap = std::map<Id, JournalData>;
+
+struct Context
+{
+  Context(std::shared_ptr<Broker> j, const Clock& v, Connection c);
+  std::weak_ptr<Broker> journal;
+  Clock version;
+  Port conn;
+  IdDistanceMap provides;
+};
+
+class Broker : public std::enable_shared_from_this<Broker>
+{
+public:
+  explicit Broker(Id id = 0);
+  virtual ~Broker();
+  virtual bool insert(const ClockEntry& data, Port sender = 0);
+  virtual bool insert(const ClockEntryList& entries, Port sender = 0);
+  virtual ClockEntryList entries(const Clock& from = {}) const;
+  virtual IdDistanceMap provides() const;
+
+  Id id() const;
+  Clock clock() const;
+
+  bool attach(BrokerPtr other);
+  bool detach(Port port);
+  virtual IdClockMap versions() const;
+
+  BrokerPtr ptr();
+
+protected:
+  void setClock(const Clock& clock);
+  void clockTick(Id id);
+  Port attach(BrokerPtr source, Port port);
+
+private:
+  const Id _id;
+  std::vector<ContextPtr> _contexts;
+  std::unordered_map<Id, ContextPtr> _contextMap;
+};
 
 }
 

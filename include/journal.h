@@ -19,13 +19,13 @@
 #include <cassert>
 #include <memory>
 
-#include "entry.h"
+#include "broker.h"
 #include "random.h"
 
 namespace Cashmere
 {
 
-class Journal : public EntryHandler
+class Journal : public Broker
 {
 public:
   Journal();
@@ -50,6 +50,7 @@ private:
   static Random _random;
   const Id _bookId;
   ClockEntryMap _entries;
+  Clock _version;
 };
 
 using JournalPtr = std::shared_ptr<Journal>;

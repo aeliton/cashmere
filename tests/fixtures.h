@@ -31,7 +31,7 @@ struct JournalMock : public Journal
   JournalMock(Id id, ClockEntryList e)
     : Journal(id)
   {
-    EntryHandler::insert(e);
+    Broker::insert(e);
     _insertArgs.clear();
     _entriesArgs.clear();
     _entriesSignaler.connect([this](const Clock& clock) -> bool {

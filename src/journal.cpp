@@ -27,7 +27,7 @@ Journal::Journal()
 }
 
 Journal::Journal(Id id, const ClockEntryMap& entries)
-  : EntryHandler(id)
+  : Broker(id)
   , _bookId(_random.next())
   , _entries(entries)
 {
@@ -57,7 +57,7 @@ bool Journal::insert(const ClockEntry& data, Port port)
     return false;
   }
   _entries[data.clock] = data.entry;
-  return EntryHandler::insert(data, port);
+  return Broker::insert(data, port);
 }
 
 bool Journal::replace(Amount value, const Clock& clock)
