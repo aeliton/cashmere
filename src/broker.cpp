@@ -22,7 +22,7 @@ namespace Cashmere
 Context::Context(std::shared_ptr<Broker> j, const Clock& v, Connection c)
   : journal(j)
   , version(v)
-  , conn(c)
+  , port(c)
   , provides({})
 {
 }
@@ -81,55 +81,65 @@ IdDistanceMap Broker::provides() const
   return out;
 }
 
-bool Broker::attach(BrokerPtr other)
+Port Broker::getLocalPortFor(BrokerPtr remote)
 {
-  if (!other) {
+  Port local = _contexts.size();
+  auto provides = remote->provides();
+  if (provides.size() > 0) {
+    auto& [id, data] = *provides.begin();
+    for (size_t i = 1; i < _contexts.size(); ++i) {
+      if (_contexts[i]->provides.empty()) {
+        continue;
+      }
+      auto& ctxProvides = _contexts[i]->provides;
+      auto it = ctxProvides.find(id);
+      if (it != ctxProvides.end() && data.distance + 1 == it->second.distance) {
+        local = i;
+        break;
+      }
+    }
+  }
+  if (local == _contexts.size()) {
+    _contexts.push_back(std::make_shared<Context>(nullptr, Clock{}, 0));
+  }
+  return local;
+}
+
+bool Broker::attach(BrokerPtr remote)
+{
+  if (!remote) {
     return false;
   }
-  Port local = _contexts.size();
-  for (size_t i = 1; i < _contexts.size(); ++i) {
-    if (_contexts[i]->provides.empty()) {
-      continue;
-    }
-    auto provides = other->provides();
-    if (provides.find(_contexts[i]->provides.begin()->first) !=
-        provides.end()) {
-      local = i;
-      break;
-    }
-  }
+  auto local = getLocalPortFor(remote);
 
-  ClockEntryList otherEntries;
-  ClockEntryList thisEntries;
-  auto remote = other->attach(ptr(), local);
-  if (local == _contexts.size()) {
-    otherEntries = other->entries();
-    thisEntries = this->entries();
-    attach(other, remote);
-  } else {
-    _contexts[local]->journal = other;
-    otherEntries = other->entries(_contexts[local]->version);
-    thisEntries = this->entries(_contexts[local]->version);
-  }
+  auto context = _contexts.at(local);
 
-  if (other->insert(thisEntries, remote)) {
-    _contexts[local]->version = other->clock();
-    _contexts[local]->provides = UpdateProvides(other->provides());
+  context->port = remote->getLocalPortFor(ptr());
+
+  auto otherEntries = remote->entries(context->version);
+  auto thisEntries = this->entries(context->version);
+
+  remote->attach(ptr(), context->port, local);
+  attach(remote, local, context->port);
+
+  if (remote->insert(thisEntries, context->port)) {
+    context->version = remote->clock();
+    context->provides = UpdateProvides(remote->provides());
   }
   insert(otherEntries, local);
 
   return true;
 }
 
-Port Broker::attach(BrokerPtr source, Port port)
+void Broker::attach(BrokerPtr source, Port local, Port remote)
 {
-  _contexts.push_back(std::make_shared<Context>(source, source->clock(), port));
-  _contexts.back()->provides = UpdateProvides(source->provides());
-  for (auto& [id, dist] : _contexts.back()->provides) {
-    _contextMap[id] = _contexts.back();
+  auto context = _contexts.at(local);
+  context->journal = source;
+  context->port = remote;
+  context->provides = UpdateProvides(source->provides());
+  for (auto& [id, dist] : context->provides) {
+    _contextMap[id] = context;
   }
-
-  return _contexts.size() - 1;
 }
 
 bool Broker::detach(Port port)
@@ -175,7 +185,7 @@ bool Broker::insert(const ClockEntry& data, Port port)
       continue;
     }
     if (auto journal = ctx->journal.lock()) {
-      if (journal->insert(data, ctx->conn)) {
+      if (journal->insert(data, ctx->port)) {
         ctx->version = journal->clock();
         ctx->provides = UpdateProvides(journal->provides());
       }

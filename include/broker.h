@@ -50,7 +50,7 @@ struct Context
   Context(std::shared_ptr<Broker> j, const Clock& v, Connection c);
   BrokerWeakPtr journal;
   Clock version;
-  Port conn;
+  Port port;
   IdDistanceMap provides;
 
   bool containsEntries() const
@@ -84,10 +84,11 @@ public:
 protected:
   void setClock(const Clock& clock);
   void clockTick(Id id);
-  Port attach(BrokerPtr source, Port port);
 
 private:
   static IdDistanceMap UpdateProvides(IdDistanceMap provides);
+  void attach(BrokerPtr source, Port local, Port remote);
+  Port getLocalPortFor(BrokerPtr broker);
 
   const Id _id;
   std::vector<ContextPtr> _contexts;
