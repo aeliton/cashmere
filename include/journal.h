@@ -36,6 +36,7 @@ public:
 
   bool insert(const ClockEntry& data, Port port = 0) override;
 
+  Id id() const;
   const Id bookId() const;
   bool append(Amount value);
   bool append(const Entry& entry);
@@ -47,6 +48,7 @@ public:
   IdDistanceMap provides() const override;
 
 private:
+  const Id _id;
   static Random _random;
   const Id _bookId;
   ClockEntryMap _entries;

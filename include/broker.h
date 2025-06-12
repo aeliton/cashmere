@@ -65,14 +65,13 @@ struct Context
 class Broker : public std::enable_shared_from_this<Broker>
 {
 public:
-  explicit Broker(Id id = 0);
+  explicit Broker();
   virtual ~Broker();
   virtual bool insert(const ClockEntry& data, Port sender = 0);
   virtual bool insert(const ClockEntryList& entries, Port sender = 0);
   virtual ClockEntryList entries(const Clock& from = {}) const;
   virtual IdDistanceMap provides() const;
 
-  Id id() const;
   Clock clock() const;
 
   bool attach(BrokerPtr other);
@@ -90,7 +89,6 @@ private:
   void attach(BrokerPtr source, Port local, Port remote);
   Port getLocalPortFor(BrokerPtr broker);
 
-  const Id _id;
   std::vector<ContextPtr> _contexts;
   std::unordered_map<Id, ContextPtr> _contextMap;
 };

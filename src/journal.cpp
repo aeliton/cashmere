@@ -27,13 +27,19 @@ Journal::Journal()
 }
 
 Journal::Journal(Id id, const ClockEntryMap& entries)
-  : Broker(id)
+  : Broker()
+  , _id(id)
   , _bookId(_random.next())
   , _entries(entries)
 {
 }
 
 Journal::~Journal() {}
+
+Id Journal::id() const
+{
+  return _id;
+}
 
 const Id Journal::bookId() const
 {

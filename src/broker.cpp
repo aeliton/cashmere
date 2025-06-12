@@ -29,15 +29,9 @@ Context::Context(std::shared_ptr<Broker> j, const Clock& v, Connection c)
 
 Broker::~Broker() = default;
 
-Broker::Broker(Id id)
-  : _id(id)
+Broker::Broker()
 {
   _contexts.push_back(std::make_shared<Context>(nullptr, Clock{}, 0));
-}
-
-Id Broker::id() const
-{
-  return _id;
 }
 
 void Broker::setClock(const Clock& clock)
