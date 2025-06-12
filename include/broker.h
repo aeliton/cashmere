@@ -53,13 +53,7 @@ struct Context
   Port port;
   IdDistanceMap provides;
 
-  bool containsEntries() const
-  {
-    if (provides.size() != 1) {
-      return false;
-    }
-    return provides.begin()->second.distance == 1;
-  }
+  bool containsEntries() const;
 };
 
 class Broker : public std::enable_shared_from_this<Broker>

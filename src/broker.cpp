@@ -207,4 +207,13 @@ IdDistanceMap Broker::UpdateProvides(IdDistanceMap provides)
   }
   return provides;
 }
+
+bool Context::containsEntries() const
+{
+  if (provides.size() != 1) {
+    return false;
+  }
+  return provides.begin()->second.distance == 1;
+}
+
 }
