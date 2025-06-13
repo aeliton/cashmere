@@ -19,12 +19,22 @@
 namespace Cashmere
 {
 
+bool ConnectionInfo::operator==(const ConnectionInfo& other) const
+{
+  return std::tie(distance, version) == std::tie(other.distance, other.version);
+}
+
+bool ConnectionInfo::operator<(const ConnectionInfo& other) const
+{
+  return std::tie(distance, version) < std::tie(other.distance, other.version);
+}
+
 struct Context
 {
   BrokerWeakPtr journal;
   Clock version;
   Port port;
-  IdDistanceMap provides;
+  IdConnectionInfoMap provides;
 };
 
 Broker::~Broker() = default;
@@ -54,13 +64,13 @@ ClockEntryList Broker::entries(const Clock& from) const
   return entries(from, -1);
 }
 
-IdDistanceMap Broker::provides() const
+IdConnectionInfoMap Broker::provides() const
 {
-  IdDistanceMap out;
+  IdConnectionInfoMap out;
   for (auto& ctx : _contexts) {
     if (ctx->journal.lock()) {
       for (auto& [id, data] : ctx->provides) {
-        IdDistanceMap::const_iterator it = out.find(id);
+        IdConnectionInfoMap::const_iterator it = out.find(id);
         if (it == out.cend() || out.at(id).distance > it->second.distance) {
           out[id] = data;
         }
@@ -198,7 +208,7 @@ IdClockMap Broker::versions() const
   return out;
 }
 
-IdDistanceMap Broker::UpdateProvides(IdDistanceMap provides)
+IdConnectionInfoMap Broker::UpdateProvides(IdConnectionInfoMap provides)
 {
   for (auto& [id, data] : provides) {
     ++data.distance;

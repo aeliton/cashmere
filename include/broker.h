@@ -29,23 +29,15 @@ using BrokerWeakPtr = std::weak_ptr<Broker>;
 struct Context;
 using ContextPtr = std::shared_ptr<Context>;
 
-struct JournalData
+struct ConnectionInfo
 {
   int64_t distance;
   Clock version;
-  friend bool operator==(const JournalData& l, const JournalData& r)
-  {
-    return std::tie(l.distance, l.version) == std::tie(r.distance, r.version);
-  }
-  friend bool operator<(const JournalData& l, const JournalData& r)
-  {
-    return std::tie(l.distance, l.version) < std::tie(r.distance, r.version);
-  }
+  bool operator==(const ConnectionInfo& other) const;
+  bool operator<(const ConnectionInfo& other) const;
 };
 
-using IdDistanceMap = std::map<Id, JournalData>;
-
-struct Context;
+using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 
 class Broker : public std::enable_shared_from_this<Broker>
 {
@@ -55,7 +47,7 @@ public:
   virtual bool insert(const ClockEntry& data, Port sender = 0);
   virtual bool insert(const ClockEntryList& entries, Port sender = 0);
   virtual ClockEntryList entries(const Clock& from = {}) const;
-  virtual IdDistanceMap provides() const;
+  virtual IdConnectionInfoMap provides() const;
 
   Clock clock() const;
 
@@ -70,7 +62,7 @@ protected:
   void clockTick(Id id);
 
 private:
-  static IdDistanceMap UpdateProvides(IdDistanceMap provides);
+  static IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
   void attach(BrokerPtr source, Port local, Port remote);
   Port getLocalPortFor(BrokerPtr broker);
   ClockEntryList entries(const Clock& from, Port ignore) const;

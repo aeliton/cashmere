@@ -219,6 +219,6 @@ TEST_CASE_METHOD(Journal, "journal provides data from itself", "[provides]")
 {
   REQUIRE(
     provides() ==
-    IdDistanceMap{{id(), JournalData{.distance = 0, .version = Clock{}}}}
+    IdConnectionInfoMap{{id(), ConnectionInfo{.distance = 0, .version = Clock{}}}}
   );
 }

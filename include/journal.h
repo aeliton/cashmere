@@ -45,7 +45,7 @@ public:
   bool contains(const Clock& clock) const;
   Entry entry(Clock time) const;
 
-  IdDistanceMap provides() const override;
+  IdConnectionInfoMap provides() const override;
 
 private:
   const Id _id;

@@ -52,19 +52,19 @@ struct StringMaker<Cashmere::ClockEntry>
 };
 
 template<>
-struct StringMaker<Cashmere::IdDistanceMap>
+struct StringMaker<Cashmere::IdConnectionInfoMap>
 {
-  static std::string convert(Cashmere::IdDistanceMap const& m)
+  static std::string convert(Cashmere::IdConnectionInfoMap const& m)
   {
     std::stringstream ss;
-    ss << "IdDistanceMap{";
+    ss << "IdConnectionInfoMap{";
     if (m.size() > 0) {
       auto it = m.cbegin();
       ss << "{" << it->first << ", { .distance: " << it->second.distance
-         << ", .version: " << it->second.version << " }";
+         << ", .version: " << it->second.version << "} }";
       for (++it; it != m.cend(); it++) {
         ss << ", {" << it->first << ", { .distance: " << it->second.distance
-           << ", .version: " << it->second.version << " }";
+           << ", .version: " << it->second.version << "} }";
       }
     }
     ss << "}";
@@ -169,7 +169,7 @@ SCENARIO_METHOD(
 {
   GIVEN("a empty broker")
   {
-    REQUIRE(broker->provides() == IdDistanceMap{});
+    REQUIRE(broker->provides() == IdConnectionInfoMap{});
 
     WHEN("attaching journal with transactions")
     {
@@ -185,12 +185,15 @@ SCENARIO_METHOD(
       {
         REQUIRE(
           broker->provides() ==
-          IdDistanceMap{
+          IdConnectionInfoMap{
             {0xAA,
-             JournalData{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}
-            },
+             ConnectionInfo{
+               .distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}
+             }},
             {0xBB,
-             JournalData{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}
+             ConnectionInfo{
+               .distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}
+             }}
           }
         );
       }
@@ -230,7 +233,7 @@ SCENARIO_METHOD(
     REQUIRE(broker->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
     REQUIRE(
       broker->provides() ==
-      IdDistanceMap{{0xAA, {.distance = 1, .version = Clock{{0xAA, 1}}}}}
+      IdConnectionInfoMap{{0xAA, {.distance = 1, .version = Clock{{0xAA, 1}}}}}
     );
 
     WHEN("attaching a second journal")
@@ -253,7 +256,7 @@ SCENARIO_METHOD(
 
         REQUIRE(
           broker->provides() ==
-          IdDistanceMap{
+          IdConnectionInfoMap{
             {0xAA, {.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}
           }
         );
