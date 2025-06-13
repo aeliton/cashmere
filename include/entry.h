@@ -32,9 +32,6 @@ using ReplaceEntryMap = std::map<Clock, ClockEntry>;
 using ClockEntryList = std::list<ClockEntry>;
 using Port = int64_t;
 
-using ClockChangeSignal = Signal<bool(ClockEntry)>;
-using ClockChangeSlot = ClockChangeSignal::Slot;
-
 struct Entry
 {
   Id id;
