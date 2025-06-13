@@ -79,7 +79,7 @@ IdConnectionInfoMap Broker::provides() const
 Port Broker::getLocalPortFor(BrokerPtr remote)
 {
   Port local = _contexts.size();
-  auto provides = remote->provides();
+  const auto provides = UpdateProvides(remote->provides());
   if (provides.size() > 0) {
     auto& [id, data] = *provides.begin();
     for (size_t i = 1; i < _contexts.size(); ++i) {
@@ -88,7 +88,7 @@ Port Broker::getLocalPortFor(BrokerPtr remote)
       }
       auto& ctxProvides = _contexts[i]->provides;
       auto it = ctxProvides.find(id);
-      if (it != ctxProvides.end() && data.distance + 1 == it->second.distance) {
+      if (it != ctxProvides.end() && data.distance == it->second.distance) {
         local = i;
         break;
       }
