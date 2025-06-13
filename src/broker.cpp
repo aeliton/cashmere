@@ -19,6 +19,15 @@
 namespace Cashmere
 {
 
+struct Context
+{
+  Context(std::shared_ptr<Broker> j, const Clock& v, Connection c);
+  BrokerWeakPtr journal;
+  Clock version;
+  Port port;
+  IdDistanceMap provides;
+};
+
 Context::Context(std::shared_ptr<Broker> j, const Clock& v, Connection c)
   : journal(j)
   , version(v)
@@ -51,15 +60,7 @@ Clock Broker::clock() const
 
 ClockEntryList Broker::entries(const Clock& from) const
 {
-  for (const auto& context : _contexts) {
-    if (!context->containsEntries()) {
-      continue;
-    }
-    if (auto journal = context->journal.lock()) {
-      return context->journal.lock()->entries(from);
-    }
-  }
-  return {};
+  return entries(from, -1);
 }
 
 IdDistanceMap Broker::provides() const
@@ -67,9 +68,12 @@ IdDistanceMap Broker::provides() const
   IdDistanceMap out;
   for (auto& ctx : _contexts) {
     if (ctx->journal.lock()) {
-      auto provides = ctx->provides;
-      out.merge(provides);
-      assert(provides.empty());
+      for (auto& [id, data] : ctx->provides) {
+        IdDistanceMap::const_iterator it = out.find(id);
+        if (it == out.cend() || out.at(id).distance > it->second.distance) {
+          out[id] = data;
+        }
+      }
     }
   }
   return out;
@@ -110,8 +114,8 @@ bool Broker::attach(BrokerPtr remote)
 
   context->port = remote->getLocalPortFor(ptr());
 
-  auto otherEntries = remote->entries(context->version);
-  auto thisEntries = this->entries(context->version);
+  auto otherEntries = remote->entries(context->version, context->port);
+  auto thisEntries = this->entries(context->version, local);
 
   remote->attach(ptr(), context->port, local);
   attach(remote, local, context->port);
@@ -174,6 +178,9 @@ bool Broker::insert(const ClockEntry& data, Port port)
     ctx->provides[data.entry.journalId].version.merge(data.clock);
 
   for (size_t i = 0; i < _contexts.size(); ++i) {
+    if (i == port) {
+      continue;
+    }
     auto ctx = _contexts[i];
     if (ctx->provides.find(data.entry.journalId) != ctx->provides.cend()) {
       continue;
@@ -208,12 +215,21 @@ IdDistanceMap Broker::UpdateProvides(IdDistanceMap provides)
   return provides;
 }
 
-bool Context::containsEntries() const
+ClockEntryList Broker::entries(const Clock& from, Port ignore) const
 {
-  if (provides.size() != 1) {
-    return false;
+  if (provides().size() == 1 && provides().begin()->second.distance == 0) {
+    return entries(from);
   }
-  return provides.begin()->second.distance == 1;
+  for (size_t i = 1; i < _contexts.size(); i++) {
+    auto context = _contexts[i];
+    if (i == ignore) {
+      continue;
+    }
+    if (auto broker = context->journal.lock()) {
+      return broker->entries(from, context->port);
+    }
+  }
+  return {};
 }
 
 }

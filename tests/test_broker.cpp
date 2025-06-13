@@ -356,9 +356,63 @@ SCENARIO_METHOD(
       {
         REQUIRE(broker->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
       }
+
       THEN("the attached broker display the journal version")
       {
         REQUIRE(second->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+      }
+
+      THEN("the attached broker can retrieve entries")
+      {
+        REQUIRE(
+          second->entries() ==
+          ClockEntryList{
+            {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
+          }
+        );
+      }
+
+      AND_WHEN("a journal attaches to the second broker")
+      {
+        auto bb = std::make_shared<JournalMock>(
+          0xBB, ClockEntryMap{{{{0xBB, 1}}, {0xBB, 50, {}}}}
+        );
+
+        second->attach(bb);
+
+        THEN("a single insert for data exchange call is made on both journals")
+        {
+          REQUIRE(mock->_insertArgs.size() == 1);
+          REQUIRE(bb->_insertArgs.size() == 1);
+        }
+
+        THEN("the clock of both journals reflect the data exchange")
+        {
+          REQUIRE(mock->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
+          REQUIRE(bb->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
+        }
+
+        THEN("the previously attached journal receives the new entry")
+        {
+          REQUIRE(
+            mock->entries() ==
+            ClockEntryList{
+              {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
+              {Clock{{0xBB, 1}}, Entry{0xBB, 50, {}}}
+            }
+          );
+        }
+
+        THEN("the recently attached journal receives the existing entries")
+        {
+          REQUIRE(
+            bb->entries() ==
+            ClockEntryList{
+              {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
+              {Clock{{0xBB, 1}}, Entry{0xBB, 50, {}}}
+            }
+          );
+        }
       }
     }
   }

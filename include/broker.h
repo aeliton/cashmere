@@ -45,16 +45,7 @@ struct JournalData
 
 using IdDistanceMap = std::map<Id, JournalData>;
 
-struct Context
-{
-  Context(std::shared_ptr<Broker> j, const Clock& v, Connection c);
-  BrokerWeakPtr journal;
-  Clock version;
-  Port port;
-  IdDistanceMap provides;
-
-  bool containsEntries() const;
-};
+struct Context;
 
 class Broker : public std::enable_shared_from_this<Broker>
 {
@@ -82,6 +73,7 @@ private:
   static IdDistanceMap UpdateProvides(IdDistanceMap provides);
   void attach(BrokerPtr source, Port local, Port remote);
   Port getLocalPortFor(BrokerPtr broker);
+  ClockEntryList entries(const Clock& from, Port ignore) const;
 
   std::vector<ContextPtr> _contexts;
   std::unordered_map<Id, ContextPtr> _contextMap;
