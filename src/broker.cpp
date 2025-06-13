@@ -78,26 +78,28 @@ IdConnectionInfoMap Broker::provides() const
 
 Port Broker::getLocalPortFor(BrokerPtr remote)
 {
-  Port local = _contexts.size();
-  const auto provides = UpdateProvides(remote->provides());
-  if (provides.size() > 0) {
-    auto& [id, data] = *provides.begin();
-    for (size_t i = 1; i < _contexts.size(); ++i) {
-      if (_contexts[i]->provides.empty()) {
-        continue;
+  Port port = _contexts.size();
+  const auto remoteProvides = UpdateProvides(remote->provides());
+  for (size_t i = 1; i < _contexts.size(); ++i) {
+    auto localData = _contexts[i]->provides;
+    auto remoteData = remoteProvides;
+    while (remoteData.size() > 0 && localData.size() > 0) {
+      const auto& [rId, rData] = *remoteData.begin();
+      const auto& [lId, lData] = *localData.begin();
+      if (rId == lId && rData.distance == lData.distance) {
+        localData.erase(lId);
       }
-      auto& ctxProvides = _contexts[i]->provides;
-      auto it = ctxProvides.find(id);
-      if (it != ctxProvides.end() && data.distance == it->second.distance) {
-        local = i;
-        break;
-      }
+      remoteData.erase(rId);
+    }
+    if (remoteData.empty() && localData.empty()) {
+      port = i;
+      break;
     }
   }
-  if (local == _contexts.size()) {
+  if (port == _contexts.size()) {
     _contexts.push_back(std::make_shared<Context>());
   }
-  return local;
+  return port;
 }
 
 bool Broker::attach(BrokerPtr remote)
@@ -228,5 +230,4 @@ ClockEntryList Broker::entries(const Clock& from, Port ignore) const
   }
   return {};
 }
-
 }
