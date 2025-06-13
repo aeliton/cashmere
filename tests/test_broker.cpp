@@ -45,7 +45,7 @@ struct StringMaker<Cashmere::ClockEntry>
   static std::string convert(Cashmere::ClockEntry const& m)
   {
     std::stringstream ss;
-    ss << "{ Clock" << m.clock << "}, Entry{" << m.entry.journalId << ", "
+    ss << "{ Clock" << m.clock << "}, Entry{" << m.entry.id << ", "
        << m.entry.value << ", " << "Clock" << m.entry.alters << " }";
     return ss.str();
   }

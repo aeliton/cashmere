@@ -28,8 +28,8 @@ bool Entry::valid() const
 }
 const bool Entry::operator==(const Entry& other) const
 {
-  return std::tie(journalId, value, alters) ==
-         std::tie(other.journalId, other.value, other.alters);
+  return std::tie(id, value, alters) ==
+         std::tie(other.id, other.value, other.alters);
 }
 
 }

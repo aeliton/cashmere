@@ -56,7 +56,7 @@ bool Journal::append(Amount value)
 
 bool Journal::append(const Entry& entry)
 {
-  return insert({clock().tick(entry.journalId), entry});
+  return insert({clock().tick(entry.id), entry});
 }
 
 bool Journal::insert(const ClockEntry& data, Port port)

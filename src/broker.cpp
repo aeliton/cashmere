@@ -170,15 +170,15 @@ bool Broker::insert(const ClockEntry& data, Port port)
   }
   auto& ctx = _contexts[port];
 
-  ctx->provides[data.entry.journalId].version =
-    ctx->provides[data.entry.journalId].version.merge(data.clock);
+  ctx->provides[data.entry.id].version =
+    ctx->provides[data.entry.id].version.merge(data.clock);
 
   for (size_t i = 0; i < _contexts.size(); ++i) {
     if (i == port) {
       continue;
     }
     auto ctx = _contexts[i];
-    if (ctx->provides.find(data.entry.journalId) != ctx->provides.cend()) {
+    if (ctx->provides.find(data.entry.id) != ctx->provides.cend()) {
       continue;
     }
     if (auto journal = ctx->journal.lock()) {

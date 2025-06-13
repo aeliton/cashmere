@@ -66,7 +66,7 @@ Ledger::Replaces(const ClockEntry& existing, const ClockEntry& incoming)
   if (incoming.clock.smallerThan(existing.clock)) {
     return {Action::Ignore, {}};
   }
-  if (existing.entry.journalId < incoming.entry.journalId) {
+  if (existing.entry.id < incoming.entry.id) {
     return {Action::Replace, incoming.entry.alters};
   }
   return {Action::Ignore, {}};

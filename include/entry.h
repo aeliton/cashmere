@@ -37,7 +37,7 @@ using ClockChangeSlot = ClockChangeSignal::Slot;
 
 struct Entry
 {
-  Id journalId;
+  Id id;
   Amount value;
   Clock alters;
   const bool operator==(const Entry& other) const;
