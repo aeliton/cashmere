@@ -21,26 +21,17 @@ namespace Cashmere
 
 struct Context
 {
-  Context(std::shared_ptr<Broker> j, const Clock& v, Connection c);
   BrokerWeakPtr journal;
   Clock version;
   Port port;
   IdDistanceMap provides;
 };
 
-Context::Context(std::shared_ptr<Broker> j, const Clock& v, Connection c)
-  : journal(j)
-  , version(v)
-  , port(c)
-  , provides({})
-{
-}
-
 Broker::~Broker() = default;
 
 Broker::Broker()
 {
-  _contexts.push_back(std::make_shared<Context>(nullptr, Clock{}, 0));
+  _contexts.push_back(std::make_shared<Context>());
 }
 
 void Broker::setClock(const Clock& clock)
@@ -98,7 +89,7 @@ Port Broker::getLocalPortFor(BrokerPtr remote)
     }
   }
   if (local == _contexts.size()) {
-    _contexts.push_back(std::make_shared<Context>(nullptr, Clock{}, 0));
+    _contexts.push_back(std::make_shared<Context>());
   }
   return local;
 }
