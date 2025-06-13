@@ -57,10 +57,8 @@ public:
 
   BrokerPtr ptr();
 
-protected:
-  void setClock(const Clock& clock);
-
 private:
+  void setClock(const Clock& clock);
   static IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
   void attach(BrokerPtr source, Port local, Port remote);
   Port getLocalPortFor(BrokerPtr broker);
