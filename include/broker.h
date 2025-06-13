@@ -59,7 +59,6 @@ public:
 
 protected:
   void setClock(const Clock& clock);
-  void clockTick(Id id);
 
 private:
   static IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);

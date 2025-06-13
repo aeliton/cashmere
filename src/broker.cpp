@@ -49,11 +49,6 @@ void Broker::setClock(const Clock& clock)
   _contexts.front()->version = clock;
 }
 
-void Broker::clockTick(Id id)
-{
-  _contexts.front()->version[id]++;
-};
-
 Clock Broker::clock() const
 {
   return _contexts.front()->version;

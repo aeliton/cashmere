@@ -56,7 +56,7 @@ bool Journal::append(Amount value)
 
 bool Journal::append(const Entry& entry)
 {
-  clockTick(entry.journalId);
+  setClock(clock().tick(entry.journalId));
   return insert({clock(), entry});
 }
 

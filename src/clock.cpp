@@ -38,6 +38,13 @@ Clock Clock::merge(const Clock& other) const
   return out;
 }
 
+Clock Clock::tick(Id id) const
+{
+  Clock out = *this;
+  ++out[id];
+  return out;
+}
+
 bool Clock::smallerThan(const Clock& other) const
 {
   return *this != other && merge(other) == other;
