@@ -28,10 +28,9 @@ struct JournalMock : public Journal
     : JournalMock(id, {})
   {
   }
-  JournalMock(Id id, ClockEntryList e)
-    : Journal(id)
+  JournalMock(Id id, ClockEntryMap e)
+    : Journal(id, e)
   {
-    Broker::insert(e);
     _insertArgs.clear();
     _entriesArgs.clear();
     _entriesSignaler.connect([this](const Clock& clock) -> bool {

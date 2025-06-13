@@ -24,6 +24,16 @@ TEST_CASE("clock starts empty for newly created journals", "[journal]")
   REQUIRE(journal->clock().empty());
 }
 
+TEST_CASE(
+  "clock is updated if entrys are provided during construction", "[journal]"
+)
+{
+  JournalPtr journal = std::make_shared<Journal>(
+    0xAA, ClockEntryMap{{Clock{{0xAA, 1}}, Entry{0xAA, 10, {}}}}
+  );
+  REQUIRE(journal->clock() == Clock{{0xAA, 1}});
+}
+
 TEST_CASE("invalid/inexisting queries returns invalid", "[journal]")
 {
   SECTION("inexisting entry")

@@ -32,6 +32,9 @@ Journal::Journal(Id id, const ClockEntryMap& entries)
   , _bookId(_random.next())
   , _entries(entries)
 {
+  for (auto& [clock, entry] : _entries) {
+    Broker::insert({clock, entry});
+  }
 }
 
 Journal::~Journal() {}
