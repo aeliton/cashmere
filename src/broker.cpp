@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "broker.h"
 #include <cassert>
+#include <utility>
 
 namespace Cashmere
 {
@@ -65,7 +66,7 @@ IdConnectionInfoMap Broker::provides() const
   for (auto& ctx : _contexts) {
     if (ctx->journal.lock()) {
       for (auto& [id, data] : ctx->provides) {
-        IdConnectionInfoMap::const_iterator it = out.find(id);
+        auto it = std::as_const(out).find(id);
         if (it == out.cend() || out.at(id).distance > it->second.distance) {
           out[id] = data;
         }
