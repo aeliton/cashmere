@@ -29,7 +29,6 @@ struct ClockEntry;
 using ClockEntryMap = std::map<Clock, Entry>;
 using ReplaceEntryMap = std::map<Clock, ClockEntry>;
 using ClockEntryList = std::list<ClockEntry>;
-using Port = int64_t;
 
 struct Entry
 {
