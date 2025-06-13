@@ -19,7 +19,6 @@
 #include "clock.h"
 
 #include <list>
-#include <signal/signal.h>
 
 namespace Cashmere
 {

@@ -19,6 +19,7 @@
 #include "broker.h"
 #include "journal.h"
 #include <cassert>
+#include <signal/signal.h>
 
 namespace Cashmere
 {
