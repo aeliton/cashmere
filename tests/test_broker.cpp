@@ -365,6 +365,22 @@ SCENARIO_METHOD(
         REQUIRE(second->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
       }
 
+      THEN("brokers display the journal distances and versions")
+      {
+        REQUIRE(
+          second->provides() ==
+          IdConnectionInfoMap{
+            {0xAA, ConnectionInfo{.distance = 2, .version = Clock{{0xAA, 1}}}}
+          }
+        );
+        REQUIRE(
+          broker->provides() ==
+          IdConnectionInfoMap{
+            {0xAA, ConnectionInfo{.distance = 1, .version = Clock{{0xAA, 1}}}}
+          }
+        );
+      }
+
       THEN("the attached broker can retrieve entries")
       {
         REQUIRE(
@@ -385,8 +401,51 @@ SCENARIO_METHOD(
 
         THEN("a single insert for data exchange call is made on both journals")
         {
-          REQUIRE(mock->_insertArgs.size() == 1);
-          REQUIRE(bb->_insertArgs.size() == 1);
+          REQUIRE(
+            mock->_insertArgs ==
+            ClockEntryList{{Clock{{0xBB, 1}}, Entry{0xBB, 50, {}}}}
+          );
+          REQUIRE(
+            bb->_insertArgs ==
+            ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}}}
+          );
+        }
+
+        THEN("the clock of both brokers reflect the data exchange")
+        {
+          REQUIRE(broker->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
+          REQUIRE(second->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
+        }
+
+        THEN("brokers display the journal distances and versions")
+        {
+          REQUIRE(
+            second->provides() ==
+            IdConnectionInfoMap{
+              {0xAA,
+               ConnectionInfo{
+                 .distance = 2, .version = Clock{{0xAA, 1}, {0xBB, 1}}
+               }},
+              {0xBB,
+               ConnectionInfo{
+                 .distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}
+               }}
+            }
+          );
+
+          REQUIRE(
+            broker->provides() ==
+            IdConnectionInfoMap{
+              {0xAA,
+               ConnectionInfo{
+                 .distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}
+               }},
+              {0xBB,
+               ConnectionInfo{
+                 .distance = 2, .version = Clock{{0xAA, 1}, {0xBB, 1}}
+               }}
+            }
+          );
         }
 
         THEN("the clock of both journals reflect the data exchange")

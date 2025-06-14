@@ -71,7 +71,7 @@ IdConnectionInfoMap Broker::provides(Port to) const
     if (ctx->journal.lock()) {
       for (auto& [id, data] : ctx->provides) {
         auto it = std::as_const(out).find(id);
-        if (it == out.cend() || out.at(id).distance > it->second.distance) {
+        if (it == out.cend() || data.distance < it->second.distance) {
           out[id] = data;
         }
       }
@@ -179,6 +179,11 @@ bool Broker::insert(const ClockEntry& data, Port port)
 
   setClock(clock().merge(data.clock));
 
+  if (auto j = ctx->journal.lock()) {
+    ctx->provides = UpdateProvides(j->provides(ctx->port));
+  } else {
+    ctx->provides[data.entry.id].distance = 1;
+  }
   ctx->provides[data.entry.id].version = clock();
 
   for (size_t i = 0; i < _contexts.size(); ++i) {
