@@ -60,10 +60,14 @@ ClockEntryList Broker::entries(const Clock& from) const
   return entries(from, -1);
 }
 
-IdConnectionInfoMap Broker::provides() const
+IdConnectionInfoMap Broker::provides(Port to) const
 {
   IdConnectionInfoMap out;
-  for (auto& ctx : _contexts) {
+  for (size_t i = 0; i < _contexts.size(); i++) {
+    if (i == to) {
+      continue;
+    }
+    auto& ctx = _contexts[i];
     if (ctx->journal.lock()) {
       for (auto& [id, data] : ctx->provides) {
         auto it = std::as_const(out).find(id);

@@ -54,7 +54,7 @@ public:
   virtual bool insert(const ClockEntry& data, Port sender = 0);
   virtual bool insert(const ClockEntryList& entries, Port sender = 0);
   virtual ClockEntryList entries(const Clock& from = {}) const;
-  virtual IdConnectionInfoMap provides() const;
+  virtual IdConnectionInfoMap provides(Port to = 0) const;
   virtual Type type() const;
 
   Clock clock() const;

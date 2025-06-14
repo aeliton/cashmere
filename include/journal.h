@@ -47,7 +47,7 @@ public:
   bool contains(const Clock& clock) const;
   Entry entry(Clock time) const;
 
-  IdConnectionInfoMap provides() const override;
+  IdConnectionInfoMap provides(Port to = 0) const override;
 
 private:
   const Id _id;

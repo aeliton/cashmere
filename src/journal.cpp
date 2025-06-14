@@ -102,7 +102,7 @@ ClockEntryList Journal::entries(const Clock& from) const
   return list;
 }
 
-IdConnectionInfoMap Journal::provides() const
+IdConnectionInfoMap Journal::provides(Port to) const
 {
   return {{id(), {.distance = 0, .version = clock()}}};
 }

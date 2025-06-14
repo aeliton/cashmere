@@ -420,3 +420,24 @@ SCENARIO_METHOD(
     }
   }
 }
+
+TEST_CASE_METHOD(
+  BrokerWithTwoAttachedSingleEntryMocks, "broker provides differ per port"
+)
+{
+  REQUIRE(
+    broker->provides(0) ==
+    IdConnectionInfoMap{
+      {170, {.distance = 1, .version = {{170, 1}, {187, 1}}}},
+      {187, {.distance = 1, .version = {{170, 1}, {187, 1}}}}
+    }
+  );
+  REQUIRE(
+    broker->provides(1) ==
+    IdConnectionInfoMap{{187, {.distance = 1, .version = {{170, 1}, {187, 1}}}}}
+  );
+  REQUIRE(
+    broker->provides(2) ==
+    IdConnectionInfoMap{{170, {.distance = 1, .version = {{170, 1}, {187, 1}}}}}
+  );
+}
