@@ -61,10 +61,10 @@ struct StringMaker<Cashmere::IdConnectionInfoMap>
     if (m.size() > 0) {
       auto it = m.cbegin();
       ss << "{" << it->first << ", { .distance: " << it->second.distance
-         << ", .version: " << it->second.version << "} }";
+         << ", .version: " << it->second.version << " }}";
       for (++it; it != m.cend(); it++) {
         ss << ", {" << it->first << ", { .distance: " << it->second.distance
-           << ", .version: " << it->second.version << "} }";
+           << ", .version: " << it->second.version << " }}";
       }
     }
     ss << "}";
