@@ -43,12 +43,19 @@ using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 class Broker : public std::enable_shared_from_this<Broker>
 {
 public:
+  enum class Type
+  {
+    Transport,
+    Store
+  };
+
   explicit Broker();
   virtual ~Broker();
   virtual bool insert(const ClockEntry& data, Port sender = 0);
   virtual bool insert(const ClockEntryList& entries, Port sender = 0);
   virtual ClockEntryList entries(const Clock& from = {}) const;
   virtual IdConnectionInfoMap provides() const;
+  virtual Type type() const;
 
   Clock clock() const;
 

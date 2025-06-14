@@ -216,7 +216,7 @@ IdConnectionInfoMap Broker::UpdateProvides(IdConnectionInfoMap provides)
 
 ClockEntryList Broker::entries(const Clock& from, Port ignore) const
 {
-  if (provides().size() == 1 && provides().begin()->second.distance == 0) {
+  if (type() == Type::Store) {
     return entries(from);
   }
   for (size_t i = 1; i < _contexts.size(); i++) {
@@ -229,5 +229,10 @@ ClockEntryList Broker::entries(const Clock& from, Port ignore) const
     }
   }
   return {};
+}
+
+Broker::Type Broker::type() const
+{
+  return Type::Transport;
 }
 }

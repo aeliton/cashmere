@@ -36,6 +36,8 @@ public:
 
   bool insert(const ClockEntry& data, Port port = 0) override;
 
+  Type type() const override;
+
   Id id() const;
   const Id bookId() const;
   bool append(Amount value);

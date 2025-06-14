@@ -106,4 +106,9 @@ IdConnectionInfoMap Journal::provides() const
 {
   return {{id(), {.distance = 0, .version = clock()}}};
 }
+
+Broker::Type Journal::type() const
+{
+  return Type::Store;
+}
 }
