@@ -421,6 +421,37 @@ SCENARIO_METHOD(
   }
 }
 
+SCENARIO_METHOD(
+  TwoBrokerWithASingleEntryMocksEach,
+  "two connected brokers with a single entry journal each", "[provides]"
+)
+{
+  GIVEN("two brokers with an attached journal each")
+  {
+    WHEN("attaching the two brokers")
+    {
+      broker->attach(br1);
+      THEN("both brokers report they can provide data from the two journals")
+      {
+        REQUIRE(
+          broker->provides() ==
+          IdConnectionInfoMap{
+            {170, {.distance = 1, .version = {{170, 1}, {187, 1}}}},
+            {187, {.distance = 2, .version = {{170, 1}, {187, 1}}}}
+          }
+        );
+        REQUIRE(
+          br1->provides() ==
+          IdConnectionInfoMap{
+            {170, {.distance = 2, .version = {{170, 1}, {187, 1}}}},
+            {187, {.distance = 1, .version = {{170, 1}, {187, 1}}}}
+          }
+        );
+      }
+    }
+  }
+}
+
 TEST_CASE_METHOD(
   BrokerWithTwoAttachedSingleEntryMocks, "broker provides differ per port"
 )

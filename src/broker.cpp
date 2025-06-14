@@ -177,8 +177,9 @@ bool Broker::insert(const ClockEntry& data, Port port)
   }
   auto& ctx = _contexts[port];
 
-  ctx->provides[data.entry.id].version =
-    ctx->provides[data.entry.id].version.merge(data.clock);
+  setClock(clock().merge(data.clock));
+
+  ctx->provides[data.entry.id].version = clock();
 
   for (size_t i = 0; i < _contexts.size(); ++i) {
     if (i == port) {
@@ -195,7 +196,6 @@ bool Broker::insert(const ClockEntry& data, Port port)
       }
     }
   }
-  setClock(clock().merge(data.clock));
   return true;
 }
 
