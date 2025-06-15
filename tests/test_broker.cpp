@@ -116,6 +116,16 @@ SCENARIO("Journal is attached")
         REQUIRE(broker->versions() == IdClockMap{{0xAA, Clock{{0xAA, 1}}}});
       }
 
+      THEN("the broker reports info about the attached journal")
+      {
+        REQUIRE(
+          broker->provides() ==
+          IdConnectionInfoMap{
+            {0xAA, ConnectionInfo{.distance = 1, .version = Clock{{0xAA, 1}}}}
+          }
+        );
+      }
+
       AND_WHEN("the journal is detached")
       {
         const bool success = broker->detach(1);
@@ -130,6 +140,11 @@ SCENARIO("Journal is attached")
           REQUIRE(
             broker->versions() == IdClockMap{{0xAA, Clock{{mock->id(), 1}}}}
           );
+        }
+
+        THEN("the broker no longer report info about the journal")
+        {
+          REQUIRE(broker->provides() == IdConnectionInfoMap{});
         }
 
         AND_WHEN("attempting to detach a non-attached journal")
