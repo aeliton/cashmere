@@ -75,32 +75,43 @@ struct StringMaker<Cashmere::IdConnectionInfoMap>
 
 using namespace Cashmere;
 
-TEST_CASE("broker attach ignores nullptr")
+TEST_CASE_METHOD(Broker, "broker attach ignores nullptr")
 {
-  Broker broker;
-  REQUIRE_FALSE(broker.attach(nullptr));
+  REQUIRE_FALSE(attach(nullptr));
 }
 
-TEST_CASE("broker without journals has an empty clock")
+TEST_CASE_METHOD(Broker, "broker without journals has an empty clock")
 {
-  Broker broker;
-  REQUIRE(broker.clock() == Clock{});
+  REQUIRE(clock() == Clock{});
 }
 
-SCENARIO_METHOD(BrokerWithSingleEntryMock, "Journal is attached to a Broker")
+TEST_CASE_METHOD(Broker, "broker without journals has an empty versions")
 {
-  GIVEN("a broker")
+  REQUIRE(versions() == IdClockMap{});
+}
+
+SCENARIO("Journal is attached")
+{
+  GIVEN("an empty broker")
   {
-    REQUIRE(broker->versions() == IdClockMap{});
+    auto broker = std::make_shared<Broker>();
 
-    REQUIRE(mock->clock() == Clock{{0xAA, 1}});
-
-    WHEN("a journal is attached to the broker")
+    WHEN("the journal with an entry is attached")
     {
+      auto mock = std::make_shared<SingleEntryMock>(0xAA, 10);
       const bool success = broker->attach(mock);
-      REQUIRE(success);
+
+      THEN("the attach is successful")
+      {
+        REQUIRE(success);
+      }
 
       THEN("the broker has its clock updated")
+      {
+        REQUIRE(broker->clock() == Clock{{0xAA, 1}});
+      }
+
+      THEN("the broker has its versions updated")
       {
         REQUIRE(broker->versions() == IdClockMap{{0xAA, Clock{{0xAA, 1}}}});
       }
