@@ -35,7 +35,7 @@ using ContextPtr = std::shared_ptr<Context>;
 struct Broker::Impl
 {
   void setClock(const Clock& clock);
-  void attach(BrokerPtr source, Port local, Port remote);
+  void connect(BrokerPtr source, Port local, Port remote);
   Port getLocalPortFor(BrokerPtr broker);
 
   std::vector<ContextPtr> _contexts;
@@ -49,7 +49,7 @@ Broker::Broker()
 
 Broker::~Broker() = default;
 
-bool Broker::attach(BrokerPtr remote)
+bool Broker::connect(BrokerPtr remote)
 {
   if (!remote) {
     return false;
@@ -63,8 +63,8 @@ bool Broker::attach(BrokerPtr remote)
   auto otherEntries = remote->entries(context->version, context->port);
   auto thisEntries = this->entries(context->version, local);
 
-  remote->impl()->attach(ptr(), context->port, local);
-  b->attach(remote, local, context->port);
+  remote->impl()->connect(ptr(), context->port, local);
+  b->connect(remote, local, context->port);
 
   if (auto clock = remote->insert(thisEntries, context->port); clock.valid()) {
     context->version = clock;
@@ -165,7 +165,7 @@ IdClockMap Broker::versions() const
   return out;
 }
 
-bool Broker::detach(Port port)
+bool Broker::disconnect(Port port)
 {
   if (port < 0 || b->_contexts.size() <= port) {
     return false;
@@ -204,7 +204,7 @@ void Broker::Impl::setClock(const Clock& clock)
   _contexts.front()->version = clock;
 }
 
-void Broker::Impl::attach(BrokerPtr source, Port local, Port remote)
+void Broker::Impl::connect(BrokerPtr source, Port local, Port remote)
 {
   auto context = _contexts.at(local);
   context->journal = source;

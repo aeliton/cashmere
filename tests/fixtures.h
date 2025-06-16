@@ -82,9 +82,9 @@ struct BrokerWithAttachedEmptyMockAndOneEmpty : BrokerWithEmptyMock
   BrokerWithAttachedEmptyMockAndOneEmpty()
     : BrokerWithEmptyMock()
   {
-    broker0->attach(attached);
+    broker0->connect(connected);
   }
-  JournalMockPtr attached = std::make_shared<JournalMock>(0xFF);
+  JournalMockPtr connected = std::make_shared<JournalMock>(0xFF);
 };
 
 struct BrokerWithSingleEntryMock
@@ -98,7 +98,7 @@ struct BrokerWithAttachedSingleEntryMock : public BrokerWithSingleEntryMock
 
   BrokerWithAttachedSingleEntryMock()
   {
-    broker0->attach(aa);
+    broker0->connect(aa);
   }
   JournalMockPtr aa = std::make_shared<SingleEntryMock>(0xAA, 1);
 };
@@ -115,8 +115,8 @@ struct BrokerWithTwoAttachedSingleEntryMocks
 {
   BrokerWithTwoAttachedSingleEntryMocks()
   {
-    broker0->attach(aa);
-    broker0->attach(bb);
+    broker0->connect(aa);
+    broker0->connect(bb);
   }
 };
 
@@ -134,8 +134,8 @@ struct TwoBrokerWithASingleEntryMocksEach : BrokerAndTwoSingleEntryMocks
 {
   TwoBrokerWithASingleEntryMocksEach()
   {
-    broker0->attach(aa);
-    broker1->attach(bb);
+    broker0->connect(aa);
+    broker1->connect(bb);
   }
   BrokerPtr broker1 = std::make_shared<Broker>();
 };

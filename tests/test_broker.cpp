@@ -75,9 +75,9 @@ struct StringMaker<Cashmere::IdConnectionInfoMap>
 
 using namespace Cashmere;
 
-TEST_CASE_METHOD(Broker, "broker attach ignores nullptr")
+TEST_CASE_METHOD(Broker, "broker connect ignores nullptr")
 {
-  REQUIRE_FALSE(attach(nullptr));
+  REQUIRE_FALSE(connect(nullptr));
 }
 
 TEST_CASE_METHOD(Broker, "broker without journals has an empty clock")
@@ -90,18 +90,18 @@ TEST_CASE_METHOD(Broker, "broker without journals has an empty versions")
   REQUIRE(versions() == IdClockMap{});
 }
 
-SCENARIO("Journal is attached")
+SCENARIO("Journal is connected")
 {
   GIVEN("an empty broker")
   {
     auto broker0 = std::make_shared<Broker>();
 
-    WHEN("the journal with an entry is attached")
+    WHEN("the journal with an entry is connected")
     {
       auto aa = std::make_shared<SingleEntryMock>(0xAA, 10);
-      const bool success = broker0->attach(aa);
+      const bool success = broker0->connect(aa);
 
-      THEN("the attach is successful")
+      THEN("the connect is successful")
       {
         REQUIRE(success);
       }
@@ -116,7 +116,7 @@ SCENARIO("Journal is attached")
         REQUIRE(broker0->versions() == IdClockMap{{0xAA, Clock{{0xAA, 1}}}});
       }
 
-      THEN("the broker reports info about the attached journal")
+      THEN("the broker reports info about the connected journal")
       {
         REQUIRE(
           broker0->provides() ==
@@ -128,7 +128,7 @@ SCENARIO("Journal is attached")
 
       AND_WHEN("the journal is detached")
       {
-        const bool success = broker0->detach(1);
+        const bool success = broker0->disconnect(1);
 
         THEN("the operation succeeds")
         {
@@ -147,9 +147,9 @@ SCENARIO("Journal is attached")
           REQUIRE(broker0->provides() == IdConnectionInfoMap{});
         }
 
-        AND_WHEN("attempting to detach a non-attached journal")
+        AND_WHEN("attempting to detach a non-connected journal")
         {
-          const bool success = broker0->detach(aa->id());
+          const bool success = broker0->disconnect(aa->id());
 
           THEN("the operation fails")
           {
@@ -165,18 +165,18 @@ SCENARIO_METHOD(BrokerWithEmptyMock, "journal get entries via broker")
 {
   GIVEN("a broker with a journal attatched")
   {
-    broker0->attach(aa);
+    broker0->connect(aa);
 
     WHEN("an entry is inserted on the broker")
     {
       broker0->insert({Clock{{0xFF, 1}}, Data{0xFF, 9, Clock{}}});
 
-      THEN("insert is called on the attached journal")
+      THEN("insert is called on the connected journal")
       {
         REQUIRE(aa->_insertArgs == EntryList{{{{0xFF, 1}}, {0xFF, 9, {}}}});
       }
 
-      THEN("the broker updates the version of the attached journal")
+      THEN("the broker updates the version of the connected journal")
       {
         REQUIRE(
           broker0->versions() ==
@@ -191,19 +191,19 @@ SCENARIO_METHOD(
   BrokerWithAttachedSingleEntryMock, "a broker synchronizes journal entries"
 )
 {
-  GIVEN("a broker with an attached journal with a transaction")
+  GIVEN("a broker with a connected journal with a transaction")
   {
-    WHEN("attaching journal with transactions")
+    WHEN("connecting journal with transactions")
     {
       auto bb = std::make_shared<SingleEntryMock>(0xBB, 2);
-      broker0->attach(bb);
+      broker0->connect(bb);
 
       THEN("the broker has it's clock updated")
       {
         REQUIRE(broker0->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
       }
 
-      THEN("the journal ids are listed as attached")
+      THEN("the journal ids are listed as connected")
       {
         REQUIRE(
           broker0->provides() ==
@@ -245,12 +245,12 @@ SCENARIO_METHOD(
 
 SCENARIO_METHOD(
   BrokerAndTwoSingleEntryMocks,
-  "versions of attached journals are updated when other attaches"
+  "versions of connected journals are updated when other connectes"
 )
 {
-  GIVEN("a broker with a single journal attached")
+  GIVEN("a broker with a single journal connected")
   {
-    broker0->attach(aa);
+    broker0->connect(aa);
 
     REQUIRE(broker0->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
     REQUIRE(
@@ -258,9 +258,9 @@ SCENARIO_METHOD(
       IdConnectionInfoMap{{0xAA, {.distance = 1, .version = Clock{{0xAA, 1}}}}}
     );
 
-    WHEN("attaching a second journal")
+    WHEN("connecting a second journal")
     {
-      broker0->attach(bb);
+      broker0->connect(bb);
       const size_t aaEntriesArgsSize = aa->_entriesArgs.size();
       const size_t bbEntriesArgsSize = bb->_entriesArgs.size();
 
@@ -273,7 +273,7 @@ SCENARIO_METHOD(
 
       AND_WHEN("a journal disconnects")
       {
-        const bool success = broker0->detach(2);
+        const bool success = broker0->disconnect(2);
         REQUIRE(success);
 
         REQUIRE(
@@ -283,7 +283,7 @@ SCENARIO_METHOD(
           }
         );
 
-        AND_WHEN("the attached journal inserts an entry")
+        AND_WHEN("the connected journal inserts an entry")
         {
           const auto result = aa->insert(Entry{{{0xAA, 2}}, {0xAA, 20, {}}});
 
@@ -296,9 +296,9 @@ SCENARIO_METHOD(
             }
           );
 
-          AND_WHEN("the detached journal is re-attached")
+          AND_WHEN("the detached journal is re-connected")
           {
-            broker0->attach(bb);
+            broker0->connect(bb);
             THEN("the broker calls for new entries once on each journal")
             {
               REQUIRE(aa->_entriesArgs.size() == aaEntriesArgsSize + 1);
@@ -311,7 +311,7 @@ SCENARIO_METHOD(
               REQUIRE(aa->_entriesArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
             }
 
-            THEN("the attaching journal receives the unseen entry")
+            THEN("the connecting journal receives the unseen entry")
             {
               REQUIRE(
                 std::find(
@@ -338,23 +338,23 @@ SCENARIO_METHOD(
 
 SCENARIO_METHOD(
   BrokerWithTwoAttachedSingleEntryAndOneEmpty,
-  "only one attached journal is requested for entries"
+  "only one connected journal is requested for entries"
 )
 {
   GIVEN("a broker with two non-empty journals attatched")
   {
     const auto initialCount = aa->_entriesArgs.size() + bb->_entriesArgs.size();
 
-    WHEN("attaching a new journal")
+    WHEN("connecting a new journal")
     {
-      broker0->attach(cc);
+      broker0->connect(cc);
 
-      THEN("only one of the attached journals is queried for entries")
+      THEN("only one of the connected journals is queried for entries")
       {
         const auto count = aa->_entriesArgs.size() + bb->_entriesArgs.size();
         REQUIRE(count == initialCount + 1);
       }
-      AND_THEN("the attached journal has the entries retrieved once")
+      AND_THEN("the connected journal has the entries retrieved once")
       {
         REQUIRE(cc->_entriesArgs.size() == 1);
       }
@@ -372,16 +372,16 @@ SCENARIO_METHOD(
 
     REQUIRE(broker0->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
 
-    WHEN("attaching the empty broker to other broker")
+    WHEN("connecting the empty broker to other broker")
     {
-      broker0->attach(broker1);
+      broker0->connect(broker1);
 
       THEN("the versions of the agregator broker do not change")
       {
         REQUIRE(broker0->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
       }
 
-      THEN("the attached broker display the journal version")
+      THEN("the connected broker display the journal version")
       {
         REQUIRE(broker1->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
       }
@@ -402,7 +402,7 @@ SCENARIO_METHOD(
         );
       }
 
-      THEN("the attached broker can retrieve entries")
+      THEN("the connected broker can retrieve entries")
       {
         REQUIRE(
           broker1->entries() ==
@@ -412,13 +412,13 @@ SCENARIO_METHOD(
         );
       }
 
-      AND_WHEN("a journal attaches to the second broker")
+      AND_WHEN("a journal connectes to the second broker")
       {
         auto bb = std::make_shared<JournalMock>(
           0xBB, ClockDataMap{{{{0xBB, 1}}, {0xBB, 50, {}}}}
         );
 
-        broker1->attach(bb);
+        broker1->connect(bb);
 
         THEN("a single insert for data exchange call is made on both journals")
         {
@@ -473,7 +473,7 @@ SCENARIO_METHOD(
           REQUIRE(bb->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
         }
 
-        THEN("the previously attached journal receives the new entry")
+        THEN("the previously connected journal receives the new entry")
         {
           REQUIRE(
             aa->entries() ==
@@ -484,7 +484,7 @@ SCENARIO_METHOD(
           );
         }
 
-        THEN("the recently attached journal receives the existing entries")
+        THEN("the recently connected journal receives the existing entries")
         {
           REQUIRE(
             bb->entries() ==
@@ -504,11 +504,11 @@ SCENARIO_METHOD(
   "two connected brokers with a single entry journal each", "[provides]"
 )
 {
-  GIVEN("two brokers with an attached journal each")
+  GIVEN("two brokers with a connected journal each")
   {
-    WHEN("attaching the two brokers")
+    WHEN("connecting the two brokers")
     {
-      broker0->attach(broker1);
+      broker0->connect(broker1);
       THEN("both brokers report they can provide data from the two journals")
       {
         REQUIRE(

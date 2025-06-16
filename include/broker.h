@@ -58,8 +58,8 @@ public:
 
   Clock clock() const;
 
-  bool attach(BrokerPtr other);
-  bool detach(Port port);
+  bool connect(BrokerPtr other);
+  bool disconnect(Port port);
 
   BrokerPtr ptr();
 
