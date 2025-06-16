@@ -56,13 +56,13 @@ bool Journal::append(Amount value)
 
 bool Journal::append(const Entry& entry)
 {
-  return insert({clock().tick(entry.id), entry});
+  return insert({clock().tick(entry.id), entry}).valid();
 }
 
-bool Journal::insert(const ClockEntry& data, Port port)
+Clock Journal::insert(const ClockEntry& data, Port port)
 {
   if (_entries.find(data.clock) != _entries.end()) {
-    return false;
+    return Clock();
   }
   _entries[data.clock] = data.entry;
   return Broker::insert(data, port);

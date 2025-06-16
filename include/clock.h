@@ -34,6 +34,7 @@ public:
   Clock tick(Id id) const;
   bool smallerThan(const Clock& other) const;
   bool concurrent(const Clock& other) const;
+  bool valid() const;
 };
 
 std::ostream& operator<<(std::ostream& os, const Clock& clock);

@@ -34,7 +34,7 @@ public:
 
   ClockEntryList entries(const Clock& from = {}) const override;
 
-  bool insert(const ClockEntry& data, Port port = 0) override;
+  Clock insert(const ClockEntry& data, Port port = 0) override;
 
   Type type() const override;
 

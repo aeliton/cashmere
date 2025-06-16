@@ -72,4 +72,8 @@ std::ostream& operator<<(std::ostream& os, const Clock& clock)
   os << "}";
   return os;
 }
+bool Clock::valid() const
+{
+  return !empty();
+}
 }

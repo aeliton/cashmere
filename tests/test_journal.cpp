@@ -58,10 +58,10 @@ SCENARIO("attempt inserting a transaction using an existing clock")
     WHEN("the same clock is used to insert a transaction")
     {
       const auto data = ClockEntry{{{0xAA, 1}}, {0xAA, 10, {}}};
-      const bool success = journal.insert(data);
+      const auto clock = journal.insert(data);
       THEN("it should fail")
       {
-        REQUIRE_FALSE(success);
+        REQUIRE_FALSE(clock.valid());
       }
     }
   }
@@ -165,11 +165,12 @@ SCENARIO("zero values in clocks are ignored")
     {
       const auto clock = Clock{{0xAA, 0}, {0xBB, 0}, {0xCC, 1}};
 
-      bool success = journal.insert(ClockEntry{clock, {0xAA, 206, {}}});
+      const auto resultClock =
+        journal.insert(ClockEntry{clock, {0xAA, 206, {}}});
 
       THEN("it succeeds")
       {
-        REQUIRE(success);
+        REQUIRE(resultClock == Clock{{0xAA, 1}, {0xCC, 1}});
       }
 
       AND_WHEN("querying the inserted entry")
@@ -219,6 +220,8 @@ TEST_CASE_METHOD(Journal, "journal provides data from itself", "[provides]")
 {
   REQUIRE(
     provides() ==
-    IdConnectionInfoMap{{id(), ConnectionInfo{.distance = 0, .version = Clock{}}}}
+    IdConnectionInfoMap{
+      {id(), ConnectionInfo{.distance = 0, .version = Clock{}}}
+    }
   );
 }

@@ -123,8 +123,8 @@ bool Broker::attach(BrokerPtr remote)
   remote->attach(ptr(), context->port, local);
   attach(remote, local, context->port);
 
-  if (remote->insert(thisEntries, context->port)) {
-    context->version = remote->clock();
+  if (auto clock = remote->insert(thisEntries, context->port); clock.valid()) {
+    context->version = clock;
     context->provides = UpdateProvides(remote->provides());
   }
   insert(otherEntries, local);
@@ -161,19 +161,18 @@ BrokerPtr Broker::ptr()
   return this->shared_from_this();
 }
 
-bool Broker::insert(const ClockEntryList& entries, Port port)
+Clock Broker::insert(const ClockEntryList& entries, Port port)
 {
-  bool success = true;
   for (auto& entry : entries) {
-    success &= insert(entry, port);
+    insert(entry, port);
   }
-  return success;
+  return clock();
 };
 
-bool Broker::insert(const ClockEntry& data, Port port)
+Clock Broker::insert(const ClockEntry& data, Port port)
 {
   if (port < 0 || port >= _contexts.size()) {
-    return false;
+    return Clock();
   }
   auto& ctx = _contexts[port];
 
@@ -195,13 +194,13 @@ bool Broker::insert(const ClockEntry& data, Port port)
       continue;
     }
     if (auto journal = ctx->journal.lock()) {
-      if (journal->insert(data, ctx->port)) {
-        ctx->version = journal->clock();
+      if (auto clock = journal->insert(data, ctx->port); clock.valid()) {
+        ctx->version = clock;
         ctx->provides = UpdateProvides(journal->provides());
       }
     }
   }
-  return true;
+  return clock();
 }
 
 IdClockMap Broker::versions() const

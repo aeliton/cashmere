@@ -44,7 +44,7 @@ struct JournalMock : public Journal
     _entriesSignaler(from);
     return Journal::entries(from);
   }
-  bool insert(const ClockEntry& data, Port sender = 0) override
+  Clock insert(const ClockEntry& data, Port sender = 0) override
   {
     _insertArgs.push_back(data);
     return Journal::insert(data, sender);

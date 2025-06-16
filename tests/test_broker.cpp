@@ -289,10 +289,10 @@ SCENARIO_METHOD(
 
         AND_WHEN("the attached journal inserts an entry")
         {
-          const bool success =
+          const auto result =
             aa->insert(ClockEntry{{{0xAA, 2}}, {0xAA, 20, {}}});
 
-          REQUIRE(success);
+          REQUIRE(result == Clock{{0xAA, 2}, {0xBB, 1}});
 
           REQUIRE(
             broker0->versions() ==
