@@ -73,8 +73,8 @@ struct SingleEntryMock : public JournalMock
 
 struct BrokerWithEmptyMock
 {
-  BrokerPtr broker = std::make_shared<Broker>();
-  JournalMockPtr mock = std::make_shared<JournalMock>(0xAA);
+  BrokerPtr broker0 = std::make_shared<Broker>();
+  JournalMockPtr aa = std::make_shared<JournalMock>(0xAA);
 };
 
 struct BrokerWithAttachedEmptyMockAndOneEmpty : BrokerWithEmptyMock
@@ -82,15 +82,15 @@ struct BrokerWithAttachedEmptyMockAndOneEmpty : BrokerWithEmptyMock
   BrokerWithAttachedEmptyMockAndOneEmpty()
     : BrokerWithEmptyMock()
   {
-    broker->attach(attached);
+    broker0->attach(attached);
   }
   JournalMockPtr attached = std::make_shared<JournalMock>(0xFF);
 };
 
 struct BrokerWithSingleEntryMock
 {
-  BrokerPtr broker = std::make_shared<Broker>();
-  JournalMockPtr mock = std::make_shared<SingleEntryMock>(0xAA, 1);
+  BrokerPtr broker0 = std::make_shared<Broker>();
+  JournalMockPtr aa = std::make_shared<SingleEntryMock>(0xAA, 1);
 };
 
 struct BrokerWithAttachedSingleEntryMock : public BrokerWithSingleEntryMock
@@ -98,25 +98,25 @@ struct BrokerWithAttachedSingleEntryMock : public BrokerWithSingleEntryMock
 
   BrokerWithAttachedSingleEntryMock()
   {
-    broker->attach(mock);
+    broker0->attach(aa);
   }
-  JournalMockPtr mock = std::make_shared<SingleEntryMock>(0xAA, 1);
+  JournalMockPtr aa = std::make_shared<SingleEntryMock>(0xAA, 1);
 };
 
-struct BrokerWithTwoSingleEntryMocks
+struct BrokerAndTwoSingleEntryMocks
 {
-  BrokerPtr broker = std::make_shared<Broker>();
+  BrokerPtr broker0 = std::make_shared<Broker>();
   JournalMockPtr aa = std::make_shared<SingleEntryMock>(0xAA, 1);
   JournalMockPtr bb = std::make_shared<SingleEntryMock>(0xBB, 2);
 };
 
 struct BrokerWithTwoAttachedSingleEntryMocks
-  : public BrokerWithTwoSingleEntryMocks
+  : public BrokerAndTwoSingleEntryMocks
 {
   BrokerWithTwoAttachedSingleEntryMocks()
   {
-    broker->attach(aa);
-    broker->attach(bb);
+    broker0->attach(aa);
+    broker0->attach(bb);
   }
 };
 
@@ -130,14 +130,14 @@ struct BrokerWithTwoAttachedSingleEntryAndOneEmpty
   JournalMockPtr cc = std::make_shared<JournalMock>(0xCC);
 };
 
-struct TwoBrokerWithASingleEntryMocksEach : BrokerWithTwoSingleEntryMocks
+struct TwoBrokerWithASingleEntryMocksEach : BrokerAndTwoSingleEntryMocks
 {
   TwoBrokerWithASingleEntryMocksEach()
   {
-    broker->attach(aa);
-    br1->attach(bb);
+    broker0->attach(aa);
+    broker1->attach(bb);
   }
-  BrokerPtr br1 = std::make_shared<Broker>();
+  BrokerPtr broker1 = std::make_shared<Broker>();
 };
 }
 #endif
