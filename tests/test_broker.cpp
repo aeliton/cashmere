@@ -233,9 +233,11 @@ SCENARIO_METHOD(
           ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}}}
         );
       }
+
       AND_WHEN("a new entry is inserted in the broker")
       {
         broker0->insert(ClockEntry{{{0xCC, 1}}, {0xCC, 200, {}}});
+
         THEN("the broker clock is updated")
         {
           REQUIRE(broker0->clock() == Clock{{0xAA, 1}, {0xBB, 1}, {0xCC, 1}});
@@ -371,13 +373,13 @@ SCENARIO_METHOD(
 {
   GIVEN("an empty broker and a broker with non-empty journal attatched")
   {
-    auto second = std::make_shared<Broker>();
+    auto broker1 = std::make_shared<Broker>();
 
     REQUIRE(broker0->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
 
     WHEN("attaching the empty broker to other broker")
     {
-      broker0->attach(second);
+      broker0->attach(broker1);
 
       THEN("the versions of the agregator broker do not change")
       {
@@ -386,13 +388,13 @@ SCENARIO_METHOD(
 
       THEN("the attached broker display the journal version")
       {
-        REQUIRE(second->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
+        REQUIRE(broker1->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
       }
 
       THEN("brokers display the journal distances and versions")
       {
         REQUIRE(
-          second->provides() ==
+          broker1->provides() ==
           IdConnectionInfoMap{
             {0xAA, ConnectionInfo{.distance = 2, .version = Clock{{0xAA, 1}}}}
           }
@@ -408,7 +410,7 @@ SCENARIO_METHOD(
       THEN("the attached broker can retrieve entries")
       {
         REQUIRE(
-          second->entries() ==
+          broker1->entries() ==
           ClockEntryList{
             {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
           }
@@ -421,7 +423,7 @@ SCENARIO_METHOD(
           0xBB, ClockEntryMap{{{{0xBB, 1}}, {0xBB, 50, {}}}}
         );
 
-        second->attach(bb);
+        broker1->attach(bb);
 
         THEN("a single insert for data exchange call is made on both journals")
         {
@@ -438,13 +440,13 @@ SCENARIO_METHOD(
         THEN("the clock of both brokers reflect the data exchange")
         {
           REQUIRE(broker0->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
-          REQUIRE(second->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
+          REQUIRE(broker1->clock() == Clock{{0xAA, 1}, {0xBB, 1}});
         }
 
         THEN("brokers display the journal distances and versions")
         {
           REQUIRE(
-            second->provides() ==
+            broker1->provides() ==
             IdConnectionInfoMap{
               {0xAA,
                ConnectionInfo{
