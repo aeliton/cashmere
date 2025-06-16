@@ -49,28 +49,31 @@ public:
     Store
   };
 
-  explicit Broker();
+  Broker();
+
   virtual ~Broker();
+
   virtual Clock insert(const ClockEntry& data, Port sender = 0);
   virtual Clock insert(const ClockEntryList& entries, Port sender = 0);
   virtual ClockEntryList entries(const Clock& from = {}) const;
   virtual IdConnectionInfoMap provides(Port to = 0) const;
+  virtual IdClockMap versions() const;
   virtual Type type() const;
 
   Clock clock() const;
 
   bool attach(BrokerPtr other);
   bool detach(Port port);
-  virtual IdClockMap versions() const;
 
   BrokerPtr ptr();
 
 private:
   void setClock(const Clock& clock);
-  static IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
   void attach(BrokerPtr source, Port local, Port remote);
   Port getLocalPortFor(BrokerPtr broker);
   ClockEntryList entries(const Clock& from, Port ignore) const;
+
+  static IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
 
   std::vector<ContextPtr> _contexts;
   std::unordered_map<Id, ContextPtr> _contextMap;
