@@ -18,8 +18,6 @@
 
 #include "entry.h"
 #include <memory>
-#include <unordered_map>
-#include <vector>
 
 namespace Cashmere
 {
@@ -27,8 +25,6 @@ namespace Cashmere
 class Broker;
 using BrokerPtr = std::shared_ptr<Broker>;
 using BrokerWeakPtr = std::weak_ptr<Broker>;
-struct Context;
-using ContextPtr = std::shared_ptr<Context>;
 
 struct ConnectionInfo
 {
@@ -42,6 +38,8 @@ using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 
 class Broker : public std::enable_shared_from_this<Broker>
 {
+  struct Impl;
+
 public:
   enum class Type
   {
@@ -53,11 +51,15 @@ public:
 
   virtual ~Broker();
 
+  Clock insert(const EntryList& entries, Port sender = 0);
   virtual Clock insert(const Entry& data, Port sender = 0);
-  virtual Clock insert(const EntryList& entries, Port sender = 0);
+
   virtual EntryList entries(const Clock& from = {}) const;
+  EntryList entries(const Clock& from, Port ignore) const;
+
   virtual IdConnectionInfoMap provides(Port to = 0) const;
-  virtual IdClockMap versions() const;
+  IdClockMap versions() const;
+
   virtual Type type() const;
 
   Clock clock() const;
@@ -68,14 +70,8 @@ public:
   BrokerPtr ptr();
 
 private:
-  void setClock(const Clock& clock);
-  void attach(BrokerPtr source, Port local, Port remote);
-  Port getLocalPortFor(BrokerPtr broker);
-  EntryList entries(const Clock& from, Port ignore) const;
-
-  static IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
-
-  std::vector<ContextPtr> _contexts;
+  Impl* impl();
+  std::unique_ptr<Impl> b;
 };
 
 }

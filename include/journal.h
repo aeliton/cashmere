@@ -32,9 +32,9 @@ public:
   ~Journal();
   explicit Journal(Id id, const ClockDataMap& entries = {});
 
-  EntryList entries(const Clock& from = {}) const override;
-
   Clock insert(const Entry& data, Port port = 0) override;
+  EntryList entries(const Clock& from = {}) const override;
+  IdConnectionInfoMap provides(Port to = 0) const override;
 
   Type type() const override;
 
@@ -46,8 +46,6 @@ public:
   bool erase(Clock time);
   bool contains(const Clock& clock) const;
   Data entry(Clock time) const;
-
-  IdConnectionInfoMap provides(Port to = 0) const override;
 
 private:
   const Id _id;
