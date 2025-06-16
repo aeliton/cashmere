@@ -21,7 +21,7 @@
 namespace Cashmere
 {
 
-using ReplaceEntryMap = std::map<Clock, ClockEntry>;
+using ClockEntryMap = std::map<Clock, Entry>;
 
 class Ledger
 {
@@ -38,17 +38,15 @@ public:
 
   Amount balance() const;
 
-  static Amount Balance(const ClockEntryList& entries);
-  static ActionClock
-  Evaluate(const ReplaceEntryMap& rows, const ClockEntry& incoming);
-  static ActionClock
-  Replaces(const ClockEntry& existing, const ClockEntry& incoming);
+  static Amount Balance(const EntryList& entries);
+  static ActionClock Evaluate(const ClockEntryMap& rows, const Entry& incoming);
+  static ActionClock Replaces(const Entry& existing, const Entry& incoming);
 
 private:
-  explicit Ledger(const ClockEntryList& entries);
+  explicit Ledger(const EntryList& entries);
   BrokerPtr _journal;
   Amount _balance;
-  ReplaceEntryMap _rows;
+  ClockEntryMap _rows;
 };
 
 }

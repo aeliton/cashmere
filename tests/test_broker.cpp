@@ -40,9 +40,9 @@ struct StringMaker<Cashmere::IdClockMap>
 };
 
 template<>
-struct StringMaker<Cashmere::ClockEntry>
+struct StringMaker<Cashmere::Entry>
 {
-  static std::string convert(Cashmere::ClockEntry const& m)
+  static std::string convert(Cashmere::Entry const& m)
   {
     std::stringstream ss;
     ss << "{ Clock" << m.clock << "}, Entry{" << m.entry.id << ", "
@@ -169,13 +169,11 @@ SCENARIO_METHOD(BrokerWithEmptyMock, "journal get entries via broker")
 
     WHEN("an entry is inserted on the broker")
     {
-      broker0->insert({Clock{{0xFF, 1}}, Entry{0xFF, 9, Clock{}}});
+      broker0->insert({Clock{{0xFF, 1}}, Data{0xFF, 9, Clock{}}});
 
       THEN("insert is called on the attached journal")
       {
-        REQUIRE(
-          aa->_insertArgs == ClockEntryList{{{{0xFF, 1}}, {0xFF, 9, {}}}}
-        );
+        REQUIRE(aa->_insertArgs == EntryList{{{{0xFF, 1}}, {0xFF, 9, {}}}});
       }
 
       THEN("the broker updates the version of the attached journal")
@@ -225,18 +223,16 @@ SCENARIO_METHOD(
       THEN("each journal receives the other journal's entry once")
       {
         REQUIRE(
-          aa->_insertArgs ==
-          ClockEntryList{{Clock{{0xBB, 1}}, Entry{0xBB, 2, {}}}}
+          aa->_insertArgs == EntryList{{Clock{{0xBB, 1}}, Data{0xBB, 2, {}}}}
         );
         REQUIRE(
-          bb->_insertArgs ==
-          ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}}}
+          bb->_insertArgs == EntryList{{Clock{{0xAA, 1}}, Data{0xAA, 1, {}}}}
         );
       }
 
       AND_WHEN("a new entry is inserted in the broker")
       {
-        broker0->insert(ClockEntry{{{0xCC, 1}}, {0xCC, 200, {}}});
+        broker0->insert(Entry{{{0xCC, 1}}, {0xCC, 200, {}}});
 
         THEN("the broker clock is updated")
         {
@@ -289,8 +285,7 @@ SCENARIO_METHOD(
 
         AND_WHEN("the attached journal inserts an entry")
         {
-          const auto result =
-            aa->insert(ClockEntry{{{0xAA, 2}}, {0xAA, 20, {}}});
+          const auto result = aa->insert(Entry{{{0xAA, 2}}, {0xAA, 20, {}}});
 
           REQUIRE(result == Clock{{0xAA, 2}, {0xBB, 1}});
 
@@ -321,7 +316,7 @@ SCENARIO_METHOD(
               REQUIRE(
                 std::find(
                   bb->_insertArgs.cbegin(), bb->_insertArgs.cend(),
-                  ClockEntry{{{0xAA, 2}}, {0xAA, 20, {}}}
+                  Entry{{{0xAA, 2}}, {0xAA, 20, {}}}
                 ) != bb->_insertArgs.cend()
               );
             }
@@ -411,8 +406,8 @@ SCENARIO_METHOD(
       {
         REQUIRE(
           broker1->entries() ==
-          ClockEntryList{
-            {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
+          EntryList{
+            {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
           }
         );
       }
@@ -420,7 +415,7 @@ SCENARIO_METHOD(
       AND_WHEN("a journal attaches to the second broker")
       {
         auto bb = std::make_shared<JournalMock>(
-          0xBB, ClockEntryMap{{{{0xBB, 1}}, {0xBB, 50, {}}}}
+          0xBB, ClockDataMap{{{{0xBB, 1}}, {0xBB, 50, {}}}}
         );
 
         broker1->attach(bb);
@@ -428,12 +423,10 @@ SCENARIO_METHOD(
         THEN("a single insert for data exchange call is made on both journals")
         {
           REQUIRE(
-            aa->_insertArgs ==
-            ClockEntryList{{Clock{{0xBB, 1}}, Entry{0xBB, 50, {}}}}
+            aa->_insertArgs == EntryList{{Clock{{0xBB, 1}}, Data{0xBB, 50, {}}}}
           );
           REQUIRE(
-            bb->_insertArgs ==
-            ClockEntryList{{Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}}}
+            bb->_insertArgs == EntryList{{Clock{{0xAA, 1}}, Data{0xAA, 1, {}}}}
           );
         }
 
@@ -484,9 +477,9 @@ SCENARIO_METHOD(
         {
           REQUIRE(
             aa->entries() ==
-            ClockEntryList{
-              {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
-              {Clock{{0xBB, 1}}, Entry{0xBB, 50, {}}}
+            EntryList{
+              {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
+              {Clock{{0xBB, 1}}, Data{0xBB, 50, {}}}
             }
           );
         }
@@ -495,9 +488,9 @@ SCENARIO_METHOD(
         {
           REQUIRE(
             bb->entries() ==
-            ClockEntryList{
-              {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
-              {Clock{{0xBB, 1}}, Entry{0xBB, 50, {}}}
+            EntryList{
+              {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
+              {Clock{{0xBB, 1}}, Data{0xBB, 50, {}}}
             }
           );
         }

@@ -55,7 +55,7 @@ Clock Broker::clock() const
   return _contexts.front()->version;
 }
 
-ClockEntryList Broker::entries(const Clock& from) const
+EntryList Broker::entries(const Clock& from) const
 {
   return entries(from, -1);
 }
@@ -158,7 +158,7 @@ BrokerPtr Broker::ptr()
   return this->shared_from_this();
 }
 
-Clock Broker::insert(const ClockEntryList& entries, Port port)
+Clock Broker::insert(const EntryList& entries, Port port)
 {
   for (auto& entry : entries) {
     insert(entry, port);
@@ -166,7 +166,7 @@ Clock Broker::insert(const ClockEntryList& entries, Port port)
   return clock();
 };
 
-Clock Broker::insert(const ClockEntry& data, Port port)
+Clock Broker::insert(const Entry& data, Port port)
 {
   if (port < 0 || port >= _contexts.size()) {
     return Clock();
@@ -219,7 +219,7 @@ IdConnectionInfoMap Broker::UpdateProvides(IdConnectionInfoMap provides)
   return provides;
 }
 
-ClockEntryList Broker::entries(const Clock& from, Port ignore) const
+EntryList Broker::entries(const Clock& from, Port ignore) const
 {
   if (type() == Type::Store) {
     return entries(from);

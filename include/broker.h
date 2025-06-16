@@ -53,9 +53,9 @@ public:
 
   virtual ~Broker();
 
-  virtual Clock insert(const ClockEntry& data, Port sender = 0);
-  virtual Clock insert(const ClockEntryList& entries, Port sender = 0);
-  virtual ClockEntryList entries(const Clock& from = {}) const;
+  virtual Clock insert(const Entry& data, Port sender = 0);
+  virtual Clock insert(const EntryList& entries, Port sender = 0);
+  virtual EntryList entries(const Clock& from = {}) const;
   virtual IdConnectionInfoMap provides(Port to = 0) const;
   virtual IdClockMap versions() const;
   virtual Type type() const;
@@ -71,7 +71,7 @@ private:
   void setClock(const Clock& clock);
   void attach(BrokerPtr source, Port local, Port remote);
   Port getLocalPortFor(BrokerPtr broker);
-  ClockEntryList entries(const Clock& from, Port ignore) const;
+  EntryList entries(const Clock& from, Port ignore) const;
 
   static IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
 

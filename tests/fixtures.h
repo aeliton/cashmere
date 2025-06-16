@@ -29,7 +29,7 @@ struct JournalMock : public Journal
     : JournalMock(id, {})
   {
   }
-  JournalMock(Id id, ClockEntryMap e)
+  JournalMock(Id id, ClockDataMap e)
     : Journal(id, e)
   {
     _insertArgs.clear();
@@ -39,18 +39,18 @@ struct JournalMock : public Journal
       return false;
     });
   }
-  ClockEntryList entries(const Clock& from = {}) const override
+  EntryList entries(const Clock& from = {}) const override
   {
     _entriesSignaler(from);
     return Journal::entries(from);
   }
-  Clock insert(const ClockEntry& data, Port sender = 0) override
+  Clock insert(const Entry& data, Port sender = 0) override
   {
     _insertArgs.push_back(data);
     return Journal::insert(data, sender);
   }
   Signal<void(const Clock&)> _entriesSignaler;
-  ClockEntryList _insertArgs = {};
+  EntryList _insertArgs = {};
   ClockList _entriesArgs = {};
 };
 
@@ -64,7 +64,7 @@ struct SingleEntryMock : public JournalMock
   }
 
   SingleEntryMock(Id id, Amount amount)
-    : JournalMock(id, {{Clock{{id, 1}}, Entry{id, amount, Clock{}}}})
+    : JournalMock(id, {{Clock{{id, 1}}, Data{id, amount, Clock{}}}})
   {
     assert((clock() == Clock{{id, 1}}));
     assert(entries().size() == 1);

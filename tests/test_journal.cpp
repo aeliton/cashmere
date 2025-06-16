@@ -29,7 +29,7 @@ TEST_CASE(
 )
 {
   JournalPtr journal = std::make_shared<Journal>(
-    0xAA, ClockEntryMap{{Clock{{0xAA, 1}}, Entry{0xAA, 10, {}}}}
+    0xAA, ClockDataMap{{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}}}
   );
   REQUIRE(journal->clock() == Clock{{0xAA, 1}});
 }
@@ -57,7 +57,7 @@ SCENARIO("attempt inserting a transaction using an existing clock")
     journal.append(10);
     WHEN("the same clock is used to insert a transaction")
     {
-      const auto data = ClockEntry{{{0xAA, 1}}, {0xAA, 10, {}}};
+      const auto data = Entry{{{0xAA, 1}}, {0xAA, 10, {}}};
       const auto clock = journal.insert(data);
       THEN("it should fail")
       {
@@ -83,7 +83,7 @@ SCENARIO("journal clock updates when entries are changed")
 
       THEN("the entry is queryable")
       {
-        REQUIRE(journal.entry(Clock{{0xAA, 1}}) == Entry{0xAA, 1000, {}});
+        REQUIRE(journal.entry(Clock{{0xAA, 1}}) == Data{0xAA, 1000, {}});
       }
 
       AND_WHEN("appending a second entry")
@@ -97,13 +97,13 @@ SCENARIO("journal clock updates when entries are changed")
 
         THEN("the second entry is queryable")
         {
-          REQUIRE(journal.entry(Clock{{0xAA, 2}}) == Entry{0xAA, 333, {}});
+          REQUIRE(journal.entry(Clock{{0xAA, 2}}) == Data{0xAA, 333, {}});
         }
       }
 
       AND_WHEN("inserting a second entry from another journal")
       {
-        journal.insert(ClockEntry{{{0xFF, 1}}, {0xFF, 200, {}}});
+        journal.insert(Entry{{{0xFF, 1}}, {0xFF, 200, {}}});
 
         THEN("the clock is updated to show the incoming entry")
         {
@@ -112,7 +112,7 @@ SCENARIO("journal clock updates when entries are changed")
 
         THEN("the second entry is queryable")
         {
-          REQUIRE(journal.entry(Clock{{0xFF, 1}}) == Entry{0xFF, 200, {}});
+          REQUIRE(journal.entry(Clock{{0xFF, 1}}) == Data{0xFF, 200, {}});
         }
       }
     }
@@ -140,7 +140,7 @@ SCENARIO("zero values in clocks are ignored")
 
       THEN("the clock's zeroed entries are ignored")
       {
-        REQUIRE(result == Entry{0xAA, 1000, {}});
+        REQUIRE(result == Data{0xAA, 1000, {}});
       }
     }
 
@@ -156,7 +156,7 @@ SCENARIO("zero values in clocks are ignored")
 
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Entry{0xAA, 500, {{0xAA, 1}}});
+          REQUIRE(result == Data{0xAA, 500, {{0xAA, 1}}});
         }
       }
     }
@@ -165,8 +165,7 @@ SCENARIO("zero values in clocks are ignored")
     {
       const auto clock = Clock{{0xAA, 0}, {0xBB, 0}, {0xCC, 1}};
 
-      const auto resultClock =
-        journal.insert(ClockEntry{clock, {0xAA, 206, {}}});
+      const auto resultClock = journal.insert(Entry{clock, {0xAA, 206, {}}});
 
       THEN("it succeeds")
       {
@@ -179,7 +178,7 @@ SCENARIO("zero values in clocks are ignored")
 
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Entry{0xAA, 206, {}});
+          REQUIRE(result == Data{0xAA, 206, {}});
         }
       }
     }
@@ -195,7 +194,7 @@ SCENARIO("zero values in clocks are ignored")
         const auto result = journal.entry({{0xAA, 2}});
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Entry{0xAA, 0, {{0xAA, 1}}});
+          REQUIRE(result == Data{0xAA, 0, {{0xAA, 1}}});
         }
       }
     }
@@ -204,15 +203,15 @@ SCENARIO("zero values in clocks are ignored")
 
 TEST_CASE("entries retrieval", "[entries]")
 {
-  const ClockEntryMap entries = {
-    {Clock{{0xAA, 1}}, Entry{0xAA, 1, {}}},
-    {Clock{{0xBB, 1}}, Entry{0xBB, 10, {}}},
-    {Clock{{0xAA, 2}, {0xBB, 1}}, Entry{0xAA, 2, Clock{{0xBB, 1}}}},
-    {Clock{{0xCC, 1}}, Entry{0xCC, 100, {}}},
+  const ClockDataMap entries = {
+    {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
+    {Clock{{0xBB, 1}}, Data{0xBB, 10, {}}},
+    {Clock{{0xAA, 2}, {0xBB, 1}}, Data{0xAA, 2, Clock{{0xBB, 1}}}},
+    {Clock{{0xCC, 1}}, Data{0xCC, 100, {}}},
   };
   Journal journal(0xAA, entries);
 
-  const ClockEntryList expected{{Clock{{0xCC, 1}}, Entry{0xCC, 100, {}}}};
+  const EntryList expected{{Clock{{0xCC, 1}}, Data{0xCC, 100, {}}}};
   REQUIRE(journal.entries(Clock{{0xAA, 2}, {0xBB, 1}}) == expected);
 }
 

@@ -26,7 +26,7 @@ Journal::Journal()
 {
 }
 
-Journal::Journal(Id id, const ClockEntryMap& entries)
+Journal::Journal(Id id, const ClockDataMap& entries)
   : Broker()
   , _id(id)
   , _bookId(_random.next())
@@ -54,12 +54,12 @@ bool Journal::append(Amount value)
   return append({id(), value, {}});
 }
 
-bool Journal::append(const Entry& entry)
+bool Journal::append(const Data& entry)
 {
   return insert({clock().tick(entry.id), entry}).valid();
 }
 
-Clock Journal::insert(const ClockEntry& data, Port port)
+Clock Journal::insert(const Entry& data, Port port)
 {
   if (_entries.find(data.clock) != _entries.end()) {
     return Clock();
@@ -82,7 +82,7 @@ bool Journal::contains(const Clock& time) const
   return _entries.find(time) != _entries.cend();
 }
 
-Entry Journal::entry(Clock time) const
+Data Journal::entry(Clock time) const
 {
   if (_entries.find(time) == _entries.end()) {
     return {0, 0, {{0UL, 0}}};
@@ -91,9 +91,9 @@ Entry Journal::entry(Clock time) const
   return _entries.at(time);
 }
 
-ClockEntryList Journal::entries(const Clock& from) const
+EntryList Journal::entries(const Clock& from) const
 {
-  ClockEntryList list;
+  EntryList list;
   for (const auto& [clock, entry] : _entries) {
     if (clock.concurrent(from) || from.smallerThan(clock)) {
       list.push_back({clock, entry});

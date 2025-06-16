@@ -23,7 +23,7 @@ Ledger::Ledger(BrokerPtr journal)
   _journal = journal;
 }
 
-Ledger::Ledger(const ClockEntryList& entries)
+Ledger::Ledger(const EntryList& entries)
   : _journal(nullptr)
   , _balance(0)
 {
@@ -48,14 +48,14 @@ Amount Ledger::balance() const
   return _balance;
 }
 
-Amount Ledger::Balance(const ClockEntryList& entries)
+Amount Ledger::Balance(const EntryList& entries)
 {
   Ledger ledger(entries);
   return ledger.balance();
 }
 
 Ledger::ActionClock
-Ledger::Replaces(const ClockEntry& existing, const ClockEntry& incoming)
+Ledger::Replaces(const Entry& existing, const Entry& incoming)
 {
   if (incoming.entry.alters.empty()) {
     return {Action::Ignore, {}};
@@ -73,7 +73,7 @@ Ledger::Replaces(const ClockEntry& existing, const ClockEntry& incoming)
 }
 
 Ledger::ActionClock
-Ledger::Evaluate(const ReplaceEntryMap& rows, const ClockEntry& incoming)
+Ledger::Evaluate(const ClockEntryMap& rows, const Entry& incoming)
 {
   if (incoming.entry.alters.empty()) {
     if (rows.find(incoming.clock) == rows.end()) {

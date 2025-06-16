@@ -30,22 +30,22 @@ class Journal : public Broker
 public:
   Journal();
   ~Journal();
-  explicit Journal(Id id, const ClockEntryMap& entries = {});
+  explicit Journal(Id id, const ClockDataMap& entries = {});
 
-  ClockEntryList entries(const Clock& from = {}) const override;
+  EntryList entries(const Clock& from = {}) const override;
 
-  Clock insert(const ClockEntry& data, Port port = 0) override;
+  Clock insert(const Entry& data, Port port = 0) override;
 
   Type type() const override;
 
   Id id() const;
   const Id bookId() const;
   bool append(Amount value);
-  bool append(const Entry& entry);
+  bool append(const Data& entry);
   bool replace(Amount value, const Clock& clock);
   bool erase(Clock time);
   bool contains(const Clock& clock) const;
-  Entry entry(Clock time) const;
+  Data entry(Clock time) const;
 
   IdConnectionInfoMap provides(Port to = 0) const override;
 
@@ -53,7 +53,7 @@ private:
   const Id _id;
   static Random _random;
   const Id _bookId;
-  ClockEntryMap _entries;
+  ClockDataMap _entries;
   Clock _version;
 };
 

@@ -23,27 +23,27 @@
 namespace Cashmere
 {
 
+struct Data;
 struct Entry;
-struct ClockEntry;
 
+using ClockDataMap = std::map<Clock, Data>;
 using ClockEntryMap = std::map<Clock, Entry>;
-using ReplaceEntryMap = std::map<Clock, ClockEntry>;
-using ClockEntryList = std::list<ClockEntry>;
+using EntryList = std::list<Entry>;
 
-struct Entry
+struct Data
 {
   Id id;
   Amount value;
   Clock alters;
-  const bool operator==(const Entry& other) const;
+  const bool operator==(const Data& other) const;
   bool valid() const;
 };
 
-struct ClockEntry
+struct Entry
 {
   Clock clock;
-  Entry entry;
-  const bool operator==(const ClockEntry& other) const;
+  Data entry;
+  const bool operator==(const Entry& other) const;
 };
 
 }
