@@ -76,7 +76,6 @@ private:
   static IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
 
   std::vector<ContextPtr> _contexts;
-  std::unordered_map<Id, ContextPtr> _contextMap;
 };
 
 }

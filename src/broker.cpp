@@ -138,9 +138,6 @@ void Broker::attach(BrokerPtr source, Port local, Port remote)
   context->journal = source;
   context->port = remote;
   context->provides = UpdateProvides(source->provides());
-  for (auto& [id, dist] : context->provides) {
-    _contextMap[id] = context;
-  }
 }
 
 bool Broker::detach(Port port)
