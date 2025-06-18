@@ -18,6 +18,7 @@
 
 #include "entry.h"
 #include <memory>
+#include <vector>
 
 namespace Cashmere
 {
@@ -36,10 +37,11 @@ struct ConnectionInfo
 
 using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 
+struct Context;
+using ContextPtr = std::shared_ptr<Context>;
+
 class Broker : public std::enable_shared_from_this<Broker>
 {
-  struct Impl;
-
 public:
   Broker();
 
@@ -64,8 +66,11 @@ public:
   BrokerPtr ptr();
 
 private:
-  Impl* impl();
-  std::unique_ptr<Impl> b;
+  void setClock(const Clock& clock);
+  void connect(BrokerPtr source, Port local, Port remote);
+  Port getLocalPortFor(BrokerPtr broker);
+
+  std::vector<ContextPtr> _contexts;
 };
 
 }
