@@ -36,9 +36,7 @@ public:
   EntryList entries(const Clock& from = {}) const override;
   IdConnectionInfoMap provides(Port to = 0) const override;
 
-  Type type() const override;
-
-  Id id() const;
+  Id id() const override;
   const Id bookId() const;
   bool append(Amount value);
   bool append(const Data& entry);

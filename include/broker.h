@@ -41,15 +41,11 @@ class Broker : public std::enable_shared_from_this<Broker>
   struct Impl;
 
 public:
-  enum class Type
-  {
-    Transport,
-    Store
-  };
-
   Broker();
 
   virtual ~Broker();
+
+  virtual Id id() const;
 
   Clock insert(const EntryList& entries, Port sender = 0);
   virtual Clock insert(const Entry& data, Port sender = 0);
@@ -59,8 +55,6 @@ public:
 
   virtual IdConnectionInfoMap provides(Port to = 0) const;
   IdClockMap versions() const;
-
-  virtual Type type() const;
 
   Clock clock() const;
 
