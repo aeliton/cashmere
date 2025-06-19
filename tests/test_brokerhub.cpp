@@ -46,6 +46,7 @@ public:
     void, connect, (BrokerIPtr source, Port local, Port remote), (override)
   );
   MOCK_METHOD(Port, getLocalPortFor, (BrokerIPtr broker), (override));
+  MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
 
 TEST(BrokerHub, StartsWithNoConnections)

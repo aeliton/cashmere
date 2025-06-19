@@ -79,7 +79,7 @@ public:
     return {};
   }
 
-  std::set<Port> connectedPorts() const;
+  std::set<Port> connectedPorts() const override;
 
 private:
   std::vector<BrokerIWeakPtr> _connections;

@@ -57,6 +57,7 @@ public:
   virtual void setClock(const Clock& clock) = 0;
   virtual void connect(BrokerIPtr source, Port local, Port remote) = 0;
   virtual Port getLocalPortFor(BrokerIPtr broker) = 0;
+  virtual std::set<Port> connectedPorts() const = 0;
 };
 
 }

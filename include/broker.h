@@ -53,6 +53,10 @@ public:
   bool disconnect(Port port) override;
 
   BrokerIPtr ptr() override;
+  std::set<Port> connectedPorts() const override
+  {
+    return {};
+  }
 
 private:
   void setClock(const Clock& clock) override;
