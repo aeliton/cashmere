@@ -38,6 +38,9 @@ Port BrokerHub::connect(BrokerIPtr broker)
 Clock BrokerHub::insert(const Entry& data, Port sender)
 {
   for (size_t i = 1; i < _connections.size(); i++) {
+    if (i == sender) {
+      continue;
+    }
     _connections.at(i).lock()->insert(data, sender);
   }
   return {};

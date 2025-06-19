@@ -70,9 +70,25 @@ TEST(BrokerHub, BrokerHubForwardsInserts)
   auto aa = std::make_shared<BrokerMock>();
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
-  EXPECT_CALL(*aa, insert(entry, 1)).Times(1);
+  EXPECT_CALL(*aa, insert(entry, 0)).Times(1);
 
-  EXPECT_TRUE(hub->connect(aa));
+  EXPECT_EQ(hub->connect(aa), 1);
 
-  hub->insert(entry, 1);
+  hub->insert(entry, 0);
+}
+
+TEST(BrokerHub, BrokerHubOnlyForwardsInsertsToPortsDifferentOfTheSender)
+{
+  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+
+  auto aa = std::make_shared<BrokerMock>();
+  const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
+
+  EXPECT_CALL(*aa, insert(entry, 1)).Times(0);
+
+  const Port port = hub->connect(aa);
+
+  EXPECT_EQ(port, 1);
+
+  hub->insert(entry, port);
 }
