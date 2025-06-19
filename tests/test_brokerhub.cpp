@@ -48,11 +48,18 @@ public:
   MOCK_METHOD(Port, getLocalPortFor, (BrokerIPtr broker), (override));
 };
 
-TEST(BrokerHub, BrokerConnects)
+TEST(BrokerHub, StartsWithNoConnections)
+{
+  BrokerHubPtr broker = std::make_shared<BrokerHub>();
+  EXPECT_EQ(broker->connectedPorts(), std::set<Port>{});
+}
+
+TEST(BrokerHub, BrokerFirstConnectionUsesPortOne)
 {
   BrokerHubPtr broker = std::make_shared<BrokerHub>();
 
   EXPECT_TRUE(broker->connect(std::make_shared<BrokerMock>()));
+  EXPECT_EQ(broker->connectedPorts(), std::set<Port>{1});
 }
 
 TEST(BrokerHub, BrokerHubForwardsInserts)

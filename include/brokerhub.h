@@ -29,6 +29,8 @@ using BrokerHubPtr = std::shared_ptr<BrokerHub>;
 class BrokerHub : public BrokerI
 {
 public:
+  BrokerHub();
+
   Id id() const override;
   Clock insert(const EntryList& entries, Port sender = 0) override
   {
@@ -76,6 +78,8 @@ public:
   {
     return {};
   }
+
+  std::set<Port> connectedPorts() const;
 
 private:
   std::vector<BrokerIWeakPtr> _connections;

@@ -18,6 +18,11 @@
 namespace Cashmere
 {
 
+BrokerHub::BrokerHub()
+{
+  _connections.push_back(std::shared_ptr<BrokerI>(nullptr));
+}
+
 Id BrokerHub::id() const
 {
   return 0;
@@ -31,10 +36,18 @@ bool BrokerHub::connect(BrokerIPtr broker)
 
 Clock BrokerHub::insert(const Entry& data, Port sender)
 {
-  for (auto& c : _connections) {
-    c.lock()->insert(data, sender);
+  for (size_t i = 1; i < _connections.size(); i++) {
+    _connections.at(i).lock()->insert(data, sender);
   }
   return {};
 }
 
+std::set<Port> BrokerHub::connectedPorts() const
+{
+  std::set<Port> connected;
+  for (size_t i = 1; i < _connections.size(); i++) {
+    connected.insert(i);
+  }
+  return connected;
+}
 }
