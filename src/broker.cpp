@@ -24,11 +24,13 @@ IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
 
 struct Context
 {
-  BrokerWeakPtr journal;
+  BrokerIWeakPtr journal;
   Clock version;
   Port port;
   IdConnectionInfoMap provides;
 };
+
+BrokerI::~BrokerI() = default;
 
 Broker::Broker()
 {
@@ -37,7 +39,7 @@ Broker::Broker()
 
 Broker::~Broker() = default;
 
-bool Broker::connect(BrokerPtr remote)
+bool Broker::connect(BrokerIPtr remote)
 {
   if (!remote) {
     return false;
@@ -176,7 +178,7 @@ EntryList Broker::entries(const Clock& from) const
   return entries(from, -1);
 }
 
-BrokerPtr Broker::ptr()
+BrokerIPtr Broker::ptr()
 {
   return this->shared_from_this();
 }
@@ -187,7 +189,7 @@ void Broker::setClock(const Clock& clock)
   _contexts.front()->version = clock;
 }
 
-void Broker::connect(BrokerPtr source, Port local, Port remote)
+void Broker::connect(BrokerIPtr source, Port local, Port remote)
 {
   auto context = _contexts.at(local);
   context->journal = source;
@@ -195,7 +197,7 @@ void Broker::connect(BrokerPtr source, Port local, Port remote)
   context->provides = UpdateProvides(source->provides());
 }
 
-Port Broker::getLocalPortFor(BrokerPtr remote)
+Port Broker::getLocalPortFor(BrokerIPtr remote)
 {
   Port port = _contexts.size();
   const auto remoteProvides = UpdateProvides(remote->provides());

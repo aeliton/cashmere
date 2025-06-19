@@ -16,7 +16,7 @@
 #ifndef CASHMERE_BROKER_H
 #define CASHMERE_BROKER_H
 
-#include "entry.h"
+#include "brokerI.h"
 #include <memory>
 #include <vector>
 
@@ -27,48 +27,37 @@ class Broker;
 using BrokerPtr = std::shared_ptr<Broker>;
 using BrokerWeakPtr = std::weak_ptr<Broker>;
 
-struct ConnectionInfo
-{
-  int64_t distance;
-  Clock version;
-  bool operator==(const ConnectionInfo& other) const;
-  bool operator<(const ConnectionInfo& other) const;
-};
-
-using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
-
 struct Context;
 using ContextPtr = std::shared_ptr<Context>;
 
-class Broker : public std::enable_shared_from_this<Broker>
+class Broker : public std::enable_shared_from_this<Broker>, public BrokerI
 {
 public:
   Broker();
 
   virtual ~Broker();
 
-  virtual Id id() const;
+  virtual Id id() const override;
+  Clock insert(const EntryList& entries, Port sender = 0) override;
+  virtual Clock insert(const Entry& data, Port sender = 0) override;
 
-  Clock insert(const EntryList& entries, Port sender = 0);
-  virtual Clock insert(const Entry& data, Port sender = 0);
+  virtual EntryList entries(const Clock& from = {}) const override;
+  EntryList entries(const Clock& from, Port ignore) const override;
 
-  virtual EntryList entries(const Clock& from = {}) const;
-  EntryList entries(const Clock& from, Port ignore) const;
+  virtual IdConnectionInfoMap provides(Port to = 0) const override;
+  IdClockMap versions() const override;
 
-  virtual IdConnectionInfoMap provides(Port to = 0) const;
-  IdClockMap versions() const;
+  Clock clock() const override;
 
-  Clock clock() const;
+  bool connect(BrokerIPtr other) override;
+  bool disconnect(Port port) override;
 
-  bool connect(BrokerPtr other);
-  bool disconnect(Port port);
-
-  BrokerPtr ptr();
+  BrokerIPtr ptr() override;
 
 private:
-  void setClock(const Clock& clock);
-  void connect(BrokerPtr source, Port local, Port remote);
-  Port getLocalPortFor(BrokerPtr broker);
+  void setClock(const Clock& clock) override;
+  void connect(BrokerIPtr source, Port local, Port remote) override;
+  Port getLocalPortFor(BrokerIPtr broker) override;
 
   std::vector<ContextPtr> _contexts;
 };
