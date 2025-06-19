@@ -27,6 +27,7 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerhub.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
@@ -49,18 +50,32 @@ target_link_libraries(cash PRIVATE cash_objects)
 
 find_package(Catch2 3 REQUIRED)
 
-add_executable(tests)
-target_sources(tests PRIVATE
+add_executable(catch_tests)
+target_sources(catch_tests PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
 )
-target_link_libraries(tests PRIVATE
+target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
   cash_objects
 )
 
 include(CTest)
 include(Catch)
-catch_discover_tests(tests)
+catch_discover_tests(catch_tests)
+
+find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
+
+enable_testing()
+add_executable (gtests
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokerhub.cpp
+)
+target_link_libraries (gtests
+  cash_objects
+  GTest::gmock
+  GTest::gtest_main)
+
+include(GoogleTest)
+gtest_discover_tests(gtests)
