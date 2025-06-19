@@ -29,4 +29,12 @@ bool BrokerHub::connect(BrokerIPtr broker)
   return true;
 }
 
+Clock BrokerHub::insert(const Entry& data, Port sender)
+{
+  for (auto& c : _connections) {
+    c.lock()->insert(data, sender);
+  }
+  return {};
+}
+
 }

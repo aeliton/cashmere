@@ -20,6 +20,9 @@
 
 using namespace Cashmere;
 
+using ::testing::AtLeast;
+using ::testing::Return;
+
 class BrokerMock : public BrokerI
 {
 public:
@@ -50,4 +53,18 @@ TEST(BrokerHub, BrokerConnects)
   BrokerHubPtr broker = std::make_shared<BrokerHub>();
 
   EXPECT_TRUE(broker->connect(std::make_shared<BrokerMock>()));
+}
+
+TEST(BrokerHub, BrokerHubForwardsInserts)
+{
+  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+
+  auto aa = std::make_shared<BrokerMock>();
+  const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
+
+  EXPECT_CALL(*aa, insert(entry, 1)).Times(1);
+
+  EXPECT_TRUE(hub->connect(aa));
+
+  hub->insert(entry, 1);
 }

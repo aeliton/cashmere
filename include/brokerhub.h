@@ -34,10 +34,7 @@ public:
   {
     return {};
   }
-  Clock insert(const Entry& data, Port sender = 0) override
-  {
-    return {};
-  }
+  Clock insert(const Entry& data, Port sender = 0) override;
   EntryList entries(const Clock& from = {}) const override
   {
     return {};
