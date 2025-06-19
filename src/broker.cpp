@@ -39,10 +39,10 @@ Broker::Broker()
 
 Broker::~Broker() = default;
 
-bool Broker::connect(BrokerIPtr remote)
+Port Broker::connect(BrokerIPtr remote)
 {
   if (!remote) {
-    return false;
+    return -1;
   }
   auto local = getLocalPortFor(remote);
 
@@ -62,7 +62,7 @@ bool Broker::connect(BrokerIPtr remote)
   }
   insert(otherEntries, local);
 
-  return true;
+  return local;
 }
 
 Clock Broker::insert(const Entry& data, Port port)
@@ -155,17 +155,17 @@ IdClockMap Broker::versions() const
   return out;
 }
 
-bool Broker::disconnect(Port port)
+Port Broker::disconnect(Port port)
 {
   if (port < 0 || _contexts.size() <= port) {
-    return false;
+    return -1;
   }
   auto& context = _contexts.at(port);
   if (auto handler = context->journal.lock()) {
     context->journal.reset();
-    return true;
+    return port;
   }
-  return false;
+  return -1;
 }
 
 Clock Broker::clock() const

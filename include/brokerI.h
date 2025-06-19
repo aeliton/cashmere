@@ -51,8 +51,8 @@ public:
   virtual IdConnectionInfoMap provides(Port to = 0) const = 0;
   virtual IdClockMap versions() const = 0;
   virtual Clock clock() const = 0;
-  virtual bool connect(BrokerIPtr other) = 0;
-  virtual bool disconnect(Port port) = 0;
+  virtual Port connect(BrokerIPtr other) = 0;
+  virtual Port disconnect(Port port) = 0;
   virtual BrokerIPtr ptr() = 0;
   virtual void setClock(const Clock& clock) = 0;
   virtual void connect(BrokerIPtr source, Port local, Port remote) = 0;

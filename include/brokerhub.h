@@ -57,8 +57,8 @@ public:
   {
     return {};
   }
-  bool connect(BrokerIPtr other) override;
-  bool disconnect(Port port) override
+  Port connect(BrokerIPtr other) override;
+  Port disconnect(Port port) override
   {
     return {};
   }

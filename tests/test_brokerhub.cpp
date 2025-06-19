@@ -38,8 +38,8 @@ public:
   MOCK_METHOD(IdConnectionInfoMap, provides, (Port to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
   MOCK_METHOD(Clock, clock, (), (const, override));
-  MOCK_METHOD(bool, connect, (BrokerIPtr other), (override));
-  MOCK_METHOD(bool, disconnect, (Port port), (override));
+  MOCK_METHOD(Port, connect, (BrokerIPtr other), (override));
+  MOCK_METHOD(Port, disconnect, (Port port), (override));
   MOCK_METHOD(BrokerIPtr, ptr, (), (override));
   MOCK_METHOD(void, setClock, (const Clock& clock), (override));
   MOCK_METHOD(
@@ -59,7 +59,7 @@ TEST(BrokerHub, BrokerFirstConnectionUsesPortOne)
 {
   BrokerHubPtr broker = std::make_shared<BrokerHub>();
 
-  EXPECT_TRUE(broker->connect(std::make_shared<BrokerMock>()));
+  EXPECT_EQ(broker->connect(std::make_shared<BrokerMock>()), 1);
   EXPECT_EQ(broker->connectedPorts(), std::set<Port>{1});
 }
 

@@ -28,10 +28,11 @@ Id BrokerHub::id() const
   return 0;
 }
 
-bool BrokerHub::connect(BrokerIPtr broker)
+Port BrokerHub::connect(BrokerIPtr broker)
 {
+  const Port port = _connections.size();
   _connections.push_back(broker);
-  return true;
+  return port;
 }
 
 Clock BrokerHub::insert(const Entry& data, Port sender)

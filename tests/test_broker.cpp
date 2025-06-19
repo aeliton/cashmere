@@ -77,7 +77,7 @@ using namespace Cashmere;
 
 TEST_CASE_METHOD(Broker, "broker connect ignores nullptr")
 {
-  REQUIRE_FALSE(connect(nullptr));
+  REQUIRE(connect(nullptr) == -1);
 }
 
 TEST_CASE_METHOD(Broker, "broker without journals has an empty clock")
@@ -149,11 +149,11 @@ SCENARIO("Journal is connected")
 
         AND_WHEN("attempting to detach a non-connected journal")
         {
-          const bool success = broker0->disconnect(aa->id());
+          const Port port = broker0->disconnect(aa->id());
 
           THEN("the operation fails")
           {
-            REQUIRE_FALSE(success);
+            REQUIRE(port < 0);
           }
         }
       }

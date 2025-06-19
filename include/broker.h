@@ -49,8 +49,8 @@ public:
 
   Clock clock() const override;
 
-  bool connect(BrokerIPtr other) override;
-  bool disconnect(Port port) override;
+  Port connect(BrokerIPtr other) override;
+  Port disconnect(Port port) override;
 
   BrokerIPtr ptr() override;
   std::set<Port> connectedPorts() const override
