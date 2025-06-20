@@ -43,7 +43,7 @@ Clock BrokerHub::insert(const Entry& data, Port sender)
     }
     _connections.at(i).insert(data);
   }
-  return {};
+  return _connections.at(0).merge(data.clock);
 }
 
 std::set<Port> BrokerHub::connectedPorts() const
@@ -65,5 +65,10 @@ Port BrokerHub::getLocalPortFor(Connection conn)
 BrokerIPtr BrokerHub::ptr()
 {
   return shared_from_this();
+}
+
+Clock BrokerHub::clock() const
+{
+  return _connections.front().version();
 }
 }

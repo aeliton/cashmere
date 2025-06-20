@@ -36,9 +36,10 @@ Connection::Connection()
 {
 }
 
-Connection::Connection(BrokerIPtr broker, Port port)
+Connection::Connection(BrokerIPtr broker, Port port, Clock version)
   : _broker(broker)
   , _port(port)
+  , _version(version)
 {
 }
 
@@ -55,6 +56,21 @@ BrokerIPtr Connection::broker() const
 Clock Connection::insert(const Entry& data)
 {
   return _broker.lock()->insert(data, _port);
+}
+
+bool Connection::operator==(const Connection& other) const
+{
+  return _port == other._port &&
+         _broker.lock().get() == other._broker.lock().get();
+}
+Clock Connection::merge(const Clock& clock)
+{
+  return _version = _version.merge(clock);
+}
+
+Clock Connection::version() const
+{
+  return _version;
 }
 
 BrokerI::~BrokerI() = default;

@@ -53,10 +53,7 @@ public:
   {
     return {};
   }
-  Clock clock() const override
-  {
-    return {};
-  }
+  Clock clock() const override;
   Port connect(BrokerIPtr other) override;
   Port disconnect(Port port) override
   {

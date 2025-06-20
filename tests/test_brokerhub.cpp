@@ -118,3 +118,11 @@ TEST(BrokerHub, BrokeHubConnectionsAreFullDuplex)
 
   hub1->insert(entry, 0);
 }
+
+TEST(BrokerHub, UpdatesItsClockDuringInsert)
+{
+  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
+  hub->insert(entry, 0);
+  EXPECT_EQ(hub->clock(), entry.clock);
+}

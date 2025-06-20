@@ -43,20 +43,21 @@ class Connection
 {
 public:
   Connection();
-  Connection(BrokerIPtr broker, Port port);
+  Connection(BrokerIPtr broker, Port port, Clock version = {});
   Clock insert(const Entry& data);
   Port port() const;
   BrokerIPtr broker() const;
 
-  bool operator==(const Connection& other) const
-  {
-    return _port == other._port &&
-           _broker.lock().get() == other._broker.lock().get();
-  }
+  bool operator==(const Connection& other) const;
+
+  Clock merge(const Clock& clock);
+
+  Clock version() const;
 
 private:
   BrokerIWeakPtr _broker;
   Port _port;
+  Clock _version;
 };
 
 class BrokerI
