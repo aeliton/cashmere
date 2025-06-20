@@ -46,7 +46,7 @@ public:
     void, connect, (BrokerIPtr source, Port local, Port remote), (override)
   );
   MOCK_METHOD(Port, getLocalPortFor, (BrokerIPtr broker), (override));
-  MOCK_METHOD(Connection, getLocalPortFor, (Connection conn), (override));
+  MOCK_METHOD(Connection, connect, (Connection conn), (override));
   MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
 
@@ -61,7 +61,7 @@ TEST(BrokerHub, BrokerFirstConnectionUsesPortOne)
   BrokerHubPtr hub = std::make_shared<BrokerHub>();
   auto aa = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub, 1})))
+  EXPECT_CALL(*aa, connect((Connection{hub, 1})))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1}));
 
@@ -77,7 +77,7 @@ TEST(BrokerHub, BrokerHubForwardsInserts)
 
   const auto aa = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*aa, getLocalPortFor(Connection{hub, 1}))
+  EXPECT_CALL(*aa, connect(Connection{hub, 1}))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1}));
   EXPECT_CALL(*aa, insert(entry, 1)).Times(1);
@@ -94,7 +94,7 @@ TEST(BrokerHub, BrokerHubOnlyForwardsInsertsToPortsDifferentOfTheSender)
   auto aa = std::make_shared<BrokerMock>();
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
-  EXPECT_CALL(*aa, getLocalPortFor(Connection{hub, 1}))
+  EXPECT_CALL(*aa, connect(Connection{hub, 1}))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1}));
   EXPECT_CALL(*aa, insert(entry, 1)).Times(0);
@@ -115,7 +115,7 @@ TEST(BrokerHub, BrokeHubConnectionsAreFullDuplex)
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
   EXPECT_CALL(*aa, insert(entry, /* hub1Port */ 1)).Times(1);
-  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub0, /* aaPort */ 2})))
+  EXPECT_CALL(*aa, connect((Connection{hub0, /* aaPort */ 2})))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1}));
 
@@ -144,7 +144,7 @@ TEST(BrokerHub, UpdatesItsClockDuringConnect)
   BrokerHubPtr hub = std::make_shared<BrokerHub>();
   const auto aa = std::make_shared<BrokerMock>();
   const Clock aaClock = Clock{{0xAA, 1}};
-  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub, /* aaPort */ 1})))
+  EXPECT_CALL(*aa, connect((Connection{hub, /* aaPort */ 1})))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1}));
   EXPECT_CALL(*aa, entries(Clock({}), /* aaPort */ 1))
@@ -165,7 +165,7 @@ TEST(BrokerHub, UpdateConnectionProvidedSourcesOnAttach)
   const auto aaEntry = Entry{aaClock, Data{0xAA, 10, {}}};
 
   EXPECT_CALL(*aa, clock()).Times(1).WillOnce(Return(aaClock));
-  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub, 1})))
+  EXPECT_CALL(*aa, connect((Connection{hub, 1})))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1}));
   EXPECT_CALL(*aa, entries(Clock{}, 1))
@@ -192,7 +192,7 @@ TEST(BrokerHub, ExchangeEntriesOnConnect)
   const auto bbEntry = Entry{bbClock, Data{0xBB, 20, {}}};
 
   EXPECT_CALL(*aa, clock()).Times(1).WillOnce(Return(aaClock));
-  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub, 1})))
+  EXPECT_CALL(*aa, connect((Connection{hub, 1})))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1}));
   EXPECT_CALL(*aa, insert(EntryList{bbEntry}, 1))
@@ -215,7 +215,7 @@ TEST(BrokerHub, ExchangeEntriesOnConnect)
     )));
 
   EXPECT_CALL(*bb, clock()).Times(1).WillOnce(Return(bbClock));
-  EXPECT_CALL(*bb, getLocalPortFor((Connection{hub, 2})))
+  EXPECT_CALL(*bb, connect((Connection{hub, 2})))
     .Times(1)
     .WillOnce(Return(Connection{bb, 1}));
   EXPECT_CALL(*bb, insert(EntryList{aaEntry}, 1))
