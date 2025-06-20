@@ -22,17 +22,9 @@ namespace Cashmere
 
 IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
 
-struct Context
-{
-  BrokerIWeakPtr journal;
-  Clock version;
-  Port port;
-  IdConnectionInfoMap provides;
-};
-
 Connection::Connection()
   : _broker(std::shared_ptr<BrokerI>(nullptr))
-  , _port(-1)
+  , _port(0)
 {
 }
 
@@ -55,21 +47,34 @@ BrokerIPtr Connection::broker() const
 
 Clock Connection::insert(const Entry& data)
 {
-  return _broker.lock()->insert(data, _port);
+  auto source = _broker.lock();
+  if (!source) {
+    return {};
+  }
+  auto clock = source->insert(data, _port);
+  if (!clock.valid()) {
+    return {};
+  }
+  for (auto& [id, info] : _provides) {
+    info.version = info.version.merge(data.clock);
+  }
+  return _version = clock;
 }
 
 Clock Connection::insert(const EntryList& data)
 {
-  auto clock = _broker.lock()->insert(data, _port);
+  auto clock = broker()->insert(data, _port);
   if (clock.valid()) {
-    updateProvides();
+    for (auto& [id, info] : _provides) {
+      info.version = info.version.merge(clock);
+    }
   }
   return clock;
 }
 
 void Connection::updateProvides()
 {
-  _provides = _broker.lock()->provides();
+  _provides = _broker.lock()->provides(_port);
   for (auto& [id, data] : _provides) {
     ++data.distance;
   }
@@ -95,11 +100,41 @@ EntryList Connection::entries(Clock clock) const
   return _broker.lock()->entries(clock, _port);
 }
 
+IdConnectionInfoMap Connection::provides() const
+{
+  return _provides;
+}
+
+void Connection::setProvides(Id id, int64_t distance)
+{
+  _provides[id].distance = distance;
+}
+
+void Connection::setProvides(Id id, Clock version)
+{
+  _provides[id].version = version;
+}
+
+bool Connection::provides(Id id) const
+{
+  return _provides.find(id) != _provides.cend();
+}
+
+void Connection::reset()
+{
+  _broker.reset();
+}
+
+void Connection::setVersion(Clock clock)
+{
+  _version = clock;
+}
+
 BrokerI::~BrokerI() = default;
 
 Broker::Broker()
 {
-  _contexts.push_back(std::make_shared<Context>());
+  _connections.push_back({});
 }
 
 Broker::~Broker() = default;
@@ -109,57 +144,49 @@ Port Broker::connect(BrokerIPtr remote)
   if (!remote) {
     return -1;
   }
-  auto local = getLocalPortFor(remote);
+  const Port port = _connections.size();
+  _connections.push_back(remote->connect({ptr(), port}));
 
-  auto context = _contexts.at(local);
+  _connections.back().updateProvides();
 
-  context->port = remote->getLocalPortFor(ptr());
+  auto thisEntries = entries(remote->clock(), port);
+  auto brokerEntries = _connections.back().entries(clock());
 
-  auto otherEntries = remote->entries(context->version, context->port);
-  auto thisEntries = this->entries(context->version, local);
-
-  remote->connect(ptr(), context->port, local);
-  connect(remote, local, context->port);
-
-  if (auto clock = remote->insert(thisEntries, context->port); clock.valid()) {
-    context->version = clock;
-    context->provides = UpdateProvides(remote->provides());
+  if (brokerEntries.size() > 0) {
+    insert(brokerEntries, port);
   }
-  insert(otherEntries, local);
+  if (thisEntries.size() > 0) {
+    _connections.back().insert(thisEntries);
+  }
 
-  return local;
+  return port;
 }
 
 Clock Broker::insert(const Entry& data, Port port)
 {
-  if (port < 0 || port >= _contexts.size()) {
+  if (port < 0 || port >= _connections.size()) {
     return Clock();
   }
-  auto& ctx = _contexts[port];
+  auto& ctx = _connections[port];
 
   setClock(clock().merge(data.clock));
 
-  if (auto j = ctx->journal.lock()) {
-    ctx->provides = UpdateProvides(j->provides(ctx->port));
+  if (auto j = ctx.broker()) {
+    ctx.updateProvides();
   } else {
-    ctx->provides[data.entry.id].distance = 1;
+    ctx.setProvides(data.entry.id, 1);
   }
-  ctx->provides[data.entry.id].version = clock();
+  ctx.setProvides(data.entry.id, clock());
 
-  for (size_t i = 0; i < _contexts.size(); ++i) {
+  for (size_t i = 0; i < _connections.size(); ++i) {
     if (i == port) {
       continue;
     }
-    auto ctx = _contexts[i];
-    if (ctx->provides.find(data.entry.id) != ctx->provides.cend()) {
+    auto& ctx = _connections[i];
+    if (ctx.provides(data.entry.id)) {
       continue;
     }
-    if (auto journal = ctx->journal.lock()) {
-      if (auto clock = journal->insert(data, ctx->port); clock.valid()) {
-        ctx->version = clock;
-        ctx->provides = UpdateProvides(journal->provides());
-      }
-    }
+    ctx.insert(data);
   }
   return clock();
 }
@@ -175,13 +202,13 @@ Clock Broker::insert(const EntryList& entries, Port port)
 IdConnectionInfoMap Broker::provides(Port to) const
 {
   IdConnectionInfoMap out;
-  for (size_t i = 0; i < _contexts.size(); i++) {
+  for (size_t i = 0; i < _connections.size(); i++) {
     if (i == to) {
       continue;
     }
-    auto& ctx = _contexts[i];
-    if (ctx->journal.lock()) {
-      for (auto& [id, data] : ctx->provides) {
+    auto& ctx = _connections[i];
+    if (ctx.broker()) {
+      for (auto& [id, data] : ctx.provides()) {
         auto it = std::as_const(out).find(id);
         if (it == out.cend() || data.distance < it->second.distance) {
           out[id] = data;
@@ -197,13 +224,13 @@ EntryList Broker::entries(const Clock& from, Port ignore) const
   if (id() > 0) {
     return entries(from);
   }
-  for (size_t i = 1; i < _contexts.size(); i++) {
-    auto context = _contexts[i];
+  for (size_t i = 1; i < _connections.size(); i++) {
+    auto context = _connections[i];
     if (i == ignore) {
       continue;
     }
-    if (auto broker = context->journal.lock()) {
-      return broker->entries(from, context->port);
+    if (auto broker = context.broker()) {
+      return context.entries(from);
     }
   }
   return {};
@@ -212,8 +239,8 @@ EntryList Broker::entries(const Clock& from, Port ignore) const
 IdClockMap Broker::versions() const
 {
   IdClockMap out;
-  for (auto& context : _contexts) {
-    for (auto& [id, data] : context->provides) {
+  for (auto& context : _connections) {
+    for (auto& [id, data] : context.provides()) {
       out[id] = data.version;
     }
   }
@@ -222,12 +249,12 @@ IdClockMap Broker::versions() const
 
 Port Broker::disconnect(Port port)
 {
-  if (port < 0 || _contexts.size() <= port) {
+  if (port < 0 || _connections.size() <= port) {
     return -1;
   }
-  auto& context = _contexts.at(port);
-  if (auto handler = context->journal.lock()) {
-    context->journal.reset();
+  auto& context = _connections.at(port);
+  if (context.broker()) {
+    context.reset();
     return port;
   }
   return -1;
@@ -235,7 +262,7 @@ Port Broker::disconnect(Port port)
 
 Clock Broker::clock() const
 {
-  return _contexts.front()->version;
+  return _connections.front().version();
 }
 
 EntryList Broker::entries(const Clock& from) const
@@ -251,46 +278,21 @@ BrokerIPtr Broker::ptr()
 void Broker::setClock(const Clock& clock)
 
 {
-  _contexts.front()->version = clock;
+  _connections.front().setVersion(clock);
 }
 
-void Broker::connect(BrokerIPtr source, Port local, Port remote)
-{
-  auto context = _contexts.at(local);
-  context->journal = source;
-  context->port = remote;
-  context->provides = UpdateProvides(source->provides());
-}
+void Broker::connect(BrokerIPtr source, Port local, Port remote) {}
 
 Connection Broker::connect(Connection conn)
 {
-  return {};
+  Port port = _connections.size();
+  _connections.push_back(conn);
+  return {ptr(), port};
 }
 
 Port Broker::getLocalPortFor(BrokerIPtr remote)
 {
-  Port port = _contexts.size();
-  const auto remoteProvides = UpdateProvides(remote->provides());
-  for (size_t i = 1; i < _contexts.size(); ++i) {
-    auto localData = _contexts[i]->provides;
-    auto remoteData = remoteProvides;
-    while (remoteData.size() > 0 && localData.size() > 0) {
-      const auto& [rId, rData] = *remoteData.begin();
-      const auto& [lId, lData] = *localData.begin();
-      if (rId == lId && rData.distance == lData.distance) {
-        localData.erase(lId);
-      }
-      remoteData.erase(rId);
-    }
-    if (remoteData.empty() && localData.empty()) {
-      port = i;
-      break;
-    }
-  }
-  if (port == _contexts.size()) {
-    _contexts.push_back(std::make_shared<Context>());
-  }
-  return port;
+  return -1;
 }
 
 bool ConnectionInfo::operator==(const ConnectionInfo& other) const
@@ -315,8 +317,12 @@ Id Broker::id() const
 {
   return 0;
 }
-IdConnectionInfoMap Connection::provides() const
+std::set<Port> Broker::connectedPorts() const
 {
-  return _provides;
+  std::set<Port> connected;
+  for (size_t i = 1; i < _connections.size(); i++) {
+    connected.insert(i);
+  }
+  return connected;
 }
 }

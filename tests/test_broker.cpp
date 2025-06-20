@@ -307,7 +307,7 @@ SCENARIO_METHOD(
             THEN("the broker requests entries that came after the last one seen"
             )
             {
-              REQUIRE(bb->_entriesArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
+              REQUIRE(bb->_entriesArgs.back() == Clock{{0xAA, 2}, {0xBB, 1}});
               REQUIRE(aa->_entriesArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
             }
 

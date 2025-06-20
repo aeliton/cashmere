@@ -27,9 +27,6 @@ class Broker;
 using BrokerPtr = std::shared_ptr<Broker>;
 using BrokerWeakPtr = std::weak_ptr<Broker>;
 
-struct Context;
-using ContextPtr = std::shared_ptr<Context>;
-
 class Broker : public std::enable_shared_from_this<Broker>, public BrokerI
 {
 public:
@@ -53,10 +50,7 @@ public:
   Port disconnect(Port port) override;
 
   BrokerIPtr ptr() override;
-  std::set<Port> connectedPorts() const override
-  {
-    return {};
-  }
+  std::set<Port> connectedPorts() const override;
 
 private:
   void setClock(const Clock& clock) override;
@@ -64,7 +58,7 @@ private:
   Port getLocalPortFor(BrokerIPtr broker) override;
   Connection connect(Connection conn) override;
 
-  std::vector<ContextPtr> _contexts;
+  std::vector<Connection> _connections;
 };
 
 }

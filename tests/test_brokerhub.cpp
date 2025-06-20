@@ -16,7 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "brokerhub.h"
+#include "broker.h"
 
 using namespace Cashmere;
 
@@ -50,15 +50,15 @@ public:
   MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
 
-TEST(BrokerHub, StartsWithNoConnections)
+TEST(Broker, StartsWithNoConnections)
 {
-  BrokerHubPtr broker = std::make_shared<BrokerHub>();
+  BrokerPtr broker = std::make_shared<Broker>();
   EXPECT_EQ(broker->connectedPorts(), std::set<Port>{});
 }
 
-TEST(BrokerHub, BrokerFirstConnectionUsesPortOne)
+TEST(Broker, BrokerFirstConnectionUsesPortOne)
 {
-  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  BrokerPtr hub = std::make_shared<Broker>();
   auto aa = std::make_shared<BrokerMock>();
 
   EXPECT_CALL(*aa, connect((Connection{hub, 1})))
@@ -69,9 +69,9 @@ TEST(BrokerHub, BrokerFirstConnectionUsesPortOne)
   EXPECT_EQ(hub->connectedPorts(), std::set<Port>{1});
 }
 
-TEST(BrokerHub, BrokerHubForwardsInserts)
+TEST(Broker, BrokerForwardsInserts)
 {
-  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  BrokerPtr hub = std::make_shared<Broker>();
 
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
@@ -87,9 +87,9 @@ TEST(BrokerHub, BrokerHubForwardsInserts)
   hub->insert(entry, 0);
 }
 
-TEST(BrokerHub, BrokerHubOnlyForwardsInsertsToPortsDifferentOfTheSender)
+TEST(Broker, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
 {
-  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  BrokerPtr hub = std::make_shared<Broker>();
 
   auto aa = std::make_shared<BrokerMock>();
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
@@ -106,10 +106,10 @@ TEST(BrokerHub, BrokerHubOnlyForwardsInsertsToPortsDifferentOfTheSender)
   hub->insert(entry, port);
 }
 
-TEST(BrokerHub, BrokeHubConnectionsAreFullDuplex)
+TEST(Broker, BrokeHubConnectionsAreFullDuplex)
 {
-  BrokerHubPtr hub0 = std::make_shared<BrokerHub>();
-  BrokerHubPtr hub1 = std::make_shared<BrokerHub>();
+  BrokerPtr hub0 = std::make_shared<Broker>();
+  BrokerPtr hub1 = std::make_shared<Broker>();
   const auto aa = std::make_shared<BrokerMock>();
 
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
@@ -131,17 +131,17 @@ TEST(BrokerHub, BrokeHubConnectionsAreFullDuplex)
   hub1->insert(entry, 0);
 }
 
-TEST(BrokerHub, UpdatesItsClockDuringInsert)
+TEST(Broker, UpdatesItsClockDuringInsert)
 {
-  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  BrokerPtr hub = std::make_shared<Broker>();
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
   hub->insert(entry, 0);
   EXPECT_EQ(hub->clock(), entry.clock);
 }
 
-TEST(BrokerHub, UpdatesItsClockDuringConnect)
+TEST(Broker, UpdatesItsClockDuringConnect)
 {
-  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  BrokerPtr hub = std::make_shared<Broker>();
   const auto aa = std::make_shared<BrokerMock>();
   const Clock aaClock = Clock{{0xAA, 1}};
   EXPECT_CALL(*aa, connect((Connection{hub, /* aaPort */ 1})))
@@ -156,9 +156,9 @@ TEST(BrokerHub, UpdatesItsClockDuringConnect)
   EXPECT_EQ(hub->clock(), aaClock);
 }
 
-TEST(BrokerHub, UpdateConnectionProvidedSourcesOnAttach)
+TEST(Broker, UpdateConnectionProvidedSourcesOnAttach)
 {
-  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  BrokerPtr hub = std::make_shared<Broker>();
   const auto aa = std::make_shared<BrokerMock>();
 
   const auto aaClock = Clock{{0xAA, 1}};
@@ -171,40 +171,33 @@ TEST(BrokerHub, UpdateConnectionProvidedSourcesOnAttach)
   EXPECT_CALL(*aa, entries(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
-  EXPECT_CALL(*aa, provides(0))
-    .Times(1)
-    .WillOnce(Return(IdConnectionInfoMap(
-      {{0xAA, ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}}}}}
-    )));
 
   hub->connect(aa);
 }
 
-TEST(BrokerHub, ExchangeEntriesOnConnect)
+TEST(Broker, ExchangeEntriesOnConnect)
 {
-  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  BrokerPtr hub = std::make_shared<Broker>();
   const auto aa = std::make_shared<BrokerMock>();
   const auto bb = std::make_shared<BrokerMock>();
 
-  const auto aaClock = Clock{{0xAA, 1}};
-  const auto bbClock = Clock{{0xBB, 1}};
-  const auto aaEntry = Entry{aaClock, Data{0xAA, 10, {}}};
-  const auto bbEntry = Entry{bbClock, Data{0xBB, 20, {}}};
+  const auto aaEntry = Entry{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}};
+  const auto bbEntry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 20, {}}};
 
-  EXPECT_CALL(*aa, clock()).Times(1).WillOnce(Return(aaClock));
+  EXPECT_CALL(*aa, clock()).Times(1).WillOnce(Return(Clock{{0xAA, 1}}));
   EXPECT_CALL(*aa, connect((Connection{hub, 1})))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1}));
-  EXPECT_CALL(*aa, insert(EntryList{bbEntry}, 1))
+  EXPECT_CALL(*aa, insert(bbEntry, 1))
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
   EXPECT_CALL(*aa, entries(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
-  EXPECT_CALL(*aa, entries(bbClock, 1))
+  EXPECT_CALL(*aa, entries(Clock{{0xBB, 1}}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
-  EXPECT_CALL(*aa, provides(0))
+  EXPECT_CALL(*aa, provides(1))
     .Times(2)
     .WillOnce(Return(IdConnectionInfoMap(
       {{0xAA, ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}}}}}
@@ -214,17 +207,17 @@ TEST(BrokerHub, ExchangeEntriesOnConnect)
         ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
     )));
 
-  EXPECT_CALL(*bb, clock()).Times(1).WillOnce(Return(bbClock));
+  EXPECT_CALL(*bb, clock()).Times(1).WillOnce(Return(Clock{{0xBB, 1}}));
   EXPECT_CALL(*bb, connect((Connection{hub, 2})))
     .Times(1)
     .WillOnce(Return(Connection{bb, 1}));
   EXPECT_CALL(*bb, insert(EntryList{aaEntry}, 1))
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
-  EXPECT_CALL(*bb, entries(aaClock, 1))
+  EXPECT_CALL(*bb, entries(Clock{{0xAA, 1}}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{bbEntry}));
-  EXPECT_CALL(*bb, provides(0))
+  EXPECT_CALL(*bb, provides(1))
     .Times(2)
     .WillOnce(Return(IdConnectionInfoMap(
       {{0xBB, ConnectionInfo{.distance = 0, .version = Clock{{0xBB, 1}}}}}
