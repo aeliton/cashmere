@@ -144,7 +144,31 @@ TEST(BrokerHub, UpdatesItsClockDuringConnect)
   EXPECT_EQ(hub->clock(), aaClock);
 }
 
-TEST(BrokerHub, ExchangeEntriesOnAttach)
+TEST(BrokerHub, UpdateConnectionProvidedSourcesOnAttach)
+{
+  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  const auto aa = std::make_shared<BrokerMock>();
+
+  const auto aaClock = Clock{{0xAA, 1}};
+  const auto aaEntry = Entry{aaClock, Data{0xAA, 10, {}}};
+
+  EXPECT_CALL(*aa, clock()).Times(1).WillOnce(Return(aaClock));
+  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub, 1})))
+    .Times(1)
+    .WillOnce(Return(1));
+  EXPECT_CALL(*aa, entries(Clock{}, 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{aaEntry}));
+  EXPECT_CALL(*aa, provides(0))
+    .Times(1)
+    .WillOnce(Return(IdConnectionInfoMap(
+      {{0xAA, ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}}}}}
+    )));
+
+  hub->connect(aa);
+}
+
+TEST(BrokerHub, ExchangeEntriesOnConnect)
 {
   BrokerHubPtr hub = std::make_shared<BrokerHub>();
   const auto aa = std::make_shared<BrokerMock>();
@@ -169,7 +193,10 @@ TEST(BrokerHub, ExchangeEntriesOnAttach)
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
   EXPECT_CALL(*aa, provides(0))
-    .Times(1)
+    .Times(2)
+    .WillOnce(Return(IdConnectionInfoMap(
+      {{0xAA, ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}}}}}
+    )))
     .WillOnce(Return(IdConnectionInfoMap(
       {{0xAA,
         ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
@@ -186,7 +213,10 @@ TEST(BrokerHub, ExchangeEntriesOnAttach)
     .Times(1)
     .WillOnce(Return(EntryList{bbEntry}));
   EXPECT_CALL(*bb, provides(0))
-    .Times(1)
+    .Times(2)
+    .WillOnce(Return(IdConnectionInfoMap(
+      {{0xBB, ConnectionInfo{.distance = 0, .version = Clock{{0xBB, 1}}}}}
+    )))
     .WillOnce(Return(IdConnectionInfoMap(
       {{0xBB,
         ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
@@ -208,5 +238,3 @@ TEST(BrokerHub, ExchangeEntriesOnAttach)
     )
   );
 }
-
-TEST(BrokerHub, ReportProviders) {}

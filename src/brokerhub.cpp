@@ -34,6 +34,8 @@ Port BrokerHub::connect(BrokerIPtr broker)
   const Port port = _connections.size();
   _connections.push_back({broker, broker->getLocalPortFor({ptr(), port})});
 
+  _connections.back().updateProvides();
+
   auto thisEntries = entries(broker->clock(), port);
   auto brokerEntries = _connections.back().entries(clock());
 
