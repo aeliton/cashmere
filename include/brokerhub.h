@@ -32,19 +32,13 @@ public:
   BrokerHub();
 
   Id id() const override;
-  Clock insert(const EntryList& entries, Port sender = 0) override
-  {
-    return {};
-  }
+  Clock insert(const EntryList& entries, Port sender = 0) override;
   Clock insert(const Entry& data, Port sender = 0) override;
   EntryList entries(const Clock& from = {}) const override
   {
     return {};
   }
-  EntryList entries(const Clock& from, Port ignore) const override
-  {
-    return {};
-  }
+  EntryList entries(const Clock& from, Port ignore) const override;
   IdConnectionInfoMap provides(Port to = 0) const override
   {
     return {};

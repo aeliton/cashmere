@@ -45,8 +45,10 @@ public:
   Connection();
   Connection(BrokerIPtr broker, Port port, Clock version = {});
   Clock insert(const Entry& data);
+  Clock insert(const EntryList& data);
   Port port() const;
   BrokerIPtr broker() const;
+  EntryList entries(Clock clock = {}) const;
 
   bool operator==(const Connection& other) const;
 

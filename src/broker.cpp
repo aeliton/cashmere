@@ -58,6 +58,11 @@ Clock Connection::insert(const Entry& data)
   return _broker.lock()->insert(data, _port);
 }
 
+Clock Connection::insert(const EntryList& data)
+{
+  return _broker.lock()->insert(data, _port);
+}
+
 bool Connection::operator==(const Connection& other) const
 {
   return _port == other._port &&
@@ -71,6 +76,11 @@ Clock Connection::merge(const Clock& clock)
 Clock Connection::version() const
 {
   return _version;
+}
+
+EntryList Connection::entries(Clock clock) const
+{
+  return _broker.lock()->entries(clock, _port);
 }
 
 BrokerI::~BrokerI() = default;

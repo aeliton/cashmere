@@ -143,3 +143,47 @@ TEST(BrokerHub, UpdatesItsClockDuringConnect)
 
   EXPECT_EQ(hub->clock(), aaClock);
 }
+
+TEST(BrokerHub, ExchangeEntriesOnAttach)
+{
+  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  const auto aa = std::make_shared<BrokerMock>();
+  const auto bb = std::make_shared<BrokerMock>();
+
+  const auto aaClock = Clock{{0xAA, 1}};
+  const auto bbClock = Clock{{0xBB, 1}};
+  const auto aaEntry = Entry{aaClock, Data{0xAA, 10, {}}};
+  const auto bbEntry = Entry{bbClock, Data{0xBB, 20, {}}};
+
+  EXPECT_CALL(*aa, clock()).Times(1).WillOnce(Return(aaClock));
+  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub, 1})))
+    .Times(1)
+    .WillOnce(Return(1));
+  EXPECT_CALL(*aa, insert(EntryList{bbEntry}, 1))
+    .Times(1)
+    .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
+  EXPECT_CALL(*aa, entries(Clock{}, 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{aaEntry}));
+  EXPECT_CALL(*aa, entries(bbClock, 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{aaEntry}));
+
+  EXPECT_CALL(*bb, clock()).Times(1).WillOnce(Return(bbClock));
+  EXPECT_CALL(*bb, getLocalPortFor((Connection{hub, 2})))
+    .Times(1)
+    .WillOnce(Return(1));
+  EXPECT_CALL(*bb, insert(EntryList{aaEntry}, 1))
+    .Times(1)
+    .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
+  EXPECT_CALL(*bb, entries(aaClock, 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{bbEntry}));
+
+  const Port aaPort = hub->connect(aa);
+  const Port bbPort = hub->connect(bb);
+
+  EXPECT_EQ(aaPort, 1);
+  EXPECT_EQ(bbPort, 2);
+  EXPECT_EQ(hub->clock(), Clock({{0xAA, 1}, {0xBB, 1}}));
+}

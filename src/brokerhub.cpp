@@ -33,9 +33,16 @@ Port BrokerHub::connect(BrokerIPtr broker)
   const Port port = _connections.size();
   _connections.push_back({broker, broker->getLocalPortFor({ptr(), port})});
 
-  for (auto& entry : broker->entries(clock(), _connections.back().port())) {
-    _connections.front().merge(entry.clock);
+  auto thisEntries = entries(broker->clock(), port);
+  auto brokerEntries = _connections.back().entries(clock());
+
+  if (brokerEntries.size() > 0) {
+    insert(brokerEntries, port);
   }
+  if (thisEntries.size() > 0) {
+    _connections.back().insert(thisEntries);
+  }
+
   return port;
 }
 
@@ -74,5 +81,36 @@ BrokerIPtr BrokerHub::ptr()
 Clock BrokerHub::clock() const
 {
   return _connections.front().version();
+}
+
+EntryList BrokerHub::entries(const Clock& from, Port ignore) const
+{
+  for (size_t i = 1; i < _connections.size(); i++) {
+    auto context = _connections[i];
+    if (i == ignore) {
+      continue;
+    }
+    if (auto broker = context.broker()) {
+      return broker->entries(from, context.port());
+    }
+  }
+  return {};
+}
+
+Clock BrokerHub::insert(const EntryList& entries, Port sender)
+{
+  for (auto& entry : entries) {
+    _connections.front().merge(entry.clock);
+  }
+
+  for (int i = 1; i < _connections.size(); i++) {
+    if (i == sender) {
+      continue;
+    }
+    if (auto broker = _connections.at(i).broker()) {
+      broker->insert(entries, _connections.at(i).port());
+    }
+  }
+  return clock();
 }
 }
