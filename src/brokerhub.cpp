@@ -40,7 +40,7 @@ Port BrokerHub::connect(BrokerIPtr broker)
   auto brokerEntries = _connections.back().entries(clock());
 
   if (brokerEntries.size() > 0) {
-    insert(brokerEntries, port);
+    BrokerI::insert(brokerEntries, port);
   }
   if (thisEntries.size() > 0) {
     _connections.back().insert(thisEntries);
@@ -98,21 +98,6 @@ EntryList BrokerHub::entries(const Clock& from, Port ignore) const
     }
   }
   return {};
-}
-
-Clock BrokerHub::insert(const EntryList& entries, Port sender)
-{
-  for (auto& entry : entries) {
-    _connections.front().merge(entry.clock);
-  }
-
-  for (int i = 1; i < _connections.size(); i++) {
-    if (i == sender) {
-      continue;
-    }
-    _connections.at(i).insert(entries);
-  }
-  return clock();
 }
 
 IdConnectionInfoMap BrokerHub::provides(Port to) const

@@ -132,6 +132,14 @@ void Connection::setVersion(Clock clock)
 
 BrokerI::~BrokerI() = default;
 
+Clock BrokerI::insert(const EntryList& entries, Port sender)
+{
+  for (const auto& entry : entries) {
+    insert(entry, sender);
+  }
+  return clock();
+}
+
 Broker::Broker()
 {
   _connections.push_back({});
@@ -153,7 +161,7 @@ Port Broker::connect(BrokerIPtr remote)
   auto brokerEntries = _connections.back().entries(clock());
 
   if (brokerEntries.size() > 0) {
-    insert(brokerEntries, port);
+    BrokerI::insert(brokerEntries, port);
   }
   if (thisEntries.size() > 0) {
     _connections.back().insert(thisEntries);
@@ -190,14 +198,6 @@ Clock Broker::insert(const Entry& data, Port port)
   }
   return clock();
 }
-
-Clock Broker::insert(const EntryList& entries, Port port)
-{
-  for (auto& entry : entries) {
-    insert(entry, port);
-  }
-  return clock();
-};
 
 IdConnectionInfoMap Broker::provides(Port to) const
 {
@@ -325,4 +325,5 @@ std::set<Port> Broker::connectedPorts() const
   }
   return connected;
 }
+
 }

@@ -74,7 +74,6 @@ public:
   virtual ~BrokerI();
 
   virtual Id id() const = 0;
-  virtual Clock insert(const EntryList& entries, Port sender = 0) = 0;
   virtual Clock insert(const Entry& data, Port sender = 0) = 0;
   virtual EntryList entries(const Clock& from = {}) const = 0;
   virtual EntryList entries(const Clock& from, Port ignore) const = 0;
@@ -89,6 +88,8 @@ public:
   virtual Port getLocalPortFor(BrokerIPtr broker) = 0;
   virtual Connection connect(Connection conn) = 0;
   virtual std::set<Port> connectedPorts() const = 0;
+
+  Clock insert(const EntryList& entries, Port sender = 0);
 };
 
 }

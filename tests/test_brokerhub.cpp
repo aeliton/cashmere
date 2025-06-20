@@ -27,9 +27,6 @@ class BrokerMock : public BrokerI
 {
 public:
   MOCK_METHOD(Id, id, (), (const, override));
-  MOCK_METHOD(
-    Clock, insert, (const EntryList& entries, Port sender), (override)
-  );
   MOCK_METHOD(Clock, insert, (const Entry& data, Port sender), (override));
   MOCK_METHOD(EntryList, entries, (const Clock& from), (const, override));
   MOCK_METHOD(
@@ -207,11 +204,14 @@ TEST(Broker, ExchangeEntriesOnConnect)
         ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
     )));
 
-  EXPECT_CALL(*bb, clock()).Times(1).WillOnce(Return(Clock{{0xBB, 1}}));
+  EXPECT_CALL(*bb, clock())
+    .Times(2)
+    .WillOnce(Return(Clock{{0xBB, 1}}))
+    .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
   EXPECT_CALL(*bb, connect((Connection{hub, 2})))
     .Times(1)
     .WillOnce(Return(Connection{bb, 1}));
-  EXPECT_CALL(*bb, insert(EntryList{aaEntry}, 1))
+  EXPECT_CALL(*bb, insert(aaEntry, 1))
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
   EXPECT_CALL(*bb, entries(Clock{{0xAA, 1}}, 1))

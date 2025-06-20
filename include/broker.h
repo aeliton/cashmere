@@ -35,7 +35,6 @@ public:
   virtual ~Broker();
 
   virtual Id id() const override;
-  Clock insert(const EntryList& entries, Port sender = 0) override;
   virtual Clock insert(const Entry& data, Port sender = 0) override;
 
   virtual EntryList entries(const Clock& from = {}) const override;

@@ -32,7 +32,6 @@ public:
   BrokerHub();
 
   Id id() const override;
-  Clock insert(const EntryList& entries, Port sender = 0) override;
   Clock insert(const Entry& data, Port sender = 0) override;
   EntryList entries(const Clock& from = {}) const override
   {
