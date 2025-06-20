@@ -32,6 +32,10 @@ Port BrokerHub::connect(BrokerIPtr broker)
 {
   const Port port = _connections.size();
   _connections.push_back({broker, broker->getLocalPortFor({ptr(), port})});
+
+  for (auto& entry : broker->entries(clock(), _connections.back().port())) {
+    _connections.front().merge(entry.clock);
+  }
   return port;
 }
 

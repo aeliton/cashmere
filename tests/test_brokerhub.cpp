@@ -126,3 +126,20 @@ TEST(BrokerHub, UpdatesItsClockDuringInsert)
   hub->insert(entry, 0);
   EXPECT_EQ(hub->clock(), entry.clock);
 }
+
+TEST(BrokerHub, UpdatesItsClockDuringConnect)
+{
+  BrokerHubPtr hub = std::make_shared<BrokerHub>();
+  const auto aa = std::make_shared<BrokerMock>();
+  const Clock aaClock = Clock{{0xAA, 1}};
+  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub, /* aaPort */ 1})))
+    .Times(1)
+    .WillOnce(Return(1));
+  EXPECT_CALL(*aa, entries(Clock({}), /* aaPort */ 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
+
+  hub->connect(aa);
+
+  EXPECT_EQ(hub->clock(), aaClock);
+}
