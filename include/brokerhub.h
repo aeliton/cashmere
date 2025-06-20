@@ -65,7 +65,8 @@ public:
   {
     return {};
   }
-  Port getLocalPortFor(Connection conn) override;
+
+  Connection getLocalPortFor(Connection conn) override;
 
   std::set<Port> connectedPorts() const override;
 

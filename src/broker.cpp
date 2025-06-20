@@ -262,9 +262,9 @@ void Broker::connect(BrokerIPtr source, Port local, Port remote)
   context->provides = UpdateProvides(source->provides());
 }
 
-Port Broker::getLocalPortFor(Connection conn)
+Connection Broker::getLocalPortFor(Connection conn)
 {
-  return -1;
+  return {};
 }
 
 Port Broker::getLocalPortFor(BrokerIPtr remote)

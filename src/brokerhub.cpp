@@ -32,7 +32,7 @@ Id BrokerHub::id() const
 Port BrokerHub::connect(BrokerIPtr broker)
 {
   const Port port = _connections.size();
-  _connections.push_back({broker, broker->getLocalPortFor({ptr(), port})});
+  _connections.push_back(broker->getLocalPortFor({ptr(), port}));
 
   _connections.back().updateProvides();
 
@@ -69,11 +69,11 @@ std::set<Port> BrokerHub::connectedPorts() const
   return connected;
 }
 
-Port BrokerHub::getLocalPortFor(Connection conn)
+Connection BrokerHub::getLocalPortFor(Connection conn)
 {
   Port port = _connections.size();
   _connections.push_back(conn);
-  return port;
+  return {ptr(), port};
 }
 
 BrokerIPtr BrokerHub::ptr()
