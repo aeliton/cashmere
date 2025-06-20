@@ -30,6 +30,33 @@ struct Context
   IdConnectionInfoMap provides;
 };
 
+Connection::Connection()
+  : _broker(std::shared_ptr<BrokerI>(nullptr))
+  , _port(-1)
+{
+}
+
+Connection::Connection(BrokerIPtr broker, Port port)
+  : _broker(broker)
+  , _port(port)
+{
+}
+
+Port Connection::port() const
+{
+  return _port;
+}
+
+BrokerIPtr Connection::broker() const
+{
+  return _broker.lock();
+}
+
+Clock Connection::insert(const Entry& data)
+{
+  return _broker.lock()->insert(data, _port);
+}
+
 BrokerI::~BrokerI() = default;
 
 Broker::Broker()

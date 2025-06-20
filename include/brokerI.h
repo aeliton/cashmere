@@ -38,6 +38,21 @@ using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 class BrokerI;
 using BrokerIPtr = std::shared_ptr<BrokerI>;
 using BrokerIWeakPtr = std::weak_ptr<BrokerI>;
+
+class Connection
+{
+public:
+  Connection();
+  Connection(BrokerIPtr broker, Port port);
+  Clock insert(const Entry& data);
+  Port port() const;
+  BrokerIPtr broker() const;
+
+private:
+  BrokerIWeakPtr _broker;
+  Port _port;
+};
+
 class BrokerI
 {
 public:
