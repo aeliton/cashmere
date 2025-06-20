@@ -49,17 +49,18 @@ public:
   Port port() const;
   BrokerIPtr broker() const;
   EntryList entries(Clock clock = {}) const;
+  Clock merge(const Clock& clock);
+  Clock version() const;
+  IdConnectionInfoMap provides() const;
+  void updateProvides();
 
   bool operator==(const Connection& other) const;
-
-  Clock merge(const Clock& clock);
-
-  Clock version() const;
 
 private:
   BrokerIWeakPtr _broker;
   Port _port;
   Clock _version;
+  IdConnectionInfoMap _provides;
 };
 
 class BrokerI

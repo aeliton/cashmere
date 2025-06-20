@@ -39,10 +39,7 @@ public:
     return {};
   }
   EntryList entries(const Clock& from, Port ignore) const override;
-  IdConnectionInfoMap provides(Port to = 0) const override
-  {
-    return {};
-  }
+  IdConnectionInfoMap provides(Port to = 0) const override;
   IdClockMap versions() const override
   {
     return {};

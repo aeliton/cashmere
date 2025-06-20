@@ -60,7 +60,19 @@ Clock Connection::insert(const Entry& data)
 
 Clock Connection::insert(const EntryList& data)
 {
-  return _broker.lock()->insert(data, _port);
+  auto clock = _broker.lock()->insert(data, _port);
+  if (clock.valid()) {
+    updateProvides();
+  }
+  return clock;
+}
+
+void Connection::updateProvides()
+{
+  _provides = _broker.lock()->provides();
+  for (auto& [id, data] : _provides) {
+    ++data.distance;
+  }
 }
 
 bool Connection::operator==(const Connection& other) const
@@ -302,5 +314,9 @@ IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides)
 Id Broker::id() const
 {
   return 0;
+}
+IdConnectionInfoMap Connection::provides() const
+{
+  return _provides;
 }
 }

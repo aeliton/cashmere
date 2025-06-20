@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "brokerhub.h"
+#include <utility>
 
 namespace Cashmere
 {
@@ -107,10 +108,29 @@ Clock BrokerHub::insert(const EntryList& entries, Port sender)
     if (i == sender) {
       continue;
     }
-    if (auto broker = _connections.at(i).broker()) {
-      broker->insert(entries, _connections.at(i).port());
-    }
+    _connections.at(i).insert(entries);
   }
   return clock();
 }
+
+IdConnectionInfoMap BrokerHub::provides(Port to) const
+{
+  IdConnectionInfoMap out;
+  for (size_t i = 0; i < _connections.size(); i++) {
+    if (i == to) {
+      continue;
+    }
+    auto& ctx = _connections[i];
+    if (ctx.broker()) {
+      for (auto& [id, data] : ctx.provides()) {
+        auto it = std::as_const(out).find(id);
+        if (it == out.cend() || data.distance < it->second.distance) {
+          out[id] = data;
+        }
+      }
+    }
+  }
+  return out;
+}
+
 }

@@ -168,6 +168,12 @@ TEST(BrokerHub, ExchangeEntriesOnAttach)
   EXPECT_CALL(*aa, entries(bbClock, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
+  EXPECT_CALL(*aa, provides(0))
+    .Times(1)
+    .WillOnce(Return(IdConnectionInfoMap(
+      {{0xAA,
+        ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
+    )));
 
   EXPECT_CALL(*bb, clock()).Times(1).WillOnce(Return(bbClock));
   EXPECT_CALL(*bb, getLocalPortFor((Connection{hub, 2})))
@@ -179,6 +185,12 @@ TEST(BrokerHub, ExchangeEntriesOnAttach)
   EXPECT_CALL(*bb, entries(aaClock, 1))
     .Times(1)
     .WillOnce(Return(EntryList{bbEntry}));
+  EXPECT_CALL(*bb, provides(0))
+    .Times(1)
+    .WillOnce(Return(IdConnectionInfoMap(
+      {{0xBB,
+        ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
+    )));
 
   const Port aaPort = hub->connect(aa);
   const Port bbPort = hub->connect(bb);
@@ -186,4 +198,15 @@ TEST(BrokerHub, ExchangeEntriesOnAttach)
   EXPECT_EQ(aaPort, 1);
   EXPECT_EQ(bbPort, 2);
   EXPECT_EQ(hub->clock(), Clock({{0xAA, 1}, {0xBB, 1}}));
+  EXPECT_EQ(
+    hub->provides(),
+    IdConnectionInfoMap(
+      {{0xAA,
+        ConnectionInfo{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}},
+       {0xBB,
+        ConnectionInfo{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
+    )
+  );
 }
+
+TEST(BrokerHub, ReportProviders) {}
