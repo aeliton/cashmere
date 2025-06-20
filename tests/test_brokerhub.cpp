@@ -46,6 +46,7 @@ public:
     void, connect, (BrokerIPtr source, Port local, Port remote), (override)
   );
   MOCK_METHOD(Port, getLocalPortFor, (BrokerIPtr broker), (override));
+  MOCK_METHOD(Port, getLocalPortFor, (Connection conn), (override));
   MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
 
@@ -91,4 +92,29 @@ TEST(BrokerHub, BrokerHubOnlyForwardsInsertsToPortsDifferentOfTheSender)
   EXPECT_EQ(port, 1);
 
   hub->insert(entry, port);
+}
+
+TEST(BrokerHub, BrokeHubConnectionsAreFullDuplex)
+{
+  BrokerHubPtr hub0 = std::make_shared<BrokerHub>();
+  BrokerHubPtr hub1 = std::make_shared<BrokerHub>();
+  const auto aa = std::make_shared<BrokerMock>();
+
+  const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
+
+  EXPECT_CALL(*aa, insert(entry, /* hub1Port */ 1)).Times(1);
+  EXPECT_CALL(*aa, getLocalPortFor((Connection{hub0, /* aaPort */ 2})))
+    .Times(1)
+    .WillOnce(Return(1));
+
+  const Port hub1Port = hub0->connect(hub1);
+  const Port aaPort = hub0->connect(aa);
+
+  EXPECT_EQ(hub1Port, 1);
+  EXPECT_EQ(aaPort, 2);
+
+  EXPECT_EQ(hub0->connectedPorts(), std::set<Port>({1, 2}));
+  EXPECT_EQ(hub1->connectedPorts(), std::set<Port>{1});
+
+  hub1->insert(entry, 0);
 }

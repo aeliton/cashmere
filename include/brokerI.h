@@ -48,6 +48,12 @@ public:
   Port port() const;
   BrokerIPtr broker() const;
 
+  bool operator==(const Connection& other) const
+  {
+    return _port == other._port &&
+           _broker.lock().get() == other._broker.lock().get();
+  }
+
 private:
   BrokerIWeakPtr _broker;
   Port _port;
@@ -72,6 +78,7 @@ public:
   virtual void setClock(const Clock& clock) = 0;
   virtual void connect(BrokerIPtr source, Port local, Port remote) = 0;
   virtual Port getLocalPortFor(BrokerIPtr broker) = 0;
+  virtual Port getLocalPortFor(Connection conn) = 0;
   virtual std::set<Port> connectedPorts() const = 0;
 };
 

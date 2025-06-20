@@ -26,7 +26,7 @@ namespace Cashmere
 class BrokerHub;
 using BrokerHubPtr = std::shared_ptr<BrokerHub>;
 
-class BrokerHub : public BrokerI
+class BrokerHub : public std::enable_shared_from_this<BrokerHub>, public BrokerI
 {
 public:
   BrokerHub();
@@ -62,10 +62,9 @@ public:
   {
     return {};
   }
-  BrokerIPtr ptr() override
-  {
-    return {};
-  }
+
+  BrokerIPtr ptr() override;
+
   void setClock(const Clock& clock) override
   {
     return;
@@ -78,6 +77,7 @@ public:
   {
     return {};
   }
+  Port getLocalPortFor(Connection conn) override;
 
   std::set<Port> connectedPorts() const override;
 

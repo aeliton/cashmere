@@ -224,6 +224,11 @@ void Broker::connect(BrokerIPtr source, Port local, Port remote)
   context->provides = UpdateProvides(source->provides());
 }
 
+Port Broker::getLocalPortFor(Connection conn)
+{
+  return -1;
+}
+
 Port Broker::getLocalPortFor(BrokerIPtr remote)
 {
   Port port = _contexts.size();
