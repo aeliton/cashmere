@@ -19,7 +19,7 @@
 #include <functional>
 #include <map>
 
-namespace Cashmere
+namespace Signaller
 {
 using Connection = size_t;
 

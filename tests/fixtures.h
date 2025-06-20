@@ -49,7 +49,7 @@ struct JournalMock : public Journal
     _insertArgs.push_back(data);
     return Journal::insert(data, sender);
   }
-  Signal<void(const Clock&)> _entriesSignaler;
+  Signaller::Signal<void(const Clock&)> _entriesSignaler;
   EntryList _insertArgs = {};
   ClockList _entriesArgs = {};
 };

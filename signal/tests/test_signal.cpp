@@ -16,7 +16,7 @@
 #include "signal/signal.h"
 #include <catch2/catch_all.hpp>
 
-using namespace Cashmere;
+using namespace Signaller;
 
 SCENARIO("signal to a single slot")
 {
