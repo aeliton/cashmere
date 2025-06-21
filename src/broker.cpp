@@ -135,6 +135,13 @@ void Connection::setVersion(Clock clock)
   _version = clock;
 }
 
+void Connection::update(Connection conn)
+{
+  if (auto source = broker()) {
+    source->update(conn, _port);
+  }
+}
+
 BrokerI::~BrokerI() = default;
 
 Clock BrokerI::insert(const EntryList& entries, Port sender)
@@ -184,12 +191,9 @@ Port Broker::connect(BrokerIPtr remote)
       continue;
     }
     auto& conn = _connections.at(i);
-    if (auto broker = conn.broker()) {
-      auto newConn = Connection{
-        ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))
-      };
-      broker->update(newConn, conn.port());
-    }
+    conn.update(
+      {ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
+    );
   }
 
   return port;
@@ -204,12 +208,9 @@ void Broker::update(const Connection& conn, Port port)
       continue;
     }
     auto& conn = _connections.at(i);
-    if (auto broker = conn.broker()) {
-      auto newConn = Connection{
-        ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))
-      };
-      broker->update(newConn, conn.port());
-    }
+    conn.update(
+      {ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
+    );
   }
 }
 

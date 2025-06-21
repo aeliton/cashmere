@@ -60,6 +60,7 @@ public:
   bool provides(Id id) const;
   void reset();
   void setVersion(Clock clock);
+  void update(Connection conn);
 
   bool operator==(const Connection& other) const;
 
