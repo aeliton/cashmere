@@ -33,23 +33,22 @@ struct ConnectionInfo
 };
 
 using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
-using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 
-class BrokerI;
-using BrokerIPtr = std::shared_ptr<BrokerI>;
-using BrokerIWeakPtr = std::weak_ptr<BrokerI>;
+class BrokerBase;
+using BrokerBasePtr = std::shared_ptr<BrokerBase>;
+using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 
 class Connection
 {
 public:
   Connection();
   Connection(
-    BrokerIPtr broker, Port port, Clock version, IdConnectionInfoMap provides
+    BrokerBasePtr broker, Port port, Clock version, IdConnectionInfoMap provides
   );
   Clock insert(const Entry& data);
   Clock insert(const EntryList& data);
   Port port() const;
-  BrokerIPtr broker() const;
+  BrokerBasePtr broker() const;
   EntryList entries(Clock clock = {}) const;
   Clock merge(const Clock& clock);
   Clock version() const;
@@ -64,16 +63,16 @@ public:
   bool operator==(const Connection& other) const;
 
 private:
-  BrokerIWeakPtr _broker;
+  BrokerBaseWeakPtr _broker;
   Port _port;
   Clock _version;
   IdConnectionInfoMap _provides;
 };
 
-class BrokerI
+class BrokerBase
 {
 public:
-  virtual ~BrokerI();
+  virtual ~BrokerBase();
 
   virtual Id id() const = 0;
   virtual Clock insert(const Entry& data, Port sender = 0) = 0;
@@ -82,9 +81,9 @@ public:
   virtual IdConnectionInfoMap provides(Port to = 0) const = 0;
   virtual IdClockMap versions() const = 0;
   virtual Clock clock() const = 0;
-  virtual Port connect(BrokerIPtr other) = 0;
+  virtual Port connect(BrokerBasePtr other) = 0;
   virtual Port disconnect(Port port) = 0;
-  virtual BrokerIPtr ptr() = 0;
+  virtual BrokerBasePtr ptr() = 0;
   virtual void setClock(const Clock& clock) = 0;
   virtual Connection connect(Connection conn) = 0;
   virtual std::set<Port> connectedPorts() const = 0;

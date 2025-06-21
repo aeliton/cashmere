@@ -23,7 +23,7 @@ using namespace Cashmere;
 using ::testing::AtLeast;
 using ::testing::Return;
 
-class BrokerMock : public BrokerI
+class BrokerMock : public BrokerBase
 {
 public:
   MOCK_METHOD(Id, id, (), (const, override));
@@ -35,9 +35,9 @@ public:
   MOCK_METHOD(IdConnectionInfoMap, provides, (Port to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
   MOCK_METHOD(Clock, clock, (), (const, override));
-  MOCK_METHOD(Port, connect, (BrokerIPtr other), (override));
+  MOCK_METHOD(Port, connect, (BrokerBasePtr other), (override));
   MOCK_METHOD(Port, disconnect, (Port port), (override));
-  MOCK_METHOD(BrokerIPtr, ptr, (), (override));
+  MOCK_METHOD(BrokerBasePtr, ptr, (), (override));
   MOCK_METHOD(void, setClock, (const Clock& clock), (override));
   MOCK_METHOD(Connection, connect, (Connection conn), (override));
   MOCK_METHOD(void, update, (const Connection& conn, Port port), (override));

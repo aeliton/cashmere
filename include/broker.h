@@ -16,7 +16,7 @@
 #ifndef CASHMERE_BROKER_H
 #define CASHMERE_BROKER_H
 
-#include "brokerI.h"
+#include "brokerbase.h"
 #include <memory>
 #include <vector>
 
@@ -27,7 +27,7 @@ class Broker;
 using BrokerPtr = std::shared_ptr<Broker>;
 using BrokerWeakPtr = std::weak_ptr<Broker>;
 
-class Broker : public std::enable_shared_from_this<Broker>, public BrokerI
+class Broker : public std::enable_shared_from_this<Broker>, public BrokerBase
 {
 public:
   Broker();
@@ -45,12 +45,12 @@ public:
 
   Clock clock() const override;
 
-  Port connect(BrokerIPtr other) override;
+  Port connect(BrokerBasePtr other) override;
   Port disconnect(Port port) override;
 
   void update(const Connection& conn, Port port) override;
 
-  BrokerIPtr ptr() override;
+  BrokerBasePtr ptr() override;
   std::set<Port> connectedPorts() const override;
 
   void updateConnections(Port ignore = 0);
