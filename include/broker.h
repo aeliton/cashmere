@@ -53,8 +53,6 @@ public:
 
 private:
   void setClock(const Clock& clock) override;
-  void connect(BrokerIPtr source, Port local, Port remote) override;
-  Port getLocalPortFor(BrokerIPtr broker) override;
   Connection connect(Connection conn) override;
 
   std::vector<Connection> _connections;

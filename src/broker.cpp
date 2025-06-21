@@ -292,13 +292,6 @@ void Broker::setClock(const Clock& clock)
   _connections.front().setVersion(clock);
 }
 
-void Broker::connect(BrokerIPtr source, Port local, Port remote) {}
-
-Port Broker::getLocalPortFor(BrokerIPtr remote)
-{
-  return -1;
-}
-
 bool ConnectionInfo::operator==(const ConnectionInfo& other) const
 {
   return std::tie(distance, version) == std::tie(other.distance, other.version);

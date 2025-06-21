@@ -39,10 +39,6 @@ public:
   MOCK_METHOD(Port, disconnect, (Port port), (override));
   MOCK_METHOD(BrokerIPtr, ptr, (), (override));
   MOCK_METHOD(void, setClock, (const Clock& clock), (override));
-  MOCK_METHOD(
-    void, connect, (BrokerIPtr source, Port local, Port remote), (override)
-  );
-  MOCK_METHOD(Port, getLocalPortFor, (BrokerIPtr broker), (override));
   MOCK_METHOD(Connection, connect, (Connection conn), (override));
   MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
