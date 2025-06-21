@@ -34,7 +34,6 @@ public:
 
   Clock insert(const Entry& data, Port port = 0) override;
   EntryList entries(const Clock& from = {}) const override;
-  IdConnectionInfoMap provides(Port to = 0) const override;
 
   Id id() const override;
   const Id bookId() const;

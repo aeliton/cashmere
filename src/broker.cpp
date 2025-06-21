@@ -185,10 +185,10 @@ Clock Broker::insert(const Entry& data, Port port)
   if (port < 0 || port >= _connections.size()) {
     return Clock();
   }
-  auto& ctx = _connections[port];
 
   setClock(clock().merge(data.clock));
 
+  auto& ctx = _connections[port];
   if (auto j = ctx.broker()) {
     ctx.updateProvides();
   }
@@ -223,6 +223,9 @@ IdConnectionInfoMap Broker::provides(Port to) const
         }
       }
     }
+  }
+  if (id() > 0) {
+    out[id()] = {0, clock()};
   }
   return out;
 }
