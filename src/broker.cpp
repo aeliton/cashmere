@@ -191,8 +191,6 @@ Clock Broker::insert(const Entry& data, Port port)
 
   if (auto j = ctx.broker()) {
     ctx.updateProvides();
-  } else {
-    ctx.setProvides(data.entry.id, 1);
   }
   ctx.setProvides(data.entry.id, clock());
 
