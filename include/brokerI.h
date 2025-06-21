@@ -54,7 +54,6 @@ public:
   Clock merge(const Clock& clock);
   Clock version() const;
   IdConnectionInfoMap provides() const;
-  void setProvides(Id id, int64_t distance);
   void setProvides(Id id, Clock version);
   void updateProvides();
   bool provides(Id id) const;

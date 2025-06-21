@@ -110,11 +110,6 @@ IdConnectionInfoMap Connection::provides() const
   return _provides;
 }
 
-void Connection::setProvides(Id id, int64_t distance)
-{
-  _provides[id].distance = distance;
-}
-
 void Connection::setProvides(Id id, Clock version)
 {
   _provides[id].version = _provides[id].version.merge(version);
