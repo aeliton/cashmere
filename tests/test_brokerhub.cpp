@@ -182,23 +182,29 @@ TEST(Broker, ExchangeEntriesOnConnect)
   EXPECT_CALL(*aa, connect((Connection{hub, 1, {}, {}})))
     .Times(1)
     .WillOnce(Return(Connection{
-      aa, 1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {0, {{0xAA, 1}}}}}
+      aa, 1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
     }));
-  EXPECT_CALL(*aa, insert(bbEntry, 1))
-    .Times(1)
-    .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
   EXPECT_CALL(*aa, entries(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
+  EXPECT_CALL(
+    *aa, update(
+           Connection{
+             hub, 1, Clock{{0xAA, 1}, {0xBB, 1}},
+             IdConnectionInfoMap{
+               {0xBB, ConnectionInfo{1, Clock{{0xAA, 1}, {0xBB, 1}}}}
+             }
+           },
+           1
+         )
+  )
+    .Times(1);
   EXPECT_CALL(*aa, entries(Clock{{0xBB, 1}}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
-  EXPECT_CALL(*aa, provides(1))
+  EXPECT_CALL(*aa, insert(bbEntry, 1))
     .Times(1)
-    .WillOnce(Return(IdConnectionInfoMap(
-      {{0xAA,
-        ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
-    )));
+    .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
 
   EXPECT_CALL(*bb, clock())
     .Times(1)
@@ -213,7 +219,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
     .Times(1)
     .WillOnce(Return(Connection{
       bb, 1, Clock{{0xBB, 1}},
-      IdConnectionInfoMap{{0xBB, {.distance = 0, .version = Clock{{0xBB, 1}}}}}
+      IdConnectionInfoMap{{0xBB, {.distance = 1, .version = Clock{{0xBB, 1}}}}}
     }));
   EXPECT_CALL(*bb, insert(aaEntry, 1))
     .Times(1)
@@ -221,12 +227,6 @@ TEST(Broker, ExchangeEntriesOnConnect)
   EXPECT_CALL(*bb, entries(Clock{{0xAA, 1}}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{bbEntry}));
-  EXPECT_CALL(*bb, provides(1))
-    .Times(1)
-    .WillOnce(Return(IdConnectionInfoMap(
-      {{0xBB,
-        ConnectionInfo{.distance = 0, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
-    )));
 
   const Port aaPort = hub->connect(aa);
   const Port bbPort = hub->connect(bb);
@@ -279,9 +279,6 @@ TEST(Broker, PropagatesProvidedConnections)
     .WillOnce(Return(Connection{
       aa, 1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
     }));
-  EXPECT_CALL(*aa, provides(1))
-    .Times(1)
-    .WillOnce(Return(IdConnectionInfoMap{{0xAA, {0, {{0xAA, 1}}}}}));
   EXPECT_CALL(*aa, entries(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));

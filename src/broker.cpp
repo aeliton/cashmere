@@ -117,7 +117,7 @@ void Connection::setProvides(Id id, int64_t distance)
 
 void Connection::setProvides(Id id, Clock version)
 {
-  _provides[id].version = version;
+  _provides[id].version = _provides[id].version.merge(version);
 }
 
 bool Connection::provides(Id id) const
@@ -127,7 +127,10 @@ bool Connection::provides(Id id) const
 
 void Connection::reset()
 {
-  _broker.reset();
+  if (auto b = broker()) {
+    b->update({nullptr, 0, {}, {}}, _port);
+    _broker.reset();
+  }
 }
 
 void Connection::setVersion(Clock clock)
@@ -163,7 +166,8 @@ Connection Broker::connect(Connection conn)
 {
   Port port = _connections.size();
   _connections.push_back(conn);
-  return {ptr(), port, clock(), UpdateProvides(provides(conn.port()))};
+  updateConnections(port);
+  return {ptr(), port, clock(), UpdateProvides(provides(port))};
 }
 
 Port Broker::connect(BrokerIPtr remote)
@@ -206,21 +210,14 @@ Clock Broker::insert(const Entry& data, Port port)
   }
 
   setClock(clock().merge(data.clock));
-
-  auto& ctx = _connections[port];
-  if (auto j = ctx.broker()) {
-    ctx.updateProvides();
-  }
-  ctx.setProvides(data.entry.id, clock());
+  auto& conn = _connections.at(port);
+  conn.setProvides(data.entry.id, clock());
 
   for (size_t i = 0; i < _connections.size(); ++i) {
     if (i == port) {
       continue;
     }
     auto& ctx = _connections[i];
-    if (ctx.provides(data.entry.id)) {
-      continue;
-    }
     ctx.insert(data);
   }
   return clock();
@@ -271,7 +268,7 @@ IdClockMap Broker::versions() const
   IdClockMap out;
   for (auto& context : _connections) {
     for (auto& [id, data] : context.provides()) {
-      out[id] = data.version;
+      out[id] = out[id].merge(data.version);
     }
   }
   return out;
@@ -285,6 +282,7 @@ Port Broker::disconnect(Port port)
   auto& context = _connections.at(port);
   if (context.broker()) {
     context.reset();
+    updateConnections();
     return port;
   }
   return -1;

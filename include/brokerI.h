@@ -94,5 +94,11 @@ public:
   Clock insert(const EntryList& entries, Port sender = 0);
 };
 
+inline std::ostream& operator<<(std::ostream& os, const ConnectionInfo& info)
+{
+  return os << "ConnectionInfo{ .distance = " << info.distance
+            << ", .version = " << info.version << "}";
+}
+
 }
 #endif
