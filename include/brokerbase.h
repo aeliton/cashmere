@@ -56,7 +56,7 @@ public:
   void setProvides(Id id, Clock version);
   void updateProvides();
   bool provides(Id id) const;
-  void reset();
+  void disconnect();
   void setVersion(Clock clock);
   void update(Connection conn);
 

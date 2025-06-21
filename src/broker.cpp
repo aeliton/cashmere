@@ -148,7 +148,7 @@ Port Broker::disconnect(Port port)
   }
   auto& context = _connections.at(port);
   if (context.broker()) {
-    context.reset();
+    context.disconnect();
     updateConnections();
     return port;
   }

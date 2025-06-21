@@ -116,7 +116,7 @@ bool Connection::provides(Id id) const
   return _provides.find(id) != _provides.cend();
 }
 
-void Connection::reset()
+void Connection::disconnect()
 {
   if (auto b = broker()) {
     b->update({nullptr, 0, {}, {}}, _port);
