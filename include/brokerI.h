@@ -88,6 +88,7 @@ public:
   virtual void setClock(const Clock& clock) = 0;
   virtual Connection connect(Connection conn) = 0;
   virtual std::set<Port> connectedPorts() const = 0;
+  virtual void update(const Connection& conn, Port sender) = 0;
 
   Clock insert(const EntryList& entries, Port sender = 0);
 };

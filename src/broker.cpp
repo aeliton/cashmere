@@ -166,20 +166,51 @@ Port Broker::connect(BrokerIPtr remote)
   }
   const Port port = _connections.size();
   _connections.push_back(
-    remote->connect({ptr(), port, clock(), UpdateProvides(provides())})
+    remote->connect({ptr(), port, clock(), UpdateProvides(provides(port))})
   );
+  auto& conn = _connections.at(port);
 
-  auto thisEntries = entries(_connections.back().version(), port);
-  auto brokerEntries = _connections.back().entries(clock());
+  auto thisEntries = entries(conn.version(), port);
+  auto brokerEntries = conn.entries(clock());
 
   if (brokerEntries.size() > 0) {
     BrokerI::insert(brokerEntries, port);
   }
   if (thisEntries.size() > 0) {
-    _connections.back().insert(thisEntries);
+    conn.insert(thisEntries);
+  }
+  for (size_t i = 1; i < _connections.size(); i++) {
+    if (i == port) {
+      continue;
+    }
+    auto& conn = _connections.at(i);
+    if (auto broker = conn.broker()) {
+      auto newConn = Connection{
+        ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))
+      };
+      broker->update(newConn, conn.port());
+    }
   }
 
   return port;
+}
+
+void Broker::update(const Connection& conn, Port port)
+{
+  _connections[port] = conn;
+
+  for (size_t i = 1; i < _connections.size(); i++) {
+    if (i == port) {
+      continue;
+    }
+    auto& conn = _connections.at(i);
+    if (auto broker = conn.broker()) {
+      auto newConn = Connection{
+        ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))
+      };
+      broker->update(newConn, conn.port());
+    }
+  }
 }
 
 Clock Broker::insert(const Entry& data, Port port)
@@ -239,7 +270,7 @@ EntryList Broker::entries(const Clock& from, Port ignore) const
   }
   for (size_t i = 1; i < _connections.size(); i++) {
     auto context = _connections[i];
-    if (i == ignore) {
+    if (i == ignore || context.provides().empty()) {
       continue;
     }
     if (auto broker = context.broker()) {

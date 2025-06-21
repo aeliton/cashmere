@@ -48,6 +48,8 @@ public:
   Port connect(BrokerIPtr other) override;
   Port disconnect(Port port) override;
 
+  void update(const Connection& conn, Port port) override;
+
   BrokerIPtr ptr() override;
   std::set<Port> connectedPorts() const override;
 

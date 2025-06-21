@@ -40,6 +40,7 @@ public:
   MOCK_METHOD(BrokerIPtr, ptr, (), (override));
   MOCK_METHOD(void, setClock, (const Clock& clock), (override));
   MOCK_METHOD(Connection, connect, (Connection conn), (override));
+  MOCK_METHOD(void, update, (const Connection& conn, Port port), (override));
   MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
 
@@ -242,4 +243,49 @@ TEST(Broker, ExchangeEntriesOnConnect)
         ConnectionInfo{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
     )
   );
+}
+
+TEST(Broker, PropagatesProvidedConnections)
+{
+  const auto hub0 = std::make_shared<Broker>();
+  const auto hub1 = std::make_shared<BrokerMock>();
+  const auto aa = std::make_shared<BrokerMock>();
+
+  const auto aaEntry = Entry{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}};
+
+  EXPECT_CALL(*hub1, connect((Connection{hub0, 1, {}, {}})))
+    .Times(1)
+    .WillOnce(Return(Connection{hub1, 1, {}, {}}));
+  EXPECT_CALL(*hub1, entries(Clock{}, 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{}));
+  EXPECT_CALL(*hub1, insert(aaEntry, 1))
+    .Times(1)
+    .WillOnce(Return(Clock{{0xAA, 1}}));
+  EXPECT_CALL(
+    *hub1,
+    update(
+      Connection{
+        hub0, 1, Clock{{0xAA, 1}},
+        IdConnectionInfoMap{{0xAA, {.distance = 2, .version = {{0xAA, 1}}}}}
+      },
+      1
+    )
+  )
+    .Times(1);
+
+  EXPECT_CALL(*aa, connect((Connection{hub0, 2, {}, {}})))
+    .Times(1)
+    .WillOnce(Return(Connection{
+      aa, 1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
+    }));
+  EXPECT_CALL(*aa, provides(1))
+    .Times(1)
+    .WillOnce(Return(IdConnectionInfoMap{{0xAA, {0, {{0xAA, 1}}}}}));
+  EXPECT_CALL(*aa, entries(Clock{}, 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{aaEntry}));
+
+  hub0->connect(hub1);
+  hub0->connect(aa);
 }
