@@ -53,6 +53,8 @@ public:
   BrokerIPtr ptr() override;
   std::set<Port> connectedPorts() const override;
 
+  void updateConnections(Port ignore = 0);
+
 private:
   void setClock(const Clock& clock) override;
   Connection connect(Connection conn) override;

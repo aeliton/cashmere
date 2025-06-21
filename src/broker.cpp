@@ -186,15 +186,8 @@ Port Broker::connect(BrokerIPtr remote)
   if (thisEntries.size() > 0) {
     conn.insert(thisEntries);
   }
-  for (size_t i = 1; i < _connections.size(); i++) {
-    if (i == port) {
-      continue;
-    }
-    auto& conn = _connections.at(i);
-    conn.update(
-      {ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
-    );
-  }
+
+  updateConnections(port);
 
   return port;
 }
@@ -203,15 +196,7 @@ void Broker::update(const Connection& conn, Port port)
 {
   _connections[port] = conn;
 
-  for (size_t i = 1; i < _connections.size(); i++) {
-    if (i == port) {
-      continue;
-    }
-    auto& conn = _connections.at(i);
-    conn.update(
-      {ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
-    );
-  }
+  updateConnections(port);
 }
 
 Clock Broker::insert(const Entry& data, Port port)
@@ -355,6 +340,19 @@ std::set<Port> Broker::connectedPorts() const
     connected.insert(i);
   }
   return connected;
+}
+
+void Broker::updateConnections(Port ignore)
+{
+  for (size_t i = 1; i < _connections.size(); i++) {
+    if (i == ignore) {
+      continue;
+    }
+    auto& conn = _connections.at(i);
+    conn.update(
+      {ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
+    );
+  }
 }
 
 }
