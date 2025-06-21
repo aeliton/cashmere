@@ -21,7 +21,7 @@ namespace Cashmere
 
 BrokerHub::BrokerHub()
 {
-  _connections.push_back({nullptr, 0});
+  _connections.push_back({});
 }
 
 Id BrokerHub::id() const
@@ -32,7 +32,7 @@ Id BrokerHub::id() const
 Port BrokerHub::connect(BrokerIPtr broker)
 {
   const Port port = _connections.size();
-  _connections.push_back(broker->connect({ptr(), port}));
+  _connections.push_back(broker->connect({ptr(), port, clock(), provides()}));
 
   _connections.back().updateProvides();
 
@@ -73,7 +73,7 @@ Connection BrokerHub::connect(Connection conn)
 {
   Port port = _connections.size();
   _connections.push_back(conn);
-  return {ptr(), port};
+  return {ptr(), port, clock(), provides(conn.port())};
 }
 
 BrokerIPtr BrokerHub::ptr()

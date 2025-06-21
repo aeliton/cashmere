@@ -25,13 +25,18 @@ IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
 Connection::Connection()
   : _broker(std::shared_ptr<BrokerI>(nullptr))
   , _port(0)
+  , _version({})
+  , _provides({})
 {
 }
 
-Connection::Connection(BrokerIPtr broker, Port port, Clock version)
+Connection::Connection(
+  BrokerIPtr broker, Port port, Clock version, IdConnectionInfoMap provides
+)
   : _broker(broker)
   , _port(port)
   , _version(version)
+  , _provides(provides)
 {
 }
 
@@ -147,17 +152,22 @@ Broker::Broker()
 
 Broker::~Broker() = default;
 
+Connection Broker::connect(Connection conn)
+{
+  Port port = _connections.size();
+  _connections.push_back(conn);
+  return {ptr(), port, clock(), provides(conn.port())};
+}
+
 Port Broker::connect(BrokerIPtr remote)
 {
   if (!remote) {
     return -1;
   }
   const Port port = _connections.size();
-  _connections.push_back(remote->connect({ptr(), port}));
+  _connections.push_back(remote->connect({ptr(), port, clock(), provides()}));
 
-  _connections.back().updateProvides();
-
-  auto thisEntries = entries(remote->clock(), port);
+  auto thisEntries = entries(_connections.back().version(), port);
   auto brokerEntries = _connections.back().entries(clock());
 
   if (brokerEntries.size() > 0) {
@@ -282,13 +292,6 @@ void Broker::setClock(const Clock& clock)
 }
 
 void Broker::connect(BrokerIPtr source, Port local, Port remote) {}
-
-Connection Broker::connect(Connection conn)
-{
-  Port port = _connections.size();
-  _connections.push_back(conn);
-  return {ptr(), port};
-}
 
 Port Broker::getLocalPortFor(BrokerIPtr remote)
 {

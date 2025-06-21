@@ -43,7 +43,9 @@ class Connection
 {
 public:
   Connection();
-  Connection(BrokerIPtr broker, Port port, Clock version = {});
+  Connection(
+    BrokerIPtr broker, Port port, Clock version, IdConnectionInfoMap provides
+  );
   Clock insert(const Entry& data);
   Clock insert(const EntryList& data);
   Port port() const;
