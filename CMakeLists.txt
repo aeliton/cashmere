@@ -27,7 +27,6 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerhub.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
