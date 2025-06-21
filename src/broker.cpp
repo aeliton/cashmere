@@ -156,7 +156,7 @@ Connection Broker::connect(Connection conn)
 {
   Port port = _connections.size();
   _connections.push_back(conn);
-  return {ptr(), port, clock(), provides(conn.port())};
+  return {ptr(), port, clock(), UpdateProvides(provides(conn.port()))};
 }
 
 Port Broker::connect(BrokerIPtr remote)
@@ -165,7 +165,9 @@ Port Broker::connect(BrokerIPtr remote)
     return -1;
   }
   const Port port = _connections.size();
-  _connections.push_back(remote->connect({ptr(), port, clock(), provides()}));
+  _connections.push_back(
+    remote->connect({ptr(), port, clock(), UpdateProvides(provides())})
+  );
 
   auto thisEntries = entries(_connections.back().version(), port);
   auto brokerEntries = _connections.back().entries(clock());
