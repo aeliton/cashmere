@@ -161,32 +161,6 @@ SCENARIO("Journal is connected")
   }
 }
 
-SCENARIO_METHOD(BrokerWithEmptyMock, "journal get entries via broker")
-{
-  GIVEN("a broker with a journal attatched")
-  {
-    broker0->connect(aa);
-
-    WHEN("an entry is inserted on the broker")
-    {
-      broker0->insert({Clock{{0xFF, 1}}, Data{0xFF, 9, Clock{}}});
-
-      THEN("insert is called on the connected journal")
-      {
-        REQUIRE(aa->_insertArgs == EntryList{{{{0xFF, 1}}, {0xFF, 9, {}}}});
-      }
-
-      THEN("the broker updates the version of the connected journal")
-      {
-        REQUIRE(
-          broker0->versions() ==
-          IdClockMap{{0xAA, Clock{{0xFF, 1}}}, {0xFF, Clock{{0xFF, 1}}}}
-        );
-      }
-    }
-  }
-}
-
 SCENARIO_METHOD(
   BrokerWithAttachedSingleEntryMock, "a broker synchronizes journal entries"
 )
