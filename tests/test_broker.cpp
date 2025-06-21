@@ -514,15 +514,15 @@ SCENARIO_METHOD(
         REQUIRE(
           broker0->provides() ==
           IdConnectionInfoMap{
-            {170, {.distance = 1, .version = {{170, 1}, {187, 1}}}},
-            {187, {.distance = 2, .version = {{170, 1}, {187, 1}}}}
+            {0xAA, {.distance = 1, .version = {{0xAA, 1}, {0xBB, 1}}}},
+            {0xBB, {.distance = 2, .version = {{0xAA, 1}, {0xBB, 1}}}}
           }
         );
         REQUIRE(
           broker1->provides() ==
           IdConnectionInfoMap{
-            {170, {.distance = 2, .version = {{170, 1}, {187, 1}}}},
-            {187, {.distance = 1, .version = {{170, 1}, {187, 1}}}}
+            {0xAA, {.distance = 2, .version = {{0xAA, 1}, {0xBB, 1}}}},
+            {0xBB, {.distance = 1, .version = {{0xAA, 1}, {0xBB, 1}}}}
           }
         );
       }
@@ -537,16 +537,20 @@ TEST_CASE_METHOD(
   REQUIRE(
     broker0->provides(0) ==
     IdConnectionInfoMap{
-      {170, {.distance = 1, .version = {{170, 1}, {187, 1}}}},
-      {187, {.distance = 1, .version = {{170, 1}, {187, 1}}}}
+      {0xAA, {.distance = 1, .version = {{0xAA, 1}, {0xBB, 1}}}},
+      {0xBB, {.distance = 1, .version = {{0xAA, 1}, {0xBB, 1}}}}
     }
   );
   REQUIRE(
     broker0->provides(1) ==
-    IdConnectionInfoMap{{187, {.distance = 1, .version = {{170, 1}, {187, 1}}}}}
+    IdConnectionInfoMap{
+      {0xBB, {.distance = 1, .version = {{0xAA, 1}, {0xBB, 1}}}}
+    }
   );
   REQUIRE(
     broker0->provides(2) ==
-    IdConnectionInfoMap{{170, {.distance = 1, .version = {{170, 1}, {187, 1}}}}}
+    IdConnectionInfoMap{
+      {0xAA, {.distance = 1, .version = {{0xAA, 1}, {0xBB, 1}}}}
+    }
   );
 }
