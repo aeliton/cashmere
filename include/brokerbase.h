@@ -30,6 +30,7 @@ struct ConnectionInfo
   Clock version;
   bool operator==(const ConnectionInfo& other) const;
   bool operator<(const ConnectionInfo& other) const;
+  friend std::ostream& operator<<(std::ostream& os, const ConnectionInfo& info);
 };
 
 using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
@@ -99,12 +100,6 @@ public:
 
   Clock insert(const EntryList& entries, Port sender = 0);
 };
-
-inline std::ostream& operator<<(std::ostream& os, const ConnectionInfo& info)
-{
-  return os << "ConnectionInfo{ .distance = " << info.distance
-            << ", .version = " << info.version << "}";
-}
 
 }
 #endif
