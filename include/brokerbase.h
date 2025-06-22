@@ -56,10 +56,12 @@ public:
   Connection(
     BrokerBasePtr broker, Port port, Clock version, IdConnectionInfoMap provides
   );
-  Clock insert(const Entry& data);
-  Clock insert(const EntryList& data);
-  EntryList entries(Clock clock = {}) const;
-  bool reconnect(Connection conn) const;
+
+  Clock insert(const Entry& data) const;
+  Clock insert(const EntryList& data) const;
+  EntryList entries(const Clock& clock = {}) const;
+  bool refresh(const Connection& conn) const;
+
   void disconnect();
 
   BrokerBasePtr broker() const;

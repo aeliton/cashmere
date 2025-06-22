@@ -44,7 +44,7 @@ BrokerBasePtr Connection::broker() const
   return _broker.lock();
 }
 
-Clock Connection::insert(const Entry& data)
+Clock Connection::insert(const Entry& data) const
 {
   auto source = _broker.lock();
   if (!source) {
@@ -60,7 +60,7 @@ Clock Connection::insert(const Entry& data)
   return _cache.version = clock;
 }
 
-Clock Connection::insert(const EntryList& data)
+Clock Connection::insert(const EntryList& data) const
 {
   auto clock = broker()->insert(data, _port);
   if (clock.valid()) {
@@ -85,7 +85,7 @@ Clock& Connection::version(Origin origin) const
   return _cache.version;
 }
 
-EntryList Connection::entries(Clock clock) const
+EntryList Connection::entries(const Clock& clock) const
 {
   return _broker.lock()->entries(clock, _port);
 }
@@ -110,7 +110,7 @@ void Connection::disconnect()
   }
 }
 
-bool Connection::reconnect(Connection conn) const
+bool Connection::refresh(const Connection& conn) const
 {
   if (auto source = broker()) {
     return source->update(conn, _port);

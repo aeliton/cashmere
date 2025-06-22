@@ -218,7 +218,7 @@ void Broker::updateConnections(Port ignore)
       continue;
     }
     auto& conn = _connections.at(i);
-    conn.reconnect(
+    conn.refresh(
       {ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
     );
   }
