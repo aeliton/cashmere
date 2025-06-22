@@ -50,7 +50,6 @@ public:
   Port port() const;
   BrokerBasePtr broker() const;
   EntryList entries(Clock clock = {}) const;
-  Clock merge(const Clock& clock);
   Clock version() const;
   IdConnectionInfoMap provides() const;
   void setProvides(Id id, Clock version);

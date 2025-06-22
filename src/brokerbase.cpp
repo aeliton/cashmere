@@ -86,10 +86,6 @@ bool Connection::operator==(const Connection& other) const
   return _port == other._port &&
          _broker.lock().get() == other._broker.lock().get();
 }
-Clock Connection::merge(const Clock& clock)
-{
-  return _version = _version.merge(clock);
-}
 
 Clock Connection::version() const
 {
