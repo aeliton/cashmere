@@ -118,6 +118,11 @@ bool Connection::refresh(const Connection& conn) const
   return false;
 }
 
+bool Connection::active() const
+{
+  return !_broker.expired();
+}
+
 BrokerBase::~BrokerBase() = default;
 
 Clock BrokerBase::insert(const EntryList& entries, Port sender)
@@ -127,6 +132,7 @@ Clock BrokerBase::insert(const EntryList& entries, Port sender)
   }
   return clock();
 }
+
 std::ostream& operator<<(std::ostream& os, const ConnectionInfo& info)
 {
   return os << "ConnectionInfo{ .distance = " << info.distance

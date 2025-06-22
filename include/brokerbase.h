@@ -61,6 +61,7 @@ public:
   Clock insert(const Entry& data) const;
   Clock insert(const EntryList& data) const;
   EntryList entries(const Clock& clock = {}) const;
+  bool active() const;
   bool refresh(const Connection& conn) const;
 
   void disconnect();

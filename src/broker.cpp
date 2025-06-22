@@ -101,9 +101,9 @@ IdConnectionInfoMap Broker::provides(Port to) const
     if (i == to) {
       continue;
     }
-    auto& ctx = _connections[i];
-    if (ctx.broker()) {
-      for (auto& [id, data] : ctx.provides()) {
+    auto& conn = _connections[i];
+    if (conn.active()) {
+      for (auto& [id, data] : conn.provides()) {
         auto it = std::as_const(out).find(id);
         if (it == out.cend() || data.distance < it->second.distance) {
           out[id] = data;
@@ -123,12 +123,12 @@ EntryList Broker::entries(const Clock& from, Port ignore) const
     return entries(from);
   }
   for (size_t i = 1; i < _connections.size(); i++) {
-    auto context = _connections[i];
-    if (i == ignore || context.provides().empty()) {
+    auto conn = _connections[i];
+    if (i == ignore || conn.provides().empty()) {
       continue;
     }
-    if (auto broker = context.broker()) {
-      return context.entries(from);
+    if (conn.active()) {
+      return conn.entries(from);
     }
   }
   return {};
@@ -137,8 +137,8 @@ EntryList Broker::entries(const Clock& from, Port ignore) const
 IdClockMap Broker::versions() const
 {
   IdClockMap out;
-  for (auto& context : _connections) {
-    for (auto& [id, data] : context.provides()) {
+  for (auto& conn : _connections) {
+    for (auto& [id, data] : conn.provides()) {
       out[id] = out[id].merge(data.version);
     }
   }
@@ -150,9 +150,9 @@ Port Broker::disconnect(Port port)
   if (port < 0 || _connections.size() <= port) {
     return -1;
   }
-  auto& context = _connections.at(port);
-  if (context.broker()) {
-    context.disconnect();
+  auto& conn = _connections.at(port);
+  if (conn.active()) {
+    conn.disconnect();
     updateConnections();
     return port;
   }
