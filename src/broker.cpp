@@ -63,11 +63,15 @@ Port Broker::connect(BrokerBasePtr remote)
   return port;
 }
 
-void Broker::update(const Connection& conn, Port port)
+bool Broker::update(const Connection& conn, Port port)
 {
+  if (port <= 0 || _connections.size() <= port) {
+    return false;
+  }
   _connections[port] = conn;
 
   updateConnections(port);
+  return true;
 }
 
 Clock Broker::insert(const Entry& data, Port port)
@@ -214,7 +218,7 @@ void Broker::updateConnections(Port ignore)
       continue;
     }
     auto& conn = _connections.at(i);
-    conn.update(
+    conn.reconnect(
       {ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
     );
   }

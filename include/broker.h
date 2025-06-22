@@ -48,7 +48,7 @@ public:
   Port connect(BrokerBasePtr other) override;
   Port disconnect(Port port) override;
 
-  void update(const Connection& conn, Port port) override;
+  bool update(const Connection& conn, Port port) override;
 
   BrokerBasePtr ptr() override;
   std::set<Port> connectedPorts() const override;

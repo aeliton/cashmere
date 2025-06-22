@@ -40,7 +40,7 @@ public:
   MOCK_METHOD(BrokerBasePtr, ptr, (), (override));
   MOCK_METHOD(void, setClock, (const Clock& clock), (override));
   MOCK_METHOD(Connection, connect, (Connection conn), (override));
-  MOCK_METHOD(void, update, (const Connection& conn, Port port), (override));
+  MOCK_METHOD(bool, update, (const Connection& conn, Port port), (override));
   MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
 
@@ -198,7 +198,8 @@ TEST(Broker, ExchangeEntriesOnConnect)
            1
          )
   )
-    .Times(1);
+    .Times(1)
+    .WillOnce(Return(true));
   EXPECT_CALL(*aa, entries(Clock{{0xBB, 1}}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
@@ -272,7 +273,8 @@ TEST(Broker, PropagatesProvidedConnections)
       1
     )
   )
-    .Times(1);
+    .Times(1)
+    .WillOnce(Return(true));
 
   EXPECT_CALL(*aa, connect((Connection{hub0, 2, {}, {}})))
     .Times(1)

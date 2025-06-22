@@ -125,11 +125,12 @@ void Connection::setVersion(Clock clock)
   _version = clock;
 }
 
-void Connection::update(Connection conn)
+bool Connection::reconnect(Connection conn) const
 {
   if (auto source = broker()) {
-    source->update(conn, _port);
+    return source->update(conn, _port);
   }
+  return false;
 }
 
 BrokerBase::~BrokerBase() = default;

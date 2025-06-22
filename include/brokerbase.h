@@ -47,17 +47,18 @@ public:
   );
   Clock insert(const Entry& data);
   Clock insert(const EntryList& data);
-  Port port() const;
-  BrokerBasePtr broker() const;
   EntryList entries(Clock clock = {}) const;
-  Clock version() const;
-  IdConnectionInfoMap provides() const;
+  bool reconnect(Connection conn) const;
   void setProvides(Id id, Clock version);
   void updateProvides();
-  bool provides(Id id) const;
   void disconnect();
   void setVersion(Clock clock);
-  void update(Connection conn);
+  bool provides(Id id) const;
+
+  BrokerBasePtr broker() const;
+  Port port() const;
+  Clock version() const;
+  IdConnectionInfoMap provides() const;
 
   bool operator==(const Connection& other) const;
 
@@ -86,7 +87,7 @@ public:
   virtual void setClock(const Clock& clock) = 0;
   virtual Connection connect(Connection conn) = 0;
   virtual std::set<Port> connectedPorts() const = 0;
-  virtual void update(const Connection& conn, Port sender) = 0;
+  virtual bool update(const Connection& conn, Port sender) = 0;
 
   Clock insert(const EntryList& entries, Port sender = 0);
 };
