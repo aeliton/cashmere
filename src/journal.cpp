@@ -91,7 +91,7 @@ Data Journal::entry(Clock time) const
   return _entries.at(time);
 }
 
-EntryList Journal::entries(const Clock& from) const
+EntryList Journal::entries(const Clock& from, Port port) const
 {
   EntryList list;
   for (const auto& [clock, entry] : _entries) {

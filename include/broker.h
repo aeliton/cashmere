@@ -35,27 +35,22 @@ public:
   virtual ~Broker();
 
   virtual Id id() const override;
+  virtual Clock clock() const override;
+  virtual IdClockMap versions() const override;
+  virtual IdConnectionInfoMap provides(Port sender = 0) const override;
   virtual Clock insert(const Entry& data, Port sender = 0) override;
+  virtual EntryList
+  entries(const Clock& from = {}, Port sender = 0) const override;
 
-  virtual EntryList entries(const Clock& from = {}) const override;
-  EntryList entries(const Clock& from, Port ignore) const override;
+  virtual Port connect(BrokerBasePtr other) override;
+  virtual Port disconnect(Port port) override;
+  virtual bool refresh(const Connection& conn, Port port) override;
+  virtual std::set<Port> connectedPorts() const override;
 
-  virtual IdConnectionInfoMap provides(Port to = 0) const override;
-  IdClockMap versions() const override;
-
-  Clock clock() const override;
-
-  Port connect(BrokerBasePtr other) override;
-  Port disconnect(Port port) override;
-
-  bool update(const Connection& conn, Port port) override;
-
-  BrokerBasePtr ptr() override;
-  std::set<Port> connectedPorts() const override;
-
-  void updateConnections(Port ignore = 0);
+  virtual BrokerBasePtr ptr() override;
 
 private:
+  void refreshConnections(Port ignore = 0);
   void setClock(const Clock& clock) override;
   Connection connect(Connection conn) override;
 

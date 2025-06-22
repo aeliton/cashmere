@@ -33,7 +33,7 @@ Connection Broker::connect(Connection conn)
 {
   Port port = _connections.size();
   _connections.push_back(conn);
-  updateConnections(port);
+  refreshConnections(port);
   return {ptr(), port, clock(), UpdateProvides(provides(port))};
 }
 
@@ -58,19 +58,19 @@ Port Broker::connect(BrokerBasePtr remote)
     conn.insert(thisEntries);
   }
 
-  updateConnections(port);
+  refreshConnections(port);
 
   return port;
 }
 
-bool Broker::update(const Connection& conn, Port port)
+bool Broker::refresh(const Connection& conn, Port port)
 {
   if (port <= 0 || _connections.size() <= port) {
     return false;
   }
   _connections[port] = conn;
 
-  updateConnections(port);
+  refreshConnections(port);
   return true;
 }
 
@@ -153,7 +153,7 @@ Port Broker::disconnect(Port port)
   auto& conn = _connections.at(port);
   if (conn.active()) {
     conn.disconnect();
-    updateConnections();
+    refreshConnections();
     return port;
   }
   return -1;
@@ -164,18 +164,12 @@ Clock Broker::clock() const
   return _connections.front().version();
 }
 
-EntryList Broker::entries(const Clock& from) const
-{
-  return entries(from, -1);
-}
-
 BrokerBasePtr Broker::ptr()
 {
   return this->shared_from_this();
 }
 
 void Broker::setClock(const Clock& clock)
-
 {
   _connections.front().version() = clock;
 }
@@ -211,7 +205,7 @@ std::set<Port> Broker::connectedPorts() const
   return connected;
 }
 
-void Broker::updateConnections(Port ignore)
+void Broker::refreshConnections(Port ignore)
 {
   for (size_t i = 1; i < _connections.size(); i++) {
     if (i == ignore) {

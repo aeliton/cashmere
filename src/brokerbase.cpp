@@ -105,7 +105,7 @@ IdConnectionInfoMap& Connection::provides(Origin origin) const
 void Connection::disconnect()
 {
   if (auto b = broker()) {
-    b->update({nullptr, 0, {}, {}}, _port);
+    b->refresh({nullptr, 0, {}, {}}, _port);
     _broker.reset();
   }
 }
@@ -113,7 +113,7 @@ void Connection::disconnect()
 bool Connection::refresh(const Connection& conn) const
 {
   if (auto source = broker()) {
-    return source->update(conn, _port);
+    return source->refresh(conn, _port);
   }
   return false;
 }

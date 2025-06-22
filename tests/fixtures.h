@@ -39,10 +39,10 @@ struct JournalMock : public Journal
       return false;
     });
   }
-  EntryList entries(const Clock& from = {}) const override
+  EntryList entries(const Clock& from = {}, Port sender = 0) const override
   {
     _entriesSignaler(from);
-    return Journal::entries(from);
+    return Journal::entries(from, sender);
   }
   Clock insert(const Entry& data, Port sender = 0) override
   {

@@ -28,9 +28,8 @@ class BrokerMock : public BrokerBase
 public:
   MOCK_METHOD(Id, id, (), (const, override));
   MOCK_METHOD(Clock, insert, (const Entry& data, Port sender), (override));
-  MOCK_METHOD(EntryList, entries, (const Clock& from), (const, override));
   MOCK_METHOD(
-    EntryList, entries, (const Clock& from, Port ignore), (const, override)
+    EntryList, entries, (const Clock& from, Port sender), (const, override)
   );
   MOCK_METHOD(IdConnectionInfoMap, provides, (Port to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
@@ -40,7 +39,7 @@ public:
   MOCK_METHOD(BrokerBasePtr, ptr, (), (override));
   MOCK_METHOD(void, setClock, (const Clock& clock), (override));
   MOCK_METHOD(Connection, connect, (Connection conn), (override));
-  MOCK_METHOD(bool, update, (const Connection& conn, Port port), (override));
+  MOCK_METHOD(bool, refresh, (const Connection& conn, Port port), (override));
   MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
 
@@ -188,7 +187,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
   EXPECT_CALL(
-    *aa, update(
+    *aa, refresh(
            Connection{
              hub, 1, Clock{{0xAA, 1}, {0xBB, 1}},
              IdConnectionInfoMap{
@@ -265,7 +264,7 @@ TEST(Broker, PropagatesProvidedConnections)
     .WillOnce(Return(Clock{{0xAA, 1}}));
   EXPECT_CALL(
     *hub1,
-    update(
+    refresh(
       Connection{
         hub0, 1, Clock{{0xAA, 1}},
         IdConnectionInfoMap{{0xAA, {.distance = 2, .version = {{0xAA, 1}}}}}
