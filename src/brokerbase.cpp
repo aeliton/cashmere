@@ -21,8 +21,7 @@ namespace Cashmere
 Connection::Connection()
   : _broker(std::shared_ptr<BrokerBase>(nullptr))
   , _port(0)
-  , _version({})
-  , _provides({})
+  , _cache()
 {
 }
 
@@ -31,8 +30,7 @@ Connection::Connection(
 )
   : _broker(broker)
   , _port(port)
-  , _version(version)
-  , _provides(provides)
+  , _cache(version, provides)
 {
 }
 
@@ -56,30 +54,21 @@ Clock Connection::insert(const Entry& data)
   if (!clock.valid()) {
     return {};
   }
-  for (auto& [id, info] : _provides) {
+  for (auto& [id, info] : _cache.sources) {
     info.version = info.version.merge(data.clock);
   }
-  return _version = clock;
+  return _cache.version = clock;
 }
 
 Clock Connection::insert(const EntryList& data)
 {
   auto clock = broker()->insert(data, _port);
   if (clock.valid()) {
-    for (auto& [id, info] : _provides) {
+    for (auto& [id, info] : _cache.sources) {
       info.version = info.version.merge(clock);
     }
   }
   return clock;
-}
-
-void Connection::sync()
-{
-  _provides = _broker.lock()->provides(_port);
-  for (auto& [id, data] : _provides) {
-    ++data.distance;
-    _version = _version.merge(data.version);
-  }
 }
 
 bool Connection::operator==(const Connection& other) const
@@ -88,9 +77,12 @@ bool Connection::operator==(const Connection& other) const
          _broker.lock().get() == other._broker.lock().get();
 }
 
-Clock Connection::version() const
+Clock& Connection::version(Origin origin) const
 {
-  return _version;
+  if (origin == Origin::Remote) {
+    _cache.version = broker()->clock();
+  }
+  return _cache.version;
 }
 
 EntryList Connection::entries(Clock clock) const
@@ -98,19 +90,16 @@ EntryList Connection::entries(Clock clock) const
   return _broker.lock()->entries(clock, _port);
 }
 
-IdConnectionInfoMap Connection::provides() const
+IdConnectionInfoMap& Connection::provides(Origin origin) const
 {
-  return _provides;
-}
-
-void Connection::setProvides(Id id, Clock version)
-{
-  _provides[id].version = _provides[id].version.merge(version);
-}
-
-bool Connection::provides(Id id) const
-{
-  return _provides.find(id) != _provides.cend();
+  if (origin == Origin::Remote) {
+    _cache.sources = _broker.lock()->provides(_port);
+    for (auto& [id, data] : _cache.sources) {
+      ++data.distance;
+      _cache.version = _cache.version.merge(data.version);
+    }
+  }
+  return _cache.sources;
 }
 
 void Connection::disconnect()
@@ -119,11 +108,6 @@ void Connection::disconnect()
     b->update({nullptr, 0, {}, {}}, _port);
     _broker.reset();
   }
-}
-
-void Connection::setVersion(Clock clock)
-{
-  _version = clock;
 }
 
 bool Connection::reconnect(Connection conn) const

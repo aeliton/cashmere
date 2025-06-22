@@ -82,7 +82,7 @@ Clock Broker::insert(const Entry& data, Port port)
 
   setClock(clock().merge(data.clock));
   auto& conn = _connections.at(port);
-  conn.setProvides(data.entry.id, clock());
+  conn.provides()[data.entry.id].version = clock();
 
   for (size_t i = 0; i < _connections.size(); ++i) {
     if (i == port) {
@@ -177,7 +177,7 @@ BrokerBasePtr Broker::ptr()
 void Broker::setClock(const Clock& clock)
 
 {
-  _connections.front().setVersion(clock);
+  _connections.front().version() = clock;
 }
 
 bool ConnectionInfo::operator==(const ConnectionInfo& other) const

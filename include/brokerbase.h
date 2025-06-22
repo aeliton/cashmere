@@ -40,7 +40,18 @@ using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 
 class Connection
 {
+  struct Cache
+  {
+    Clock version;
+    IdConnectionInfoMap sources;
+  };
+
 public:
+  enum class Origin
+  {
+    Cache,
+    Remote
+  };
   Connection();
   Connection(
     BrokerBasePtr broker, Port port, Clock version, IdConnectionInfoMap provides
@@ -49,24 +60,19 @@ public:
   Clock insert(const EntryList& data);
   EntryList entries(Clock clock = {}) const;
   bool reconnect(Connection conn) const;
-  void setProvides(Id id, Clock version);
-  void sync();
   void disconnect();
-  void setVersion(Clock clock);
-  bool provides(Id id) const;
 
   BrokerBasePtr broker() const;
   Port port() const;
-  Clock version() const;
-  IdConnectionInfoMap provides() const;
+  Clock& version(Origin origin = Origin::Cache) const;
+  IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
 
   bool operator==(const Connection& other) const;
 
 private:
   BrokerBaseWeakPtr _broker;
   Port _port;
-  Clock _version;
-  IdConnectionInfoMap _provides;
+  mutable Cache _cache;
 };
 
 class BrokerBase
