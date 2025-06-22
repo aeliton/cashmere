@@ -50,7 +50,7 @@ public:
   EntryList entries(Clock clock = {}) const;
   bool reconnect(Connection conn) const;
   void setProvides(Id id, Clock version);
-  void updateProvides();
+  void sync();
   void disconnect();
   void setVersion(Clock clock);
   bool provides(Id id) const;

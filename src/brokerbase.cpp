@@ -73,11 +73,12 @@ Clock Connection::insert(const EntryList& data)
   return clock;
 }
 
-void Connection::updateProvides()
+void Connection::sync()
 {
   _provides = _broker.lock()->provides(_port);
   for (auto& [id, data] : _provides) {
     ++data.distance;
+    _version = _version.merge(data.version);
   }
 }
 
