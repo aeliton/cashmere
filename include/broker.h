@@ -40,7 +40,7 @@ public:
   virtual IdConnectionInfoMap provides(Port sender = 0) const override;
   virtual Clock insert(const Entry& data, Port sender = 0) override;
   virtual EntryList
-  entries(const Clock& from = {}, Port sender = 0) const override;
+  query(const Clock& from = {}, Port sender = 0) const override;
 
   virtual Port connect(BrokerBasePtr other) override;
   virtual Port disconnect(Port port) override;

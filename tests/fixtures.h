@@ -29,20 +29,21 @@ struct JournalMock : public Journal
     : JournalMock(id, {})
   {
   }
+
   JournalMock(Id id, ClockDataMap e)
     : Journal(id, e)
   {
     _insertArgs.clear();
-    _entriesArgs.clear();
+    _queryArgs.clear();
     _entriesSignaler.connect([this](const Clock& clock) -> bool {
-      _entriesArgs.push_back(clock);
+      _queryArgs.push_back(clock);
       return false;
     });
   }
-  EntryList entries(const Clock& from = {}, Port sender = 0) const override
+  EntryList query(const Clock& from = {}, Port sender = 0) const override
   {
     _entriesSignaler(from);
-    return Journal::entries(from, sender);
+    return Journal::query(from, sender);
   }
   Clock insert(const Entry& data, Port sender = 0) override
   {
@@ -51,7 +52,7 @@ struct JournalMock : public Journal
   }
   Signaller::Signal<void(const Clock&)> _entriesSignaler;
   EntryList _insertArgs = {};
-  ClockList _entriesArgs = {};
+  ClockList _queryArgs = {};
 };
 
 using JournalMockPtr = std::shared_ptr<JournalMock>;

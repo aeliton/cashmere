@@ -29,7 +29,7 @@ public:
   MOCK_METHOD(Id, id, (), (const, override));
   MOCK_METHOD(Clock, insert, (const Entry& data, Port sender), (override));
   MOCK_METHOD(
-    EntryList, entries, (const Clock& from, Port sender), (const, override)
+    EntryList, query, (const Clock& from, Port sender), (const, override)
   );
   MOCK_METHOD(IdConnectionInfoMap, provides, (Port to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
@@ -142,7 +142,7 @@ TEST(Broker, UpdatesItsClockDuringConnect)
   EXPECT_CALL(*aa, connect((Connection{hub, 1, {}, {}})))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1, aaClock, {{0xAA, {0, aaClock}}}}));
-  EXPECT_CALL(*aa, entries(Clock({}), /* aaPort */ 1))
+  EXPECT_CALL(*aa, query(Clock({}), /* aaPort */ 1))
     .Times(1)
     .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
 
@@ -162,7 +162,7 @@ TEST(Broker, UpdateConnectionProvidedSourcesOnAttach)
   EXPECT_CALL(*aa, connect((Connection{hub, 1, {}, {}})))
     .Times(1)
     .WillOnce(Return(Connection{aa, 1, aaClock, {{0xAA, {0, aaClock}}}}));
-  EXPECT_CALL(*aa, entries(Clock{}, 1))
+  EXPECT_CALL(*aa, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
 
@@ -183,7 +183,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
     .WillOnce(Return(Connection{
       aa, 1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
     }));
-  EXPECT_CALL(*aa, entries(Clock{}, 1))
+  EXPECT_CALL(*aa, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
   EXPECT_CALL(
@@ -199,7 +199,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
   )
     .Times(1)
     .WillOnce(Return(true));
-  EXPECT_CALL(*aa, entries(Clock{{0xBB, 1}}, 1))
+  EXPECT_CALL(*aa, query(Clock{{0xBB, 1}}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
   EXPECT_CALL(*aa, insert(bbEntry, 1))
@@ -224,7 +224,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
   EXPECT_CALL(*bb, insert(aaEntry, 1))
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
-  EXPECT_CALL(*bb, entries(Clock{{0xAA, 1}}, 1))
+  EXPECT_CALL(*bb, query(Clock{{0xAA, 1}}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{bbEntry}));
 
@@ -256,9 +256,7 @@ TEST(Broker, PropagatesProvidedConnections)
   EXPECT_CALL(*hub1, connect((Connection{hub0, 1, {}, {}})))
     .Times(1)
     .WillOnce(Return(Connection{hub1, 1, {}, {}}));
-  EXPECT_CALL(*hub1, entries(Clock{}, 1))
-    .Times(1)
-    .WillOnce(Return(EntryList{}));
+  EXPECT_CALL(*hub1, query(Clock{}, 1)).Times(1).WillOnce(Return(EntryList{}));
   EXPECT_CALL(*hub1, insert(aaEntry, 1))
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}}));
@@ -280,7 +278,7 @@ TEST(Broker, PropagatesProvidedConnections)
     .WillOnce(Return(Connection{
       aa, 1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
     }));
-  EXPECT_CALL(*aa, entries(Clock{}, 1))
+  EXPECT_CALL(*aa, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
 

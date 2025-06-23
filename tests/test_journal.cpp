@@ -212,7 +212,7 @@ TEST_CASE("entries retrieval", "[entries]")
   Journal journal(0xAA, entries);
 
   const EntryList expected{{Clock{{0xCC, 1}}, Data{0xCC, 100, {}}}};
-  REQUIRE(journal.entries(Clock{{0xAA, 2}, {0xBB, 1}}) == expected);
+  REQUIRE(journal.query(Clock{{0xAA, 2}, {0xBB, 1}}) == expected);
 }
 
 TEST_CASE_METHOD(Journal, "journal provides data from itself", "[provides]")

@@ -48,7 +48,7 @@ Port Broker::connect(BrokerBasePtr remote)
   );
   auto& conn = _connections.at(port);
 
-  auto thisEntries = entries(conn.version(), port);
+  auto thisEntries = query(conn.version(), port);
   auto brokerEntries = conn.entries(clock());
 
   if (brokerEntries.size() > 0) {
@@ -117,10 +117,10 @@ IdConnectionInfoMap Broker::provides(Port to) const
   return out;
 }
 
-EntryList Broker::entries(const Clock& from, Port ignore) const
+EntryList Broker::query(const Clock& from, Port ignore) const
 {
   if (id() > 0) {
-    return entries(from);
+    return query(from);
   }
   for (size_t i = 1; i < _connections.size(); i++) {
     auto conn = _connections[i];

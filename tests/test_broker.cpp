@@ -235,8 +235,8 @@ SCENARIO_METHOD(
     WHEN("connecting a second journal")
     {
       broker0->connect(bb);
-      const size_t aaEntriesArgsSize = aa->_entriesArgs.size();
-      const size_t bbEntriesArgsSize = bb->_entriesArgs.size();
+      const size_t aaEntriesArgsSize = aa->_queryArgs.size();
+      const size_t bbEntriesArgsSize = bb->_queryArgs.size();
 
       REQUIRE(
         broker0->versions() ==
@@ -275,14 +275,14 @@ SCENARIO_METHOD(
             broker0->connect(bb);
             THEN("the broker calls for new entries once on each journal")
             {
-              REQUIRE(aa->_entriesArgs.size() == aaEntriesArgsSize + 1);
-              REQUIRE(bb->_entriesArgs.size() == bbEntriesArgsSize + 1);
+              REQUIRE(aa->_queryArgs.size() == aaEntriesArgsSize + 1);
+              REQUIRE(bb->_queryArgs.size() == bbEntriesArgsSize + 1);
             }
             THEN("the broker requests entries that came after the last one seen"
             )
             {
-              REQUIRE(bb->_entriesArgs.back() == Clock{{0xAA, 2}, {0xBB, 1}});
-              REQUIRE(aa->_entriesArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
+              REQUIRE(bb->_queryArgs.back() == Clock{{0xAA, 2}, {0xBB, 1}});
+              REQUIRE(aa->_queryArgs.back() == Clock{{0xAA, 1}, {0xBB, 1}});
             }
 
             THEN("the connecting journal receives the unseen entry")
@@ -317,7 +317,7 @@ SCENARIO_METHOD(
 {
   GIVEN("a broker with two non-empty journals attatched")
   {
-    const auto initialCount = aa->_entriesArgs.size() + bb->_entriesArgs.size();
+    const auto initialCount = aa->_queryArgs.size() + bb->_queryArgs.size();
 
     WHEN("connecting a new journal")
     {
@@ -325,12 +325,12 @@ SCENARIO_METHOD(
 
       THEN("only one of the connected journals is queried for entries")
       {
-        const auto count = aa->_entriesArgs.size() + bb->_entriesArgs.size();
+        const auto count = aa->_queryArgs.size() + bb->_queryArgs.size();
         REQUIRE(count == initialCount + 1);
       }
       AND_THEN("the connected journal has the entries retrieved once")
       {
-        REQUIRE(cc->_entriesArgs.size() == 1);
+        REQUIRE(cc->_queryArgs.size() == 1);
       }
     }
   }
@@ -379,7 +379,7 @@ SCENARIO_METHOD(
       THEN("the connected broker can retrieve entries")
       {
         REQUIRE(
-          broker1->entries() ==
+          broker1->query() ==
           EntryList{
             {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
           }
@@ -450,7 +450,7 @@ SCENARIO_METHOD(
         THEN("the previously connected journal receives the new entry")
         {
           REQUIRE(
-            aa->entries() ==
+            aa->query() ==
             EntryList{
               {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
               {Clock{{0xBB, 1}}, Data{0xBB, 50, {}}}
@@ -461,7 +461,7 @@ SCENARIO_METHOD(
         THEN("the recently connected journal receives the existing entries")
         {
           REQUIRE(
-            bb->entries() ==
+            bb->query() ==
             EntryList{
               {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
               {Clock{{0xBB, 1}}, Data{0xBB, 50, {}}}

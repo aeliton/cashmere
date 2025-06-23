@@ -31,6 +31,7 @@ add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/journalbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp

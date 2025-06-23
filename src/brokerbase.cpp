@@ -87,7 +87,7 @@ Clock& Connection::version(Origin origin) const
 
 EntryList Connection::entries(const Clock& clock) const
 {
-  return _broker.lock()->entries(clock, _port);
+  return _broker.lock()->query(clock, _port);
 }
 
 IdConnectionInfoMap& Connection::provides(Origin origin) const

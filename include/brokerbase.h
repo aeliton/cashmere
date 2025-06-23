@@ -90,7 +90,7 @@ public:
   virtual void setClock(const Clock& clock) = 0;
   virtual IdConnectionInfoMap provides(Port sender = 0) const = 0;
   virtual Clock insert(const Entry& data, Port sender = 0) = 0;
-  virtual EntryList entries(const Clock& from = {}, Port sender = 0) const = 0;
+  virtual EntryList query(const Clock& from = {}, Port sender = 0) const = 0;
 
   virtual Port connect(BrokerBasePtr other) = 0;
   virtual Connection connect(Connection conn) = 0;

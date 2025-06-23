@@ -16,43 +16,24 @@
 #ifndef CASHEMERE_JOURNAL_H
 #define CASHEMERE_JOURNAL_H
 
-#include <cassert>
-#include <memory>
-
-#include "broker.h"
-#include "random.h"
+#include "journalbase.h"
 
 namespace Cashmere
 {
-
-class Journal : public Broker
+class Journal : public JournalBase
 {
 public:
-  Journal();
-  ~Journal();
+  explicit Journal();
   explicit Journal(Id id, const ClockDataMap& entries = {});
 
-  Clock insert(const Entry& data, Port source = 0) override;
-  EntryList entries(const Clock& from = {}, Port source = 0) const override;
-
-  Id id() const override;
-  const Id bookId() const;
-  bool append(Amount value);
-  bool append(const Data& entry);
-  bool replace(Amount value, const Clock& clock);
-  bool erase(Clock time);
-  bool contains(const Clock& clock) const;
-  Data entry(Clock time) const;
+  bool save(const Entry& data) override;
+  Data entry(Clock time) const override;
+  EntryList entries() const override;
 
 private:
-  const Id _id;
-  static Random _random;
-  const Id _bookId;
   ClockDataMap _entries;
-  Clock _version;
 };
 
-using JournalPtr = std::shared_ptr<Journal>;
 }
 
 #endif

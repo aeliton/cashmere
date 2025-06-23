@@ -14,90 +14,45 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "journal.h"
-#include <cassert>
 
 namespace Cashmere
 {
 
-Random Journal::_random{};
-
 Journal::Journal()
-  : Journal(_random.next())
+  : JournalBase()
 {
 }
 
 Journal::Journal(Id id, const ClockDataMap& entries)
-  : Broker()
-  , _id(id)
-  , _bookId(_random.next())
-  , _entries(entries)
+  : JournalBase(id)
 {
-  for (auto& [clock, entry] : _entries) {
-    Broker::insert({clock, entry});
+  for (auto& [clock, entry] : entries) {
+    insert({clock, entry});
   }
 }
 
-Journal::~Journal() {}
-
-Id Journal::id() const
+bool Journal::save(const Entry& data)
 {
-  return _id;
-}
-
-const Id Journal::bookId() const
-{
-  return _bookId;
-}
-
-bool Journal::append(Amount value)
-{
-  return append({id(), value, {}});
-}
-
-bool Journal::append(const Data& entry)
-{
-  return insert({clock().tick(entry.id), entry}).valid();
-}
-
-Clock Journal::insert(const Entry& data, Port port)
-{
-  if (_entries.find(data.clock) != _entries.end()) {
-    return Clock();
+  if (_entries.find(data.clock) != _entries.cend()) {
+    return false;
   }
   _entries[data.clock] = data.entry;
-  return Broker::insert(data, port);
-}
-
-bool Journal::replace(Amount value, const Clock& clock)
-{
-  return append({id(), value, clock});
-}
-
-bool Journal::erase(Clock time)
-{
-  return append({id(), 0, time});
-}
-bool Journal::contains(const Clock& time) const
-{
-  return _entries.find(time) != _entries.cend();
+  return true;
 }
 
 Data Journal::entry(Clock time) const
 {
   if (_entries.find(time) == _entries.end()) {
-    return {0, 0, {{0UL, 0}}};
+    return {0, 0, {}};
   }
-
   return _entries.at(time);
 }
 
-EntryList Journal::entries(const Clock& from, Port port) const
+EntryList Journal::entries() const
 {
   EntryList list;
   for (const auto& [clock, entry] : _entries) {
-    if (clock.concurrent(from) || from.smallerThan(clock)) {
-      list.push_back({clock, entry});
-    }
+    list.push_back({clock, entry});
   }
   return list;
 }
