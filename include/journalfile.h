@@ -40,7 +40,7 @@ public:
 
 private:
   const std::string _filename;
-  std::fstream _file;
+  mutable size_t _lineCount;
 };
 
 }

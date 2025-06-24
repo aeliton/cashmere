@@ -14,12 +14,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "journalfile.h"
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 
 namespace fs = std::filesystem;
+using isbuf_it = std::istreambuf_iterator<char>;
+
 namespace Cashmere
 {
+constexpr char kLF = '\n';
 
 std::string Filename(const std::string& base, Id id)
 {
@@ -30,26 +34,30 @@ std::string Filename(const std::string& base, Id id)
   return filename;
 }
 
+size_t LineCount(const std::string& filename)
+{
+  if (!fs::exists(filename)) {
+    return 0;
+  }
+  std::ifstream file(filename);
+  return std::count(isbuf_it(file), isbuf_it(), kLF);
+}
+
 JournalFile::JournalFile(const std::string& directory)
   : JournalBase()
   , _filename(Filename(directory, id()))
-  , _file(_filename, std::ios::out)
+  , _lineCount(LineCount(_filename))
 {
-  assert(_file.is_open());
 }
 
 JournalFile::JournalFile(Id id, const std::string& directory)
   : JournalBase(id)
   , _filename(Filename(directory, this->id()))
-  , _file(_filename, std::ios::out)
+  , _lineCount(LineCount(_filename))
 {
-  assert(_file.is_open());
 }
 
-JournalFile::~JournalFile()
-{
-  _file.close();
-}
+JournalFile::~JournalFile() {}
 
 bool JournalFile::save(const Entry& data)
 {
