@@ -21,11 +21,15 @@
 
 namespace Cashmere
 {
+
+class JournalFile;
+using JournalFilePtr = std::shared_ptr<JournalFile>;
+
 class JournalFile : public JournalBase
 {
 public:
-  explicit JournalFile(const std::string& directory = {});
-  explicit JournalFile(Id id, const std::string& directory = {});
+  explicit JournalFile(const std::string& location);
+  explicit JournalFile(Id id, const std::string& location);
   ~JournalFile();
 
   bool save(const Entry& data) override;
@@ -35,7 +39,7 @@ public:
   std::string filename() const;
 
 private:
-  void init(const std::string& directory) const;
+  const std::string _filename;
   std::fstream _file;
 };
 

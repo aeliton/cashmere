@@ -1,0 +1,49 @@
+// Cashmere - a distributed conflict-free replicated database.
+// Copyright (C) 2025 Aeliton G. Silva
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#include "journalfile.h"
+#include <catch2/catch_all.hpp>
+#include <filesystem>
+
+using namespace Cashmere;
+
+namespace fs = std::filesystem;
+
+struct JournalFileFixture
+{
+  JournalFileFixture()
+    : tmpdir(fs::temp_directory_path() / std::tmpnam(nullptr))
+  {
+    journal = std::make_shared<JournalFile>(0xbaadcafe, tmpdir);
+  }
+  ~JournalFileFixture()
+  {
+    const fs::path directory = fs::path(tmpdir);
+    assert(fs::exists(directory));
+    const bool deleted = fs::remove_all(directory);
+    assert(deleted);
+  }
+  const std::string tmpdir;
+  JournalFilePtr journal;
+};
+
+TEST_CASE_METHOD(JournalFileFixture, "file creation", "[journalfile]")
+{
+  SECTION("filename is the hex representation of the id")
+  {
+    const std::string expected = fs::path(tmpdir) / "00000000baadcafe";
+    REQUIRE(journal->filename() == expected);
+  }
+}

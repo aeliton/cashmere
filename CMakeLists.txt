@@ -57,6 +57,7 @@ target_sources(catch_tests PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journalfile.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
 )
 target_link_libraries(catch_tests PRIVATE

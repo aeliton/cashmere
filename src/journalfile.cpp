@@ -15,28 +15,41 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "journalfile.h"
 #include <filesystem>
+#include <fstream>
 
+namespace fs = std::filesystem;
 namespace Cashmere
 {
 
+std::string Filename(const std::string& base, Id id)
+{
+  std::stringstream ss;
+  ss << std::hex << std::setfill('0') << std::setw(sizeof(Id) * 2) << id;
+  const auto filename = fs::path(base) / ss.str();
+  fs::create_directories(filename.parent_path());
+  return filename;
+}
+
 JournalFile::JournalFile(const std::string& directory)
   : JournalBase()
+  , _filename(Filename(directory, id()))
+  , _file(_filename, std::ios::out)
 {
-  init(directory);
+  assert(_file.is_open());
 }
 
 JournalFile::JournalFile(Id id, const std::string& directory)
   : JournalBase(id)
+  , _filename(Filename(directory, this->id()))
+  , _file(_filename, std::ios::out)
 {
-  init(directory);
+  assert(_file.is_open());
 }
 
 JournalFile::~JournalFile()
 {
   _file.close();
 }
-
-void JournalFile::init(const std::string& directory) const {}
 
 bool JournalFile::save(const Entry& data)
 {
@@ -56,8 +69,7 @@ EntryList JournalFile::entries() const
 
 std::string JournalFile::filename() const
 {
-
-  return "";
+  return _filename;
 }
 
 }
