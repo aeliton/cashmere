@@ -25,6 +25,7 @@ struct JournalFileFixture
 {
   JournalFileFixture()
     : tmpdir(fs::temp_directory_path() / std::tmpnam(nullptr))
+    , filename(fs::path(tmpdir) / "00000000baadcafe")
   {
     journal = std::make_shared<JournalFile>(0xbaadcafe, tmpdir);
   }
@@ -36,6 +37,7 @@ struct JournalFileFixture
     assert(deleted);
   }
   const std::string tmpdir;
+  const std::string filename;
   JournalFilePtr journal;
 };
 
@@ -43,7 +45,24 @@ TEST_CASE_METHOD(JournalFileFixture, "file creation", "[journalfile]")
 {
   SECTION("filename is the hex representation of the id")
   {
-    const std::string expected = fs::path(tmpdir) / "00000000baadcafe";
-    REQUIRE(journal->filename() == expected);
+    REQUIRE(journal->filename() == filename);
+  }
+}
+
+SCENARIO_METHOD(JournalFileFixture, "append entries", "[journalfile]")
+{
+  GIVEN("an empty JournalFile")
+  {
+    WHEN("inserting an entry")
+    {
+      journal->append(10);
+      THEN("the entry is appended to the the file")
+      {
+        std::ifstream file(filename);
+        std::string line;
+        std::getline(file, line);
+        REQUIRE(line == "{{{baadcafe, 1}}, {baadcafe, 10, {}}}");
+      }
+    }
   }
 }

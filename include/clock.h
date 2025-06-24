@@ -35,9 +35,8 @@ public:
   bool smallerThan(const Clock& other) const;
   bool concurrent(const Clock& other) const;
   bool valid() const;
+  friend std::ostream& operator<<(std::ostream& os, const Clock& clock);
 };
-
-std::ostream& operator<<(std::ostream& os, const Clock& clock);
 
 using ClockList = std::list<Clock>;
 using IdClockMap = std::map<Id, Clock>;

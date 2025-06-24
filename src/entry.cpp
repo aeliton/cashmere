@@ -22,6 +22,17 @@ const bool Entry::operator==(const Entry& other) const
   return clock == other.clock && entry == other.entry;
 }
 
+std::ostream& operator<<(std::ostream& os, const Data& data)
+{
+  return os << "{" << std::hex << data.id << std::dec << ", " << data.value
+            << ", " << data.alters << "}";
+}
+
+std::ostream& operator<<(std::ostream& os, const Entry& data)
+{
+  return os << "{" << data.clock << ", " << data.entry << "}";
+}
+
 bool Data::valid() const
 {
   return alters.size() > 0 && alters.begin()->first != 0UL;

@@ -28,7 +28,8 @@ constexpr char kLF = '\n';
 std::string Filename(const std::string& base, Id id)
 {
   std::stringstream ss;
-  ss << std::hex << std::setfill('0') << std::setw(sizeof(Id) * 2) << id;
+  ss << std::hex << std::setfill('0') << std::setw(sizeof(Id) * 2) << id
+     << std::dec;
   const auto filename = fs::path(base) / ss.str();
   fs::create_directories(filename.parent_path());
   return filename;
@@ -61,6 +62,8 @@ JournalFile::~JournalFile() {}
 
 bool JournalFile::save(const Entry& data)
 {
+  std::ofstream file(_filename);
+  file << data << std::endl;
   return true;
 }
 

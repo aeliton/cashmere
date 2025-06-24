@@ -64,10 +64,10 @@ std::ostream& operator<<(std::ostream& os, const Clock& clock)
   }
 
   auto it = clock.begin();
-  os << "{" << it->first << ", " << it->second << "}";
-  it++;
-  for (; it != clock.end(); it++) {
-    os << ", {" << it->first << ", " << it->second << "}";
+  os << "{" << std::hex << it->first << std::dec << ", " << it->second << "}";
+  for (++it; it != clock.end(); it++) {
+    os << ", {" << std::hex << it->first << std::dec << ", " << it->second
+       << "}";
   }
   os << "}";
   return os;
