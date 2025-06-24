@@ -24,7 +24,7 @@ namespace fs = std::filesystem;
 struct JournalFileFixture
 {
   JournalFileFixture()
-    : tmpdir(fs::temp_directory_path() / std::tmpnam(nullptr))
+    : tmpdir(fs::temp_directory_path() / std::to_string(Random{}.next()))
     , filename(fs::path(tmpdir) / "00000000baadcafe")
   {
     journal = std::make_shared<JournalFile>(0xbaadcafe, tmpdir);
