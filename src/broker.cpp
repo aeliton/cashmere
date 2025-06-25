@@ -65,7 +65,7 @@ Port Broker::connect(BrokerBasePtr remote)
 
 bool Broker::refresh(const Connection& conn, Port port)
 {
-  if (port <= 0 || _connections.size() <= port) {
+  if (port <= 0 || _connections.size() <= static_cast<size_t>(port)) {
     return false;
   }
   _connections[port] = conn;
@@ -76,7 +76,7 @@ bool Broker::refresh(const Connection& conn, Port port)
 
 Clock Broker::insert(const Entry& data, Port port)
 {
-  if (port < 0 || port >= _connections.size()) {
+  if (port < 0 || static_cast<size_t>(port) >= _connections.size()) {
     return Clock();
   }
 
@@ -85,7 +85,7 @@ Clock Broker::insert(const Entry& data, Port port)
   conn.provides()[data.entry.id].version = clock();
 
   for (size_t i = 0; i < _connections.size(); ++i) {
-    if (i == port) {
+    if (i == static_cast<size_t>(port)) {
       continue;
     }
     auto& ctx = _connections[i];
@@ -94,11 +94,11 @@ Clock Broker::insert(const Entry& data, Port port)
   return clock();
 }
 
-IdConnectionInfoMap Broker::provides(Port to) const
+IdConnectionInfoMap Broker::provides(Port sender) const
 {
   IdConnectionInfoMap out;
   for (size_t i = 0; i < _connections.size(); i++) {
-    if (i == to) {
+    if (i == static_cast<size_t>(sender)) {
       continue;
     }
     auto& conn = _connections[i];
@@ -117,14 +117,14 @@ IdConnectionInfoMap Broker::provides(Port to) const
   return out;
 }
 
-EntryList Broker::query(const Clock& from, Port ignore) const
+EntryList Broker::query(const Clock& from, Port sender) const
 {
   if (id() > 0) {
     return query(from);
   }
   for (size_t i = 1; i < _connections.size(); i++) {
     auto conn = _connections[i];
-    if (i == ignore || conn.provides().empty()) {
+    if (i == static_cast<size_t>(sender) || conn.provides().empty()) {
       continue;
     }
     if (conn.active()) {
@@ -147,7 +147,7 @@ IdClockMap Broker::versions() const
 
 Port Broker::disconnect(Port port)
 {
-  if (port < 0 || _connections.size() <= port) {
+  if (port < 0 || _connections.size() <= static_cast<size_t>(port)) {
     return -1;
   }
   auto& conn = _connections.at(port);
@@ -208,7 +208,7 @@ std::set<Port> Broker::connectedPorts() const
 void Broker::refreshConnections(Port ignore)
 {
   for (size_t i = 1; i < _connections.size(); i++) {
-    if (i == ignore) {
+    if (i == static_cast<size_t>(ignore)) {
       continue;
     }
     auto& conn = _connections.at(i);

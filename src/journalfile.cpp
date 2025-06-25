@@ -67,7 +67,7 @@ bool JournalFile::save(const Entry& data)
   return true;
 }
 
-Data JournalFile::entry(Clock time) const
+Data JournalFile::entry(Clock) const
 {
   return {};
 }

@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "options.h"
 
-Options::Options(int argc, const char* const* const argv)
+Options::Options([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   : _options()
 {
 }
@@ -30,7 +30,8 @@ size_t Options::size() const
   return _options.size();
 }
 
-OptionsMap Options::parse(int argc, const char* const* const argv)
+OptionsMap
+Options::parse([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
   return {};
 }

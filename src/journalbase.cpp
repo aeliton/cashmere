@@ -40,7 +40,7 @@ Id JournalBase::id() const
   return _id;
 }
 
-const Id JournalBase::bookId() const
+Id JournalBase::bookId() const
 {
   return _bookId;
 }
@@ -78,7 +78,7 @@ bool JournalBase::contains(const Clock& time) const
   return entry(time).valid();
 }
 
-EntryList JournalBase::query(const Clock& from, Port port) const
+EntryList JournalBase::query(const Clock& from, Port) const
 {
   EntryList list;
   for (const auto& [clock, entry] : entries()) {

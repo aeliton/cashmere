@@ -33,7 +33,7 @@ struct JournalFileFixture
   {
     const fs::path directory = fs::path(tmpdir);
     assert(fs::exists(directory));
-    const bool deleted = fs::remove_all(directory);
+    [[maybe_unused]] const bool deleted = fs::remove_all(directory);
     assert(deleted);
   }
   const std::string tmpdir;

@@ -40,7 +40,7 @@ public:
   EntryList query(const Clock& from = {}, Port source = 0) const override;
 
   Id id() const override;
-  const Id bookId() const;
+  Id bookId() const;
   bool append(Amount value);
   bool append(const Data& entry);
   bool replace(Amount value, const Clock& clock);

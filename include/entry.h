@@ -35,7 +35,7 @@ struct Data
   Id id;
   Amount value;
   Clock alters;
-  const bool operator==(const Data& other) const;
+  bool operator==(const Data& other) const;
   bool valid() const;
   friend std::ostream& operator<<(std::ostream& os, const Data& data);
 };
@@ -44,7 +44,7 @@ struct Entry
 {
   Clock clock;
   Data entry;
-  const bool operator==(const Entry& other) const;
+  bool operator==(const Entry& other) const;
   friend std::ostream& operator<<(std::ostream& os, const Entry& data);
 };
 

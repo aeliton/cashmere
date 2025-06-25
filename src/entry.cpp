@@ -17,7 +17,8 @@
 
 namespace Cashmere
 {
-const bool Entry::operator==(const Entry& other) const
+
+bool Entry::operator==(const Entry& other) const
 {
   return clock == other.clock && entry == other.entry;
 }
@@ -37,7 +38,8 @@ bool Data::valid() const
 {
   return alters.size() > 0 && alters.begin()->first != 0UL;
 }
-const bool Data::operator==(const Data& other) const
+
+bool Data::operator==(const Data& other) const
 {
   return std::tie(id, value, alters) ==
          std::tie(other.id, other.value, other.alters);
