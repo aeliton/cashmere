@@ -21,13 +21,16 @@ using namespace Cashmere;
 
 namespace fs = std::filesystem;
 
+constexpr Id kFixtureId = 0xbaadcafe;
+constexpr char const* kFixtureIdStr = "00000000baadcafe";
+
 struct JournalFileFixture
 {
   JournalFileFixture()
     : tmpdir(fs::temp_directory_path() / std::to_string(Random{}.next()))
-    , filename(fs::path(tmpdir) / "00000000baadcafe")
+    , filename(fs::path(tmpdir) / kFixtureIdStr)
   {
-    journal = std::make_shared<JournalFile>(0xbaadcafe, tmpdir);
+    journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
   }
   ~JournalFileFixture()
   {
