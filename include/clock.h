@@ -32,6 +32,7 @@ public:
   Clock(const std::initializer_list<std::pair<const Id, Time>>& list);
   Clock merge(const Clock& other) const;
   Clock tick(Id id) const;
+  bool isNext(const Clock& other, Id id) const;
   bool smallerThan(const Clock& other) const;
   bool concurrent(const Clock& other) const;
   bool valid() const;

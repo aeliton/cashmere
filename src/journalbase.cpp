@@ -57,6 +57,9 @@ bool JournalBase::append(const Data& entry)
 
 Clock JournalBase::insert(const Entry& data, Port port)
 {
+  if (!data.clock.isNext(clock(), data.entry.id)) {
+    return Clock();
+  }
   if (save(data)) {
     return Broker::insert(data, port);
   }

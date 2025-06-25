@@ -72,8 +72,23 @@ std::ostream& operator<<(std::ostream& os, const Clock& clock)
   os << "}";
   return os;
 }
+
 bool Clock::valid() const
 {
   return !empty();
 }
+
+bool Clock::isNext(const Clock& other, Id id) const
+{
+  const auto it = find(id);
+  if (it == cend()) {
+    return false;
+  }
+  if (other.find(id) == other.cend()) {
+    return it->second == 1;
+  } else {
+    return at(id) == other.at(id) + 1;
+  }
+}
+
 }

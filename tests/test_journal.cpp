@@ -165,7 +165,7 @@ SCENARIO("zero values in clocks are ignored")
     {
       const auto clock = Clock{{0xAA, 0}, {0xBB, 0}, {0xCC, 1}};
 
-      const auto resultClock = journal.insert(Entry{clock, {0xAA, 206, {}}});
+      const auto resultClock = journal.insert(Entry{clock, {0xCC, 206, {}}});
 
       THEN("it succeeds")
       {
@@ -178,7 +178,7 @@ SCENARIO("zero values in clocks are ignored")
 
         THEN("the zeroed entries are ignored")
         {
-          REQUIRE(result == Data{0xAA, 206, {}});
+          REQUIRE(result == Data{0xCC, 206, {}});
         }
       }
     }
@@ -223,4 +223,58 @@ TEST_CASE_METHOD(Journal, "journal provides data from itself", "[provides]")
       {id(), ConnectionInfo{.distance = 0, .version = Clock{}}}
     }
   );
+}
+
+SCENARIO("only accepts transactions in order", "journal")
+{
+  GIVEN("an empty journal")
+  {
+    auto journal = std::make_shared<Journal>(0xAA);
+    WHEN("inserting the first entry of unseen journal")
+    {
+      const Clock clock =
+        journal->insert(Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}});
+      THEN("the entry is accepted")
+      {
+        REQUIRE(clock == Clock{{0xBB, 1}});
+      }
+    }
+
+    WHEN("inserting the second transaction without the previous being added")
+    {
+      const Clock clock =
+        journal->insert({Clock{{0xBB, 2}}, Data{0xBB, 10, {}}});
+      THEN("it should refuse the insertion")
+      {
+        REQUIRE_FALSE(clock.valid());
+      }
+    }
+  }
+
+  GIVEN("a journal with entries")
+  {
+    auto journal = std::make_shared<Journal>(
+      0xAA, ClockDataMap{{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}}}
+    );
+    WHEN("inserting the second entry of previously seen journal")
+    {
+      const Clock clock =
+        journal->insert(Entry{Clock{{0xBB, 2}}, Data{0xBB, 10, {}}});
+      THEN("the entry is accepted")
+      {
+        REQUIRE(clock == Clock{{0xBB, 2}});
+      }
+    }
+
+    WHEN("inserting the third transaction without the previous being added")
+    {
+      const Clock clock =
+        journal->insert({Clock{{0xBB, 3}}, Data{0xBB, 10, {}}});
+      THEN("it should refuse the insertion")
+      {
+        REQUIRE_FALSE(clock.valid());
+        REQUIRE(journal->clock() == Clock{{0xBB, 1}});
+      }
+    }
+  }
 }
