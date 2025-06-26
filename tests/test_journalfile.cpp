@@ -66,6 +66,18 @@ SCENARIO_METHOD(JournalFileFixture, "append entries", "[journalfile]")
         std::getline(file, line);
         REQUIRE(line == "{{{baadcafe, 1}}, {baadcafe, 10, {}}}");
       }
+      AND_WHEN("adding a second entry")
+      {
+        journal->append(20);
+        THEN("the second entry is added on the second line")
+        {
+          std::ifstream file(filename);
+          std::string line;
+          std::getline(file, line);
+          std::getline(file, line);
+          REQUIRE(line == "{{{baadcafe, 2}}, {baadcafe, 20, {}}}");
+        }
+      }
     }
   }
 }

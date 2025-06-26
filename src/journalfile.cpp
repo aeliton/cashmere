@@ -62,7 +62,7 @@ JournalFile::~JournalFile() {}
 
 bool JournalFile::save(const Entry& data)
 {
-  std::ofstream file(_filename);
+  std::ofstream file(_filename, std::ios::app);
   file << data << std::endl;
   return true;
 }
