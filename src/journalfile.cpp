@@ -44,17 +44,15 @@ size_t LineCount(const std::string& filename)
   return std::count(isbuf_it(file), isbuf_it(), kLF);
 }
 
-JournalFile::JournalFile(const std::string& directory)
+JournalFile::JournalFile(const std::string& location)
   : JournalBase()
-  , _filename(Filename(directory, id()))
-  , _lineCount(LineCount(_filename))
+  , _location(location)
 {
 }
 
-JournalFile::JournalFile(Id id, const std::string& directory)
+JournalFile::JournalFile(Id id, const std::string& location)
   : JournalBase(id)
-  , _filename(Filename(directory, this->id()))
-  , _lineCount(LineCount(_filename))
+  , _location(location)
 {
 }
 
@@ -62,7 +60,7 @@ JournalFile::~JournalFile() {}
 
 bool JournalFile::save(const Entry& data)
 {
-  std::ofstream file(_filename, std::ios::app);
+  std::ofstream file(Filename(_location, data.entry.id), std::ios::app);
   file << data << std::endl;
   return true;
 }
@@ -80,7 +78,7 @@ EntryList JournalFile::entries() const
 
 std::string JournalFile::filename() const
 {
-  return _filename;
+  return Filename(_location, id());
 }
 
 }

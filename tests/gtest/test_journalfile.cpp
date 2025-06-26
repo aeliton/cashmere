@@ -13,73 +13,67 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "journalfile.h"
-#include <catch2/catch_all.hpp>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
 #include <filesystem>
 #include <fstream>
 
+#include "brokermock.h"
+#include "journalfile.h"
+
 using namespace Cashmere;
+using ::testing::Return;
 
 namespace fs = std::filesystem;
 
 constexpr Id kFixtureId = 0xbaadcafe;
 constexpr char const* kFixtureIdStr = "00000000baadcafe";
 
-struct JournalFileFixture
+struct JournalFileTest : public ::testing::Test
 {
-  JournalFileFixture()
-    : tmpdir(fs::temp_directory_path() / std::to_string(Random{}.next()))
-    , filename(fs::path(tmpdir) / kFixtureIdStr)
+  void SetUp() override
   {
+    tmpdir = fs::temp_directory_path() / std::to_string(Random{}.next());
+    filename = fs::path(tmpdir) / kFixtureIdStr;
     assert(!fs::exists(tmpdir));
     journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
   }
-  ~JournalFileFixture()
+  void TearDown() override
   {
     const fs::path directory = fs::path(tmpdir);
     assert(fs::exists(directory));
     [[maybe_unused]] const bool deleted = fs::remove_all(directory);
     assert(deleted);
   }
-  const std::string tmpdir;
-  const std::string filename;
+  std::string tmpdir;
+  std::string filename;
   JournalFilePtr journal;
 };
 
-TEST_CASE_METHOD(JournalFileFixture, "file creation", "[journalfile]")
+TEST_F(JournalFileTest, SeparateFilesPerJournal)
 {
-  SECTION("filename is the hex representation of the id")
-  {
-    REQUIRE(journal->filename() == filename);
-  }
-}
+  const std::string bbFilename = fs::path(tmpdir) / "00000000000000bb";
 
-SCENARIO_METHOD(JournalFileFixture, "append entries", "[journalfile]")
-{
-  GIVEN("an empty JournalFile")
-  {
-    WHEN("inserting an entry")
-    {
-      journal->append(10);
-      THEN("the entry is appended to the the file")
-      {
-        std::ifstream file(filename);
-        std::string line;
-        std::getline(file, line);
-        REQUIRE(line == "{{{baadcafe, 1}}, {baadcafe, 10, {}}}");
-      }
-      AND_WHEN("adding a second entry")
-      {
-        journal->append(20);
-        THEN("the second entry is added on the second line")
-        {
-          std::ifstream file(filename);
-          std::string line;
-          std::getline(file, line);
-          std::getline(file, line);
-          REQUIRE(line == "{{{baadcafe, 2}}, {baadcafe, 20, {}}}");
-        }
-      }
-    }
-  }
+  const auto broker = std::make_shared<BrokerMock>();
+
+  EXPECT_CALL(*broker, connect(Connection{journal, 1, {}, {}}))
+    .Times(1)
+    .WillOnce(Return(Connection{
+      broker, 1, Clock{{0xBB, 1}},
+      IdConnectionInfoMap{{0xBB, {1, Clock{{0xBB, 1}}}}}
+    }));
+  EXPECT_CALL(*broker, query(Clock{}, 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}}}));
+
+  journal->connect(broker);
+
+  std::ifstream file(journal->filename());
+  EXPECT_EQ(file.peek(), std::ifstream::traits_type::eof());
+
+  EXPECT_TRUE(fs::exists(bbFilename));
+  std::string line;
+  getline(std::ifstream(bbFilename), line);
+  EXPECT_EQ(line, "{{{bb, 1}}, {bb, 10, {}}}");
 }

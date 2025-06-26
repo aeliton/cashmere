@@ -17,7 +17,6 @@
 #define CASHEMERE_JOURNAL_FILE_H
 
 #include "journalbase.h"
-#include <fstream>
 
 namespace Cashmere
 {
@@ -39,8 +38,7 @@ public:
   std::string filename() const;
 
 private:
-  const std::string _filename;
-  mutable size_t _lineCount;
+  const std::string _location;
 };
 
 }
