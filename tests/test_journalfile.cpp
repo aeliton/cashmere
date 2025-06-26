@@ -30,6 +30,7 @@ struct JournalFileFixture
     : tmpdir(fs::temp_directory_path() / std::to_string(Random{}.next()))
     , filename(fs::path(tmpdir) / kFixtureIdStr)
   {
+    assert(!fs::exists(tmpdir));
     journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
   }
   ~JournalFileFixture()
