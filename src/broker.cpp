@@ -77,7 +77,7 @@ bool Broker::refresh(const Connection& conn, Port port)
 Clock Broker::insert(const Entry& data, Port port)
 {
   if (port < 0 || static_cast<size_t>(port) >= _connections.size()) {
-    return Clock();
+    return Clock{{0, 0}};
   }
 
   setClock(clock().merge(data.clock));
