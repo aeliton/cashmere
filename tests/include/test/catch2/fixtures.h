@@ -37,8 +37,8 @@ struct JournalFileFixture
   JournalFileFixture()
     : tmpdir(CreateTempDir())
     , filename(fs::path(tmpdir) / kFixtureIdStr)
+    , journal(std::make_shared<JournalFile>(kFixtureId, tmpdir))
   {
-    journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
   }
   ~JournalFileFixture()
   {
@@ -47,6 +47,23 @@ struct JournalFileFixture
   const std::string tmpdir;
   const std::string filename;
   JournalFilePtr journal;
+};
+
+struct JournalFileWithEntriesFixture : public JournalFileFixture
+{
+  JournalFileWithEntriesFixture()
+    : JournalFileFixture()
+  {
+    for (const auto& entry : entries) {
+      journal->insert(entry);
+    }
+  }
+  const std::vector<Entry> entries = {
+    {{{kFixtureId, 1}}, {kFixtureId, 10, {}}},
+    {{{kFixtureId, 2}}, {kFixtureId, 20, {}}},
+    {{{kFixtureId, 3}}, {kFixtureId, 30, {}}},
+    {{{0xBB, 1}}, {0xBB, 100, {}}}
+  };
 };
 
 struct JournalMock : public Journal

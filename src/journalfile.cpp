@@ -25,6 +25,15 @@ namespace Cashmere
 {
 constexpr char kLF = '\n';
 
+std::fstream& SeekToLine(std::fstream& file, size_t line)
+{
+  file.seekg(std::ios::beg);
+  for (size_t i = 0; i < line - 1; ++i) {
+    file.ignore(std::numeric_limits<std::streamsize>::max(), kLF);
+  }
+  return file;
+}
+
 std::string Filename(const std::string& base, Id id)
 {
   std::stringstream ss;
@@ -67,14 +76,33 @@ bool JournalFile::save(const Entry& data)
   return true;
 }
 
-Data JournalFile::entry(Clock) const
+Data JournalFile::entry(Clock clock) const
 {
+  for (const auto& [id, count] : clock) {
+    std::fstream file(Filename(_location, id), std::ios::binary | std::ios::in);
+    SeekToLine(file, clock.at(id));
+    Entry entry;
+    Entry::Read(file, entry);
+    if (entry.clock == clock) {
+      return entry.entry;
+    }
+  }
   return {};
 }
 
 EntryList JournalFile::entries() const
 {
   EntryList list;
+  for (const auto& [id, count] : clock()) {
+    std::fstream file(Filename(_location, id), std::ios::binary | std::ios::in);
+    for (size_t i = 0; i < count; ++i) {
+      Entry entry;
+      if (Entry::Read(file, entry)) {
+        list.push_back(entry);
+      }
+      file.get();
+    }
+  }
   return list;
 }
 

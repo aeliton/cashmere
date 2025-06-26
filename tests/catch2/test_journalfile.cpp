@@ -56,3 +56,30 @@ SCENARIO_METHOD(JournalFileFixture, "append entries", "[journalfile]")
     }
   }
 }
+
+TEST_CASE_METHOD(JournalFileWithEntriesFixture, "entries retrieval")
+{
+  SECTION("third entry")
+  {
+    const auto clock = entries.at(2).clock;
+    REQUIRE(journal->entry(clock) == entries.at(2).entry);
+  }
+  SECTION("the first from another journal")
+  {
+    const auto clock = entries.at(3).clock;
+    REQUIRE(journal->entry(clock) == entries.at(3).entry);
+  }
+}
+
+TEST_CASE_METHOD(
+  JournalFileWithEntriesFixture, "entries retrieval", "[entries]"
+)
+{
+  const EntryList list = {
+    {{{0xBB, 1}}, {0xBB, 100, {}}},
+    {{{kFixtureId, 1}}, {kFixtureId, 10, {}}},
+    {{{kFixtureId, 2}}, {kFixtureId, 20, {}}},
+    {{{kFixtureId, 3}}, {kFixtureId, 30, {}}}
+  };
+  REQUIRE(journal->entries() == list);
+}
