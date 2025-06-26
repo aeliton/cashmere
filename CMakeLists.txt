@@ -60,11 +60,11 @@ find_package(Catch2 3 REQUIRED)
 
 add_executable(catch_tests)
 target_sources(catch_tests PRIVATE
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journalfile.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_broker.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_clock.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journal.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journalfile.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_ledger.cpp
 )
 target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
@@ -79,7 +79,7 @@ find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 
 enable_testing()
 add_executable (gtests
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokerhub.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokerhub.cpp
 )
 target_link_libraries (gtests
   cash_objects
