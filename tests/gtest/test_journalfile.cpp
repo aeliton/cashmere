@@ -19,37 +19,11 @@
 #include <filesystem>
 #include <fstream>
 
-#include "journalfile.h"
-#include "test/brokermock.h"
+#include "test/gtest/brokermock.h"
+#include "test/gtest/fixtures.h"
 
 using namespace Cashmere;
 using ::testing::Return;
-
-namespace fs = std::filesystem;
-
-constexpr Id kFixtureId = 0xbaadcafe;
-constexpr char const* kFixtureIdStr = "00000000baadcafe";
-
-struct JournalFileTest : public ::testing::Test
-{
-  void SetUp() override
-  {
-    tmpdir = fs::temp_directory_path() / std::to_string(Random{}.next());
-    filename = fs::path(tmpdir) / kFixtureIdStr;
-    assert(!fs::exists(tmpdir));
-    journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
-  }
-  void TearDown() override
-  {
-    const fs::path directory = fs::path(tmpdir);
-    assert(fs::exists(directory));
-    [[maybe_unused]] const bool deleted = fs::remove_all(directory);
-    assert(deleted);
-  }
-  std::string tmpdir;
-  std::string filename;
-  JournalFilePtr journal;
-};
 
 TEST_F(JournalFileTest, SeparateFilesPerJournal)
 {
