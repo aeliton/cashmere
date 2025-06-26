@@ -16,7 +16,7 @@
 #include <catch2/catch_all.hpp>
 
 #include "broker.h"
-#include "fixtures.h"
+#include "test/catch2/fixtures.h"
 
 namespace Catch
 {

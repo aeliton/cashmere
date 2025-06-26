@@ -19,8 +19,8 @@
 #include <filesystem>
 #include <fstream>
 
-#include "brokermock.h"
 #include "journalfile.h"
+#include "test/brokermock.h"
 
 using namespace Cashmere;
 using ::testing::Return;

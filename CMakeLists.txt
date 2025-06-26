@@ -56,6 +56,13 @@ target_sources(cash PRIVATE
 
 target_link_libraries(cash PRIVATE cash_objects)
 
+add_library(test_helper INTERFACE)
+target_include_directories(test_helper INTERFACE
+  $<BUILD_INTERFACE:${cash_SOURCE_DIR}/tests/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries(test_helper INTERFACE cash_objects)
+
 find_package(Catch2 3 REQUIRED)
 
 add_executable(catch_tests)
@@ -69,6 +76,7 @@ target_sources(catch_tests PRIVATE
 target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
   cash_objects
+  test_helper
 )
 
 include(CTest)
@@ -83,9 +91,11 @@ add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journalfile.cpp
 )
 target_link_libraries (gtests
-  cash_objects
   GTest::gmock
-  GTest::gtest_main)
+  GTest::gtest_main
+  cash_objects
+  test_helper
+)
 
 include(GoogleTest)
 gtest_discover_tests(gtests)

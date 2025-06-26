@@ -18,11 +18,39 @@
 
 #include "broker.h"
 #include "journal.h"
+#include "journalfile.h"
 #include <cassert>
+#include <filesystem>
 #include <signal/signal.h>
+
+namespace fs = std::filesystem;
 
 namespace Cashmere
 {
+constexpr Id kFixtureId = 0xbaadcafe;
+constexpr char const* kFixtureIdStr = "00000000baadcafe";
+
+struct JournalFileFixture
+{
+  JournalFileFixture()
+    : tmpdir(fs::temp_directory_path() / std::to_string(Random{}.next()))
+    , filename(fs::path(tmpdir) / kFixtureIdStr)
+  {
+    assert(!fs::exists(tmpdir));
+    journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
+  }
+  ~JournalFileFixture()
+  {
+    const fs::path directory = fs::path(tmpdir);
+    assert(fs::exists(directory));
+    [[maybe_unused]] const bool deleted = fs::remove_all(directory);
+    assert(deleted);
+  }
+  const std::string tmpdir;
+  const std::string filename;
+  JournalFilePtr journal;
+};
+
 struct JournalMock : public Journal
 {
   JournalMock(Id id)

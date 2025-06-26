@@ -13,38 +13,11 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "journalfile.h"
+#include "test/catch2/fixtures.h"
 #include <catch2/catch_all.hpp>
-#include <filesystem>
 #include <fstream>
 
 using namespace Cashmere;
-
-namespace fs = std::filesystem;
-
-constexpr Id kFixtureId = 0xbaadcafe;
-constexpr char const* kFixtureIdStr = "00000000baadcafe";
-
-struct JournalFileFixture
-{
-  JournalFileFixture()
-    : tmpdir(fs::temp_directory_path() / std::to_string(Random{}.next()))
-    , filename(fs::path(tmpdir) / kFixtureIdStr)
-  {
-    assert(!fs::exists(tmpdir));
-    journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
-  }
-  ~JournalFileFixture()
-  {
-    const fs::path directory = fs::path(tmpdir);
-    assert(fs::exists(directory));
-    [[maybe_unused]] const bool deleted = fs::remove_all(directory);
-    assert(deleted);
-  }
-  const std::string tmpdir;
-  const std::string filename;
-  JournalFilePtr journal;
-};
 
 TEST_CASE_METHOD(JournalFileFixture, "file creation", "[journalfile]")
 {
