@@ -36,6 +36,8 @@ public:
   bool smallerThan(const Clock& other) const;
   bool concurrent(const Clock& other) const;
   bool valid() const;
+
+  static bool Read(std::istream& in, Clock& clock);
   friend std::ostream& operator<<(std::ostream& os, const Clock& clock);
 };
 

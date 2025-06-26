@@ -15,6 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clock.h"
 
+#include <istream>
+
 namespace Cashmere
 {
 
@@ -93,4 +95,36 @@ bool Clock::isNext(const Clock& other, Id id) const
   }
 }
 
+bool Clock::Read(std::istream& in, Clock& clock)
+{
+  int c;
+  if ((c = in.get()) != '{') {
+    return false;
+  }
+  while ((c = in.get()) != '}') {
+    if (c != '{') {
+      return false;
+    }
+    Id id;
+    in >> std::hex >> id >> std::dec;
+    if ((c = in.get()) != ',') {
+      return false;
+    }
+
+    in.get();
+
+    Time time;
+    in >> time;
+
+    clock[id] = time;
+
+    if ((c = in.get()) != '}') {
+      return false;
+    }
+    if ((c = in.peek()) == ',') {
+      in.get();
+    }
+  }
+  return true;
+}
 }

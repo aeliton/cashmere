@@ -30,3 +30,20 @@ TEST_CASE("comparable clocks", "[clock]")
   REQUIRE_FALSE(Clock{{0xAA, 1}}.concurrent(Clock{{0xAA, 1}}));
   REQUIRE_FALSE(Clock{{0xAA, 1}}.smallerThan(Clock{{0xAA, 1}}));
 }
+
+TEST_CASE("from string", "[clock]")
+{
+  Clock clock;
+  SECTION("valid empty clock")
+  {
+    std::istringstream ins("{}");
+    REQUIRE(Clock::Read(ins, clock));
+    REQUIRE(clock == Clock{});
+  }
+  SECTION("valid single journal clock")
+  {
+    std::istringstream ins("{{AA, 1}}");
+    REQUIRE(Clock::Read(ins, clock));
+    REQUIRE(clock == Clock{{0xAA, 1}});
+  }
+}
