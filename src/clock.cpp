@@ -98,6 +98,9 @@ bool Clock::isNext(const Clock& other, Id id) const
 bool Clock::Read(std::istream& in, Clock& clock)
 {
   int c;
+  if (in.peek() == ' ') {
+    in.get();
+  }
   if ((c = in.get()) != '{') {
     return false;
   }

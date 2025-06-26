@@ -69,6 +69,7 @@ add_executable(catch_tests)
 target_sources(catch_tests PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_clock.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journal.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journalfile.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_ledger.cpp

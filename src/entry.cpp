@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "entry.h"
+#include <istream>
 
 namespace Cashmere
 {
@@ -43,6 +44,42 @@ bool Data::operator==(const Data& other) const
 {
   return std::tie(id, value, alters) ==
          std::tie(other.id, other.value, other.alters);
+}
+
+bool Data::Read(std::istream& in, Data& data)
+{
+  int c;
+  if ((c = in.peek()) == ' ') {
+    in.get();
+  }
+  if ((c = in.get()) != '{') {
+    return false;
+  }
+  if (in.peek() == '}') {
+    data = {};
+    return true;
+  }
+  Id id;
+  in >> std::hex >> id >> std::dec;
+  in.get();
+
+  Amount amount;
+  in >> amount;
+  in.get();
+
+  Clock clock;
+  if (!Clock::Read(in, clock)) {
+    return false;
+  }
+
+  if ((c = in.get()) != '}') {
+    return false;
+  }
+
+  data.id = id;
+  data.value = amount;
+  data.alters = clock;
+  return true;
 }
 
 }

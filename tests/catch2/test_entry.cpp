@@ -13,42 +13,24 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_ENTRY_H
-#define CASHMERE_ENTRY_H
+#include "entry.h"
+#include <catch2/catch_all.hpp>
 
-#include "clock.h"
+using namespace Cashmere;
 
-#include <list>
-
-namespace Cashmere
+TEST_CASE("from string", "[Data]")
 {
-
-struct Data;
-struct Entry;
-
-using ClockDataMap = std::map<Clock, Data>;
-using ClockEntryMap = std::map<Clock, Entry>;
-using EntryList = std::list<Entry>;
-
-struct Data
-{
-  Id id;
-  Amount value;
-  Clock alters;
-  bool operator==(const Data& other) const;
-  bool valid() const;
-  static bool Read(std::istream& in, Data& data);
-  friend std::ostream& operator<<(std::ostream& os, const Data& data);
-};
-
-struct Entry
-{
-  Clock clock;
-  Data entry;
-  bool operator==(const Entry& other) const;
-  friend std::ostream& operator<<(std::ostream& os, const Entry& data);
-};
-
+  Data data;
+  SECTION("valid empty data")
+  {
+    std::istringstream ins("{0, 0, {}}");
+    REQUIRE(Data::Read(ins, data));
+    REQUIRE(data == Data{});
+  }
+  SECTION("valid non-empty data with empty clock")
+  {
+    std::istringstream ins("{aa, 10, {}}");
+    REQUIRE(Data::Read(ins, data));
+    REQUIRE(data == Data{0xAA, 10, {}});
+  }
 }
-
-#endif
