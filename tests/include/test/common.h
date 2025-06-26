@@ -13,43 +13,34 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_TESTS_GTEST_FIXTURES_H
-#define CASHMERE_TESTS_GTEST_FIXTURES_H
+#ifndef CASHMERE_TESTS_COMMON_H
+#define CASHMERE_TESTS_COMMON_H
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
+#include "random.h"
+#include <cassert>
 #include <filesystem>
-
-#include "journalfile.h"
-#include "test/common.h"
-
-using ::testing::Return;
 
 namespace fs = std::filesystem;
 
 namespace Cashmere
 {
 
-constexpr Id kFixtureId = 0xbaadcafe;
-constexpr char const* kFixtureIdStr = "00000000baadcafe";
-
-struct JournalFileTest : public ::testing::Test
+inline std::string CreateTempDir()
 {
-  void SetUp() override
-  {
-    tmpdir = CreateTempDir();
-    filename = fs::path(tmpdir) / kFixtureIdStr;
-    journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
-  }
-  void TearDown() override
-  {
-    DeleteTempDir(tmpdir);
-  }
-  std::string tmpdir;
-  std::string filename;
-  JournalFilePtr journal;
-};
+  std::string tempDir;
+  do {
+    tempDir = fs::temp_directory_path() / std::to_string(Random{}.next());
+  } while (fs::exists(tempDir));
+  fs::create_directories(tempDir);
+  return tempDir;
+}
+
+inline void DeleteTempDir(std::string tempDir)
+{
+  assert(fs::exists(tempDir));
+  [[maybe_unused]] const bool deleted = fs::remove_all(tempDir);
+  assert(deleted);
+}
 
 }
 

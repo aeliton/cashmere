@@ -19,6 +19,8 @@
 #include "broker.h"
 #include "journal.h"
 #include "journalfile.h"
+#include "test/common.h"
+
 #include <cassert>
 #include <filesystem>
 #include <signal/signal.h>
@@ -33,18 +35,14 @@ constexpr char const* kFixtureIdStr = "00000000baadcafe";
 struct JournalFileFixture
 {
   JournalFileFixture()
-    : tmpdir(fs::temp_directory_path() / std::to_string(Random{}.next()))
+    : tmpdir(CreateTempDir())
     , filename(fs::path(tmpdir) / kFixtureIdStr)
   {
-    assert(!fs::exists(tmpdir));
     journal = std::make_shared<JournalFile>(kFixtureId, tmpdir);
   }
   ~JournalFileFixture()
   {
-    const fs::path directory = fs::path(tmpdir);
-    assert(fs::exists(directory));
-    [[maybe_unused]] const bool deleted = fs::remove_all(directory);
-    assert(deleted);
+    DeleteTempDir(tmpdir);
   }
   const std::string tmpdir;
   const std::string filename;
