@@ -98,11 +98,13 @@ bool Clock::isNext(const Clock& other, Id id) const
 bool Clock::Read(std::istream& in, Clock& clock)
 {
   int c;
-  if (in.peek() == ' ') {
-    in.get();
+  while ((c = in.get()) == ' ') {
   }
-  if ((c = in.get()) != '{') {
+  if (c != '{') {
     return false;
+  }
+  while (in.peek() == ' ') {
+    in.get();
   }
   while ((c = in.get()) != '}') {
     if (c != '{') {
@@ -110,6 +112,9 @@ bool Clock::Read(std::istream& in, Clock& clock)
     }
     Id id;
     in >> std::hex >> id >> std::dec;
+    while (in.peek() == ' ') {
+      in.get();
+    }
     if ((c = in.get()) != ',') {
       return false;
     }
@@ -118,13 +123,21 @@ bool Clock::Read(std::istream& in, Clock& clock)
 
     Time time;
     in >> time;
-
+    while (in.peek() == ' ') {
+      in.get();
+    }
     clock[id] = time;
 
     if ((c = in.get()) != '}') {
       return false;
     }
+    while (in.peek() == ' ') {
+      in.get();
+    }
     if ((c = in.peek()) == ',') {
+      in.get();
+    }
+    while (in.peek() == ' ') {
       in.get();
     }
   }

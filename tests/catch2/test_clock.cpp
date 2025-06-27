@@ -34,10 +34,20 @@ TEST_CASE("comparable clocks", "[clock]")
 TEST_CASE("from string", "[clock]")
 {
   auto [pattern, expected] = GENERATE(table<std::string, Clock>(
-    {{"{}", Clock{}}, {"{{AA, 1}}", Clock{{0xAA, 1}}}}
+    {{"{}", Clock{}},                  // empty no spaces
+     {" {}", Clock{}},                 // spaces before the first open bracket
+     {"{ }", Clock{}},                 // spaces after the first open bracket
+     {"{{AA, 1}}", Clock{{0xAA, 1}}},  // well formated single entry clock
+     {"{{ AA, 1}}", Clock{{0xAA, 1}}}, // ' ' after id-count pair open bracket
+     {"{{AA , 1}}", Clock{{0xAA, 1}}}, // spaces after id pair bracket
+     {"{{AA,  1}}", Clock{{0xAA, 1}}}, // multiple spaces after comma
+     {"{{AA, 1 }}", Clock{{0xAA, 1}}}, // space after count
+     {"{{AA, 1} }", Clock{{0xAA, 1}}}, // ' ' after id-count pair close bracket
+     {" { { AA ,  1} ,  { BB , 1 } }", Clock{{0xAA, 1}, {0xBB, 1}}}}
   ));
   std::istringstream ins(pattern);
   Clock clock;
+  CAPTURE(pattern);
   REQUIRE(Clock::Read(ins, clock));
   REQUIRE(clock == expected);
 }
