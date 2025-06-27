@@ -34,3 +34,20 @@ TEST_CASE("from string", "[Data]")
     REQUIRE(data == Data{0xAA, 10, {}});
   }
 }
+
+TEST_CASE("from string", "[entry]")
+{
+  Entry data;
+  SECTION("valid empty entry")
+  {
+    std::istringstream ins("{{}, {0, 0, {}}}");
+    REQUIRE(Entry::Read(ins, data));
+    REQUIRE(data == Entry{});
+  }
+  SECTION("valid non-empty entry with")
+  {
+    std::istringstream ins("{{{aa, 1}}, {aa, 10, {}}}");
+    REQUIRE(Entry::Read(ins, data));
+    REQUIRE(data == Entry{{{0xAA, 1}}, {0xAA, 10, {}}});
+  }
+}

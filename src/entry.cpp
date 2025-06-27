@@ -82,4 +82,27 @@ bool Data::Read(std::istream& in, Data& data)
   return true;
 }
 
+bool Entry::Read(std::istream& in, Entry& entry)
+{
+  int c;
+  if ((c = in.get()) != '{') {
+    return false;
+  }
+  if (in.peek() == '}') {
+    entry = {};
+    return true;
+  }
+  if (!Clock::Read(in, entry.clock)) {
+    return false;
+  }
+  in.get();
+  if (!Data::Read(in, entry.entry)) {
+    return false;
+  }
+  if ((c = in.get()) != '}') {
+    return false;
+  }
+  return true;
+}
+
 }

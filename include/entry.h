@@ -46,6 +46,7 @@ struct Entry
   Clock clock;
   Data entry;
   bool operator==(const Entry& other) const;
+  static bool Read(std::istream& in, Entry& entry);
   friend std::ostream& operator<<(std::ostream& os, const Entry& data);
 };
 
