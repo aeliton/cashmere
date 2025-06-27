@@ -33,17 +33,11 @@ TEST_CASE("comparable clocks", "[clock]")
 
 TEST_CASE("from string", "[clock]")
 {
+  auto [pattern, expected] = GENERATE(table<std::string, Clock>(
+    {{"{}", Clock{}}, {"{{AA, 1}}", Clock{{0xAA, 1}}}}
+  ));
+  std::istringstream ins(pattern);
   Clock clock;
-  SECTION("valid empty clock")
-  {
-    std::istringstream ins("{}");
-    REQUIRE(Clock::Read(ins, clock));
-    REQUIRE(clock == Clock{});
-  }
-  SECTION("valid single journal clock")
-  {
-    std::istringstream ins("{{AA, 1}}");
-    REQUIRE(Clock::Read(ins, clock));
-    REQUIRE(clock == Clock{{0xAA, 1}});
-  }
+  REQUIRE(Clock::Read(ins, clock));
+  REQUIRE(clock == expected);
 }
