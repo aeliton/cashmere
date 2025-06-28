@@ -54,7 +54,8 @@ TEST_CASE("from string", "[clock]")
 
 TEST_CASE("from string with invalid ids and times ", "[clock]")
 {
-  auto pattern = GENERATE("{{zz, 1}}", "{{ AA, aa}}");
+  auto pattern =
+    GENERATE("{{zz, 1}}", "{{ AA, aa}}", "", "{{AA, 1}", "{AA, 1}");
   std::istringstream ins(pattern);
   Clock clock;
   CAPTURE(pattern);
