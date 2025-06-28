@@ -47,7 +47,9 @@ Data JournalFile::entry(Clock clock) const
 {
   for (const auto& [id, count] : clock) {
     std::fstream file(Filename(_location, id), std::ios::binary | std::ios::in);
-    SeekToLine(file, clock.at(id));
+    if (!SeekToLine(file, count)) {
+      break;
+    }
     Entry entry;
     Entry::Read(file, entry);
     if (entry.clock == clock) {
