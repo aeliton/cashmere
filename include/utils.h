@@ -33,6 +33,12 @@ bool ReadChar(std::istream& in, const char expected);
 
 bool ReadPair(std::istream& in, Id& id, Time& time);
 
+bool SeekToLine(std::fstream& file, size_t line);
+
+std::string Filename(const std::string& base, Id id);
+
+size_t LineCount(const std::string& filename);
+
 }
 
 #endif

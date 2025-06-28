@@ -14,6 +14,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "utils.h"
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+
+namespace fs = std::filesystem;
+using isbuf_it = std::istreambuf_iterator<char>;
 
 namespace Cashmere
 {
@@ -57,6 +63,34 @@ bool ReadPair(std::istream& in, Id& id, Time& time)
     return false;
   }
   return true;
+}
+
+bool SeekToLine(std::fstream& file, size_t line)
+{
+  file.seekg(std::ios::beg);
+  for (; line > 1 && file.good(); line--) {
+    file.ignore(std::numeric_limits<std::streamsize>::max(), kLineFeed);
+  }
+  return line == 1;
+}
+
+std::string Filename(const std::string& base, Id id)
+{
+  std::stringstream ss;
+  ss << std::hex << std::setfill('0') << std::setw(sizeof(Id) * 2) << id
+     << std::dec;
+  const auto filename = fs::path(base) / ss.str();
+  fs::create_directories(filename.parent_path());
+  return filename;
+}
+
+size_t LineCount(const std::string& filename)
+{
+  if (!fs::exists(filename)) {
+    return 0;
+  }
+  std::ifstream file(filename);
+  return std::count(isbuf_it(file), isbuf_it(), kLineFeed);
 }
 
 }

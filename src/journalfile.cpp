@@ -15,43 +15,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "journalfile.h"
 #include "utils.h"
-#include <algorithm>
-#include <filesystem>
 #include <fstream>
-
-namespace fs = std::filesystem;
-using isbuf_it = std::istreambuf_iterator<char>;
 
 namespace Cashmere
 {
-
-std::fstream& SeekToLine(std::fstream& file, size_t line)
-{
-  file.seekg(std::ios::beg);
-  for (size_t i = 0; i < line - 1; ++i) {
-    file.ignore(std::numeric_limits<std::streamsize>::max(), kLineFeed);
-  }
-  return file;
-}
-
-std::string Filename(const std::string& base, Id id)
-{
-  std::stringstream ss;
-  ss << std::hex << std::setfill('0') << std::setw(sizeof(Id) * 2) << id
-     << std::dec;
-  const auto filename = fs::path(base) / ss.str();
-  fs::create_directories(filename.parent_path());
-  return filename;
-}
-
-size_t LineCount(const std::string& filename)
-{
-  if (!fs::exists(filename)) {
-    return 0;
-  }
-  std::ifstream file(filename);
-  return std::count(isbuf_it(file), isbuf_it(), kLineFeed);
-}
 
 JournalFile::JournalFile(const std::string& location)
   : JournalBase()
@@ -110,5 +77,4 @@ std::string JournalFile::filename() const
 {
   return Filename(_location, id());
 }
-
 }
