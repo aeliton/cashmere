@@ -42,6 +42,7 @@ add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp
 )
 target_link_libraries(cash_objects PUBLIC signal)
 

@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clock.h"
+#include "utils.h"
 
 #include <istream>
 
@@ -97,50 +98,27 @@ bool Clock::isNext(const Clock& other, Id id) const
 
 bool Clock::Read(std::istream& in, Clock& clock)
 {
-  int c;
-  while ((c = in.get()) == ' ') {
-  }
-  if (c != '{') {
+  if (!ReadChar(in, kOpenCurly)) {
     return false;
   }
-  while (in.peek() == ' ') {
-    in.get();
+
+  ReadSpaces(in);
+  if (in.peek() == kOpenCurly) {
+    do {
+      Id id;
+      Time time;
+      if (!ReadPair(in, id, time)) {
+        return false;
+      }
+      clock[id] = time;
+    } while (ReadChar(in, kComma));
   }
-  while ((c = in.get()) != '}') {
-    if (c != '{') {
-      return false;
-    }
-    Id id;
-    in >> std::hex >> id >> std::dec;
-    while (in.peek() == ' ') {
-      in.get();
-    }
-    if ((c = in.get()) != ',') {
-      return false;
-    }
 
-    in.get();
-
-    Time time;
-    in >> time;
-    while (in.peek() == ' ') {
-      in.get();
-    }
-    clock[id] = time;
-
-    if ((c = in.get()) != '}') {
-      return false;
-    }
-    while (in.peek() == ' ') {
-      in.get();
-    }
-    if ((c = in.peek()) == ',') {
-      in.get();
-    }
-    while (in.peek() == ' ') {
-      in.get();
-    }
+  if (!ReadChar(in, kCloseCurly)) {
+    return false;
   }
+
   return true;
 }
+
 }

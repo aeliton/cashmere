@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "entry.h"
+#include "utils.h"
 #include <istream>
 
 namespace Cashmere
@@ -48,58 +49,41 @@ bool Data::operator==(const Data& other) const
 
 bool Data::Read(std::istream& in, Data& data)
 {
-  int c;
-  if ((c = in.peek()) == ' ') {
-    in.get();
-  }
-  if ((c = in.get()) != '{') {
+  if (!ReadChar(in, kOpenCurly)) {
     return false;
   }
-  if (in.peek() == '}') {
-    data = {};
-    return true;
-  }
-  Id id;
-  in >> std::hex >> id >> std::dec;
-  in.get();
-
-  Amount amount;
-  in >> amount;
-  in.get();
-
-  Clock clock;
-  if (!Clock::Read(in, clock)) {
+  in >> std::hex >> data.id >> std::dec;
+  if (!ReadChar(in, kComma)) {
     return false;
   }
-
-  if ((c = in.get()) != '}') {
+  in >> data.value;
+  if (!ReadChar(in, kComma)) {
     return false;
   }
-
-  data.id = id;
-  data.value = amount;
-  data.alters = clock;
+  if (!Clock::Read(in, data.alters)) {
+    return false;
+  }
+  if (!ReadChar(in, kCloseCurly)) {
+    return false;
+  }
   return true;
 }
 
 bool Entry::Read(std::istream& in, Entry& entry)
 {
-  int c;
-  if ((c = in.get()) != '{') {
+  if (!ReadChar(in, kOpenCurly)) {
     return false;
-  }
-  if (in.peek() == '}') {
-    entry = {};
-    return true;
   }
   if (!Clock::Read(in, entry.clock)) {
     return false;
   }
-  in.get();
+  if (!ReadChar(in, kComma)) {
+    return false;
+  }
   if (!Data::Read(in, entry.entry)) {
     return false;
   }
-  if ((c = in.get()) != '}') {
+  if (!ReadChar(in, kCloseCurly)) {
     return false;
   }
   return true;

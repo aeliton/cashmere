@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "journalfile.h"
+#include "utils.h"
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -23,13 +24,12 @@ using isbuf_it = std::istreambuf_iterator<char>;
 
 namespace Cashmere
 {
-constexpr char kLF = '\n';
 
 std::fstream& SeekToLine(std::fstream& file, size_t line)
 {
   file.seekg(std::ios::beg);
   for (size_t i = 0; i < line - 1; ++i) {
-    file.ignore(std::numeric_limits<std::streamsize>::max(), kLF);
+    file.ignore(std::numeric_limits<std::streamsize>::max(), kLineFeed);
   }
   return file;
 }
@@ -50,7 +50,7 @@ size_t LineCount(const std::string& filename)
     return 0;
   }
   std::ifstream file(filename);
-  return std::count(isbuf_it(file), isbuf_it(), kLF);
+  return std::count(isbuf_it(file), isbuf_it(), kLineFeed);
 }
 
 JournalFile::JournalFile(const std::string& location)
@@ -100,7 +100,7 @@ EntryList JournalFile::entries() const
       if (Entry::Read(file, entry)) {
         list.push_back(entry);
       }
-      file.get();
+      ReadChar(file, kLineFeed);
     }
   }
   return list;

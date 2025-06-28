@@ -1,0 +1,56 @@
+// Cashmere - a distributed conflict-free replicated database.
+// Copyright (C) 2025 Aeliton G. Silva
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#include "utils.h"
+
+namespace Cashmere
+{
+
+bool ReadSpaces(std::istream& in)
+{
+  int c = 0;
+  while (in.peek() == kSpace) {
+    c = in.get();
+  }
+  return c == kSpace;
+}
+
+bool ReadChar(std::istream& in, const char expected)
+{
+  ReadSpaces(in);
+  if (in.peek() == expected) {
+    in.get();
+    return true;
+  }
+  return false;
+}
+
+bool ReadPair(std::istream& in, Id& id, Time& time)
+{
+  if (!ReadChar(in, kOpenCurly)) {
+    return false;
+  }
+  in >> std::hex >> id >> std::dec;
+  if (!ReadChar(in, kComma)) {
+    return false;
+  }
+  in >> std::hex >> time >> std::dec;
+  if (!ReadChar(in, kCloseCurly)) {
+    return false;
+  }
+  return true;
+}
+
+}
