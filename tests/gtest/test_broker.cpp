@@ -227,24 +227,24 @@ TEST(Broker, ExchangeEntriesOnConnect)
 
 TEST(Broker, PropagatesProvidedConnections)
 {
-  const auto hub0 = std::make_shared<Broker>();
-  const auto hub1 = std::make_shared<BrokerMock>();
-  const auto aa = std::make_shared<BrokerMock>();
+  const auto broker = std::make_shared<Broker>();
+  const auto hub = std::make_shared<BrokerMock>();
+  const auto journal = std::make_shared<BrokerMock>();
 
   const auto aaEntry = Entry{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}};
 
-  EXPECT_CALL(*hub1, connect((Connection{hub0, 1, {}, {}})))
+  EXPECT_CALL(*hub, connect((Connection{broker, 1, {}, {}})))
     .Times(1)
-    .WillOnce(Return(Connection{hub1, 1, {}, {}}));
-  EXPECT_CALL(*hub1, query(Clock{}, 1)).Times(1).WillOnce(Return(EntryList{}));
-  EXPECT_CALL(*hub1, insert(aaEntry, 1))
+    .WillOnce(Return(Connection{hub, 1, {}, {}}));
+  EXPECT_CALL(*hub, query(Clock{}, 1)).Times(1).WillOnce(Return(EntryList{}));
+  EXPECT_CALL(*hub, insert(aaEntry, 1))
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}}));
   EXPECT_CALL(
-    *hub1,
+    *hub,
     refresh(
       Connection{
-        hub0, 1, Clock{{0xAA, 1}},
+        broker, 1, Clock{{0xAA, 1}},
         IdConnectionInfoMap{{0xAA, {.distance = 2, .version = {{0xAA, 1}}}}}
       },
       1
@@ -253,15 +253,16 @@ TEST(Broker, PropagatesProvidedConnections)
     .Times(1)
     .WillOnce(Return(true));
 
-  EXPECT_CALL(*aa, connect((Connection{hub0, 2, {}, {}})))
+  EXPECT_CALL(*journal, connect((Connection{broker, 2, {}, {}})))
     .Times(1)
     .WillOnce(Return(Connection{
-      aa, 1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
+      journal, 1, Clock{{0xAA, 1}},
+      IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
     }));
-  EXPECT_CALL(*aa, query(Clock{}, 1))
+  EXPECT_CALL(*journal, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
 
-  hub0->connect(hub1);
-  hub0->connect(aa);
+  broker->connect(hub);
+  broker->connect(journal);
 }
