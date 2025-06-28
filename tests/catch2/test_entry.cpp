@@ -18,7 +18,7 @@
 
 using namespace Cashmere;
 
-TEST_CASE("from string", "[Data]")
+TEST_CASE("from string", "[data]")
 {
   Data data;
   SECTION("valid empty data")
@@ -32,6 +32,16 @@ TEST_CASE("from string", "[Data]")
     std::istringstream ins("{aa, 10, {}}");
     REQUIRE(Data::Read(ins, data));
     REQUIRE(data == Data{0xAA, 10, {}});
+  }
+  SECTION("value can't be hex")
+  {
+    std::istringstream ins("{aa, aa, {}}");
+    REQUIRE_FALSE(Data::Read(ins, data));
+  }
+  SECTION("id has to be a valid hex number")
+  {
+    std::istringstream ins("{zz, 1, {}}");
+    REQUIRE_FALSE(Data::Read(ins, data));
   }
 }
 

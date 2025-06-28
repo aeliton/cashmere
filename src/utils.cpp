@@ -43,10 +43,16 @@ bool ReadPair(std::istream& in, Id& id, Time& time)
     return false;
   }
   in >> std::hex >> id >> std::dec;
+  if (in.fail()) {
+    return false;
+  }
   if (!ReadChar(in, kComma)) {
     return false;
   }
-  in >> std::hex >> time >> std::dec;
+  in >> time;
+  if (in.fail()) {
+    return false;
+  }
   if (!ReadChar(in, kCloseCurly)) {
     return false;
   }

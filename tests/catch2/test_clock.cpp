@@ -51,3 +51,12 @@ TEST_CASE("from string", "[clock]")
   REQUIRE(Clock::Read(ins, clock));
   REQUIRE(clock == expected);
 }
+
+TEST_CASE("from string with invalid ids and times ", "[clock]")
+{
+  auto pattern = GENERATE("{{zz, 1}}", "{{ AA, aa}}");
+  std::istringstream ins(pattern);
+  Clock clock;
+  CAPTURE(pattern);
+  REQUIRE_FALSE(Clock::Read(ins, clock));
+}

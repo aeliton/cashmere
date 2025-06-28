@@ -57,6 +57,9 @@ bool Data::Read(std::istream& in, Data& data)
     return false;
   }
   in >> data.value;
+  if (in.fail()) {
+    return false;
+  }
   if (!ReadChar(in, kComma)) {
     return false;
   }
