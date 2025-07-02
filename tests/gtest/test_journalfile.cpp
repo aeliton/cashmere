@@ -31,17 +31,23 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
 
   const auto broker = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*broker, connect(Connection{journal, 1, {}, {}}))
+  EXPECT_CALL(
+    *broker, connect(Connection{
+               std::make_shared<BrokerStub>(journal),
+               1,
+               {},
+               {{kFixtureId, {.distance = 1, .version = {}}}}
+             })
+  )
     .Times(1)
-    .WillOnce(Return(Connection{
-      broker, 1, Clock{{0xBB, 1}},
-      IdConnectionInfoMap{{0xBB, {1, Clock{{0xBB, 1}}}}}
+    .WillOnce(Return(ConnectionData{
+      1, Clock{{0xBB, 1}}, IdConnectionInfoMap{{0xBB, {1, Clock{{0xBB, 1}}}}}
     }));
   EXPECT_CALL(*broker, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}}}));
 
-  journal->connect(broker);
+  journal->connect(std::make_shared<BrokerStub>(broker));
 
   std::ifstream file(journal->filename());
   EXPECT_EQ(file.peek(), std::ifstream::traits_type::eof());

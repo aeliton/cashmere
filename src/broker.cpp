@@ -24,28 +24,31 @@ IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
 
 Broker::Broker()
 {
-  _connections.push_back({});
+  _connections.push_back(Connection{});
 }
 
 Broker::~Broker() = default;
 
-Connection Broker::connect(Connection conn)
+ConnectionData Broker::connect(Connection conn)
 {
   Port port = _connections.size();
   _connections.push_back(conn);
   refreshConnections(port);
-  return {ptr(), port, clock(), UpdateProvides(provides(port))};
+  return ConnectionData{port, clock(), UpdateProvides(provides(port))};
 }
 
-Port Broker::connect(BrokerBasePtr remote)
+Port Broker::connect(BrokerStubPtr remote)
 {
-  if (!remote) {
+  if (!remote || !remote->broker()) {
     return -1;
   }
   const Port port = _connections.size();
-  _connections.push_back(
-    remote->connect({ptr(), port, clock(), UpdateProvides(provides(port))})
-  );
+  _connections.push_back(Connection(
+    remote, remote->broker()->connect(Connection{
+              std::make_shared<BrokerStub>(ptr()), port, clock(),
+              UpdateProvides(provides(port))
+            })
+  ));
   auto& conn = _connections.at(port);
 
   auto thisEntries = query(conn.version(), port);
@@ -63,12 +66,12 @@ Port Broker::connect(BrokerBasePtr remote)
   return port;
 }
 
-bool Broker::refresh(const Connection& conn, Port port)
+bool Broker::refresh(const ConnectionData& data, Port port)
 {
   if (port <= 0 || _connections.size() <= static_cast<size_t>(port)) {
     return false;
   }
-  _connections[port] = conn;
+  _connections[port].update(data);
 
   refreshConnections(port);
   return true;
@@ -212,9 +215,7 @@ void Broker::refreshConnections(Port ignore)
       continue;
     }
     auto& conn = _connections.at(i);
-    conn.refresh(
-      {ptr(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
-    );
+    conn.refresh({static_cast<Port>(i), clock(), UpdateProvides(provides(i))});
   }
 }
 

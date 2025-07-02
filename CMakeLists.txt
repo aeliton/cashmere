@@ -31,9 +31,32 @@ else()
   add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
+find_package(Protobuf REQUIRED)
+find_package(gRPC REQUIRED)
+
+add_library(cashmere_proto proto/cashmere.proto)
+target_link_libraries(cashmere_proto
+    PUBLIC
+        protobuf::libprotobuf
+        gRPC::grpc
+        gRPC::grpc++
+)
+target_include_directories(cashmere_proto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+
+get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
+protobuf_generate(TARGET cashmere_proto LANGUAGE cpp)
+protobuf_generate(
+  TARGET cashmere_proto
+  LANGUAGE grpc
+  GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc
+  PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"
+  PLUGIN_OPTIONS "generate_mock_code=true"
+)
+
 add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbase.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpc.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
@@ -44,7 +67,7 @@ add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp
 )
-target_link_libraries(cash_objects PUBLIC signal)
+target_link_libraries(cash_objects PUBLIC cashmere_proto)
 
 target_include_directories(cash_objects PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -79,6 +102,7 @@ target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
   cash_objects
   test_helper
+  signal
 )
 
 include(CTest)
@@ -90,6 +114,7 @@ find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 enable_testing()
 add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_broker.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpc.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journalfile.cpp
 )
 target_link_libraries (gtests
@@ -97,6 +122,7 @@ target_link_libraries (gtests
   GTest::gtest_main
   cash_objects
   test_helper
+  cashmere_proto
 )
 
 include(GoogleTest)

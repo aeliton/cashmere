@@ -13,49 +13,59 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_BROKER_H
-#define CASHMERE_BROKER_H
+#ifndef CASHMERE_BROKER_GRPC_H
+#define CASHMERE_BROKER_GRPC_H
 
-#include "brokerbase.h"
-#include <memory>
-#include <vector>
+#include "broker.h"
+
+#include <proto/cashmere.grpc.pb.h>
+#include <proto/cashmere.pb.h>
 
 namespace Cashmere
 {
 
-class Broker;
-using BrokerPtr = std::shared_ptr<Broker>;
-using BrokerWeakPtr = std::weak_ptr<Broker>;
+class BrokerGrpc;
+using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
+using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
 
-class Broker : public std::enable_shared_from_this<Broker>, public BrokerBase
+class BrokerGrpcStub;
+using BrokerGrpcStubPtr = std::shared_ptr<BrokerGrpcStub>;
+using BrokerGrpcStubWeakPtr = std::weak_ptr<BrokerGrpcStub>;
+
+class BrokerGrpcStub : public BrokerBase,
+                       public std::enable_shared_from_this<BrokerGrpcStub>
 {
 public:
-  Broker();
-
-  virtual ~Broker();
-
+  explicit BrokerGrpcStub(const std::string& url);
+  explicit BrokerGrpcStub(std::unique_ptr<Grpc::Broker::StubInterface>&& stub);
   virtual Id id() const override;
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;
+  virtual void setClock(const Clock& clock) override;
   virtual IdConnectionInfoMap provides(Port sender = 0) const override;
   virtual Clock insert(const Entry& data, Port sender = 0) override;
   virtual EntryList
   query(const Clock& from = {}, Port sender = 0) const override;
 
+  virtual ConnectionData connect(Connection conn) override;
+  virtual bool refresh(const ConnectionData& conn, Port sender) override;
   virtual Port disconnect(Port port) override;
-  virtual bool refresh(const ConnectionData& conn, Port port) override;
   virtual std::set<Port> connectedPorts() const override;
 
   virtual BrokerBasePtr ptr() override;
 
-  Port connect(BrokerStubPtr other);
+private:
+  std::string _url;
+  std::unique_ptr<Grpc::Broker::StubInterface> _stub;
+};
+
+class BrokerGrpc : public Broker
+{
+public:
+  BrokerGrpc(uint16_t port);
 
 private:
-  void refreshConnections(Port ignore = 0);
-  void setClock(const Clock& clock) override;
-  ConnectionData connect(Connection conn) override;
-
-  std::vector<Connection> _connections;
+  [[maybe_unused]] uint16_t _port;
 };
 
 }

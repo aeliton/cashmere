@@ -20,13 +20,14 @@
 #include <memory>
 
 #include "entry.h"
+#include <proto/cashmere.grpc.pb.h>
 
 namespace Cashmere
 {
 
 struct ConnectionInfo
 {
-  int64_t distance;
+  int16_t distance;
   Clock version;
   bool operator==(const ConnectionInfo& other) const;
   bool operator<(const ConnectionInfo& other) const;
@@ -39,44 +40,87 @@ class BrokerBase;
 using BrokerBasePtr = std::shared_ptr<BrokerBase>;
 using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 
-class Connection
+struct ConnectionData
 {
-  struct Cache
+  Port port;
+  Clock version;
+  IdConnectionInfoMap sources;
+  bool operator==(const ConnectionData& other) const;
+  friend std::ostream& operator<<(std::ostream& os, const ConnectionData& Data);
+};
+
+class BrokerStub;
+using BrokerStubPtr = std::shared_ptr<BrokerStub>;
+
+class BrokerStub
+{
+public:
+  enum class Type
   {
-    Clock version;
-    IdConnectionInfoMap sources;
+    Invalid,
+    Memory,
+    Grpc
   };
 
+  virtual ~BrokerStub();
+
+  explicit BrokerStub();
+  explicit BrokerStub(BrokerBasePtr broker, Type type = Type::Memory);
+  explicit BrokerStub(const std::string& url);
+
+  virtual BrokerBasePtr broker() const;
+  Type type() const;
+
+  void reset();
+
+private:
+  Type _type;
+  BrokerBaseWeakPtr _broker;
+};
+
+class Connection
+{
 public:
   enum class Origin
   {
     Cache,
     Remote
   };
-  Connection();
+  explicit Connection();
+  Connection(BrokerStubPtr stub, ConnectionData data);
   Connection(
-    BrokerBasePtr broker, Port port, Clock version, IdConnectionInfoMap provides
+    BrokerStubPtr stub, Port port, Clock version, IdConnectionInfoMap provides
   );
+  Connection(
+    const std::string& url, Port port, Clock version,
+    IdConnectionInfoMap provides
+  );
+
+  virtual ~Connection();
+
+  BrokerBasePtr broker() const;
+  void disconnect();
 
   Clock insert(const Entry& data) const;
   Clock insert(const EntryList& data) const;
   EntryList entries(const Clock& clock = {}) const;
   bool active() const;
-  bool refresh(const Connection& conn) const;
+  bool refresh(const ConnectionData& conn) const;
 
-  void disconnect();
-
-  BrokerBasePtr broker() const;
   Port port() const;
   Clock& version(Origin origin = Origin::Cache) const;
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
 
   bool operator==(const Connection& other) const;
+  friend std::ostream& operator<<(std::ostream& os, const Connection& data);
 
-private:
-  BrokerBaseWeakPtr _broker;
-  Port _port;
-  mutable Cache _cache;
+protected:
+  friend class Broker;
+
+  void update(const ConnectionData& data);
+
+  BrokerStubPtr _broker;
+  mutable ConnectionData _cache;
 };
 
 class BrokerBase
@@ -92,9 +136,8 @@ public:
   virtual Clock insert(const Entry& data, Port sender = 0) = 0;
   virtual EntryList query(const Clock& from = {}, Port sender = 0) const = 0;
 
-  virtual Port connect(BrokerBasePtr other) = 0;
-  virtual Connection connect(Connection conn) = 0;
-  virtual bool refresh(const Connection& conn, Port sender) = 0;
+  virtual ConnectionData connect(Connection conn) = 0;
+  virtual bool refresh(const ConnectionData& conn, Port sender) = 0;
   virtual Port disconnect(Port port) = 0;
   virtual std::set<Port> connectedPorts() const = 0;
 
@@ -102,6 +145,8 @@ public:
 
   Clock insert(const EntryList& entries, Port sender = 0);
 };
+
+std::ostream& operator<<(std::ostream& os, const IdConnectionInfoMap& data);
 
 }
 #endif

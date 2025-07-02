@@ -1,0 +1,44 @@
+// Cashmere - a distributed conflict-free replicated database.
+// Copyright (C) 2025 Aeliton G. Silva
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+syntax = "proto3";
+
+package Cashmere.Grpc;
+
+message Clock { map<fixed64, uint64> data = 1; };
+
+message Connection {
+  uint32 port = 1;
+  Clock version = 2;
+  map<int32, Clock> sources = 3;
+}
+
+message Data {
+  fixed64 id = 1;
+  int64 value = 2;
+  Clock alters = 3;
+}
+
+message Entry {
+  Clock clock = 1;
+  Data data = 2;
+}
+
+message EntryList { repeated Entry data = 1; }
+
+service Broker {
+  rpc Connect(Connection) returns(Connection) {}
+  rpc Query(Clock) returns(EntryList) {}
+}

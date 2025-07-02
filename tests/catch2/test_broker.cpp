@@ -77,7 +77,7 @@ using namespace Cashmere;
 
 TEST_CASE_METHOD(Broker, "broker connect ignores nullptr")
 {
-  REQUIRE(connect(nullptr) == -1);
+  REQUIRE(connect(std::shared_ptr<BrokerStub>()) == -1);
 }
 
 TEST_CASE_METHOD(Broker, "broker without journals has an empty clock")
@@ -99,7 +99,7 @@ SCENARIO("Journal is connected")
     WHEN("the journal with an entry is connected")
     {
       auto aa = std::make_shared<SingleEntryMock>(0xAA, 10);
-      const bool success = broker0->connect(aa);
+      const bool success = broker0->connect(std::make_shared<BrokerStub>(aa));
 
       THEN("the connect is successful")
       {
@@ -170,7 +170,7 @@ SCENARIO_METHOD(
     WHEN("connecting journal with transactions")
     {
       auto bb = std::make_shared<SingleEntryMock>(0xBB, 2);
-      broker0->connect(bb);
+      broker0->connect(std::make_shared<BrokerStub>(bb));
 
       THEN("the broker has it's clock updated")
       {
@@ -224,7 +224,7 @@ SCENARIO_METHOD(
 {
   GIVEN("a broker with a single journal connected")
   {
-    broker0->connect(aa);
+    broker0->connect(std::make_shared<BrokerStub>(aa));
 
     REQUIRE(broker0->versions() == IdClockMap{{0xAA, {{0xAA, 1}}}});
     REQUIRE(
@@ -234,7 +234,7 @@ SCENARIO_METHOD(
 
     WHEN("connecting a second journal")
     {
-      broker0->connect(bb);
+      broker0->connect(std::make_shared<BrokerStub>(bb));
       const size_t aaEntriesArgsSize = aa->_queryArgs.size();
       const size_t bbEntriesArgsSize = bb->_queryArgs.size();
 
@@ -272,7 +272,7 @@ SCENARIO_METHOD(
 
           AND_WHEN("the detached journal is re-connected")
           {
-            broker0->connect(bb);
+            broker0->connect(std::make_shared<BrokerStub>(bb));
             THEN("the broker calls for new entries once on each journal")
             {
               REQUIRE(aa->_queryArgs.size() == aaEntriesArgsSize + 1);
@@ -321,7 +321,7 @@ SCENARIO_METHOD(
 
     WHEN("connecting a new journal")
     {
-      broker0->connect(cc);
+      broker0->connect(std::make_shared<BrokerStub>(cc));
 
       THEN("only one of the connected journals is queried for entries")
       {
@@ -348,7 +348,7 @@ SCENARIO_METHOD(
 
     WHEN("connecting the empty broker to other broker")
     {
-      broker0->connect(broker1);
+      broker0->connect(std::make_shared<BrokerStub>(broker1));
 
       THEN("the versions of the agregator broker do not change")
       {
@@ -392,7 +392,7 @@ SCENARIO_METHOD(
           0xBB, ClockDataMap{{{{0xBB, 1}}, {0xBB, 50, {}}}}
         );
 
-        broker1->connect(bb);
+        broker1->connect(std::make_shared<BrokerStub>(bb));
 
         THEN("a single insert for data exchange call is made on both journals")
         {
@@ -482,7 +482,7 @@ SCENARIO_METHOD(
   {
     WHEN("connecting the two brokers")
     {
-      broker0->connect(broker1);
+      broker0->connect(std::make_shared<BrokerStub>(broker1));
       THEN("both brokers report they can provide data from the two journals")
       {
         REQUIRE(

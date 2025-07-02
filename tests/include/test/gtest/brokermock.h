@@ -35,12 +35,13 @@ public:
   MOCK_METHOD(IdConnectionInfoMap, provides, (Port to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
   MOCK_METHOD(Clock, clock, (), (const, override));
-  MOCK_METHOD(Port, connect, (BrokerBasePtr other), (override));
   MOCK_METHOD(Port, disconnect, (Port port), (override));
   MOCK_METHOD(BrokerBasePtr, ptr, (), (override));
   MOCK_METHOD(void, setClock, (const Clock& clock), (override));
-  MOCK_METHOD(Connection, connect, (Connection conn), (override));
-  MOCK_METHOD(bool, refresh, (const Connection& conn, Port port), (override));
+  MOCK_METHOD(ConnectionData, connect, (Connection conn), (override));
+  MOCK_METHOD(
+    bool, refresh, (const ConnectionData& data, Port port), (override)
+  );
   MOCK_METHOD(std::set<Port>, connectedPorts, (), (const, override));
 };
 
