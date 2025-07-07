@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "brokergrpc.h"
+#include "journal.h"
 #include <proto/cashmere_mock.grpc.pb.h>
 
 using namespace ::Cashmere;
@@ -24,7 +25,7 @@ using namespace ::testing;
 
 using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 
-TEST(BrokerGrpc, StartsConnectionsUsingGrpcStub)
+TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 {
   auto broker = std::make_shared<BrokerGrpc>(1000);
 
@@ -53,4 +54,25 @@ TEST(BrokerGrpc, StartsConnectionsUsingGrpcStub)
 
   EXPECT_EQ(broker->connect(brokerStub), 1);
   EXPECT_EQ(broker->clock(), Clock({{0xBB, 1}}));
+}
+
+TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
+{
+  auto journal = std::make_shared<Journal>(0xAA);
+  journal->append(1000);
+
+  auto stub = std::make_unique<Grpc::MockBrokerStub>();
+
+  Grpc::Clock outClock;
+  (*outClock.mutable_data())[0xAA] = 1;
+
+  EXPECT_CALL(*stub, Insert(_, _, _))
+    .Times(1)
+    .WillOnce(DoAll(SetArgPointee<2>(outClock), Return(grpc::Status::OK)));
+
+  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
+  auto brokerStub =
+    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+
+  EXPECT_EQ(journal->connect(brokerStub), 1);
 }

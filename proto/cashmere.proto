@@ -41,4 +41,6 @@ message EntryList { repeated Entry data = 1; }
 service Broker {
   rpc Connect(Connection) returns(Connection) {}
   rpc Query(Clock) returns(EntryList) {}
+  rpc Insert(Entry) returns(Clock) {}
+  rpc Refresh(Connection) returns(Clock) {}
 }

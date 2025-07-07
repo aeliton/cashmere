@@ -61,10 +61,28 @@ IdConnectionInfoMap BrokerGrpcStub::provides([[maybe_unused]] Port sender) const
   return {};
 }
 
-Clock BrokerGrpcStub::insert(
-  [[maybe_unused]] const Entry& data, [[maybe_unused]] Port sender
-)
+Clock BrokerGrpcStub::insert(const Entry& data, [[maybe_unused]] Port sender)
 {
+  Grpc::Entry entry;
+  for (const auto& [id, count] : data.clock) {
+    (*entry.mutable_clock()->mutable_data())[id] = count;
+  }
+  entry.mutable_data()->set_id(data.entry.id);
+  entry.mutable_data()->set_value(data.entry.value);
+  auto alters = entry.mutable_data()->mutable_alters()->mutable_data();
+  for (const auto& [id, count] : data.entry.alters) {
+    (*alters)[id] = count;
+  }
+
+  Grpc::Clock clock;
+  ::grpc::ClientContext context;
+  if (_stub->Insert(&context, entry, &clock).ok()) {
+    Clock out;
+    for (const auto& [id, count] : clock.data()) {
+      out[id] = count;
+    }
+    return out;
+  }
   return {};
 }
 
