@@ -81,19 +81,19 @@ Clock BrokerGrpcStub::insert(const Entry& data, [[maybe_unused]] Port sender)
   return {};
 }
 
-EntryList
-BrokerGrpcStub::query(const Clock& from, [[maybe_unused]] Port sender) const
+EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
 {
   ::grpc::ClientContext context;
-  Grpc::Clock clock;
+  Grpc::QueryRequest request;
+  request.set_port(sender);
   for (auto& [id, count] : from) {
-    (*clock.mutable_data())[id] = count;
+    (*request.mutable_clock())[id] = count;
   }
-  Grpc::EntryList entries;
+  Grpc::QueryResponse response;
 
   EntryList out;
-  if (_stub->Query(&context, clock, &entries).ok()) {
-    for (auto& e : entries.data()) {
+  if (_stub->Query(&context, request, &response).ok()) {
+    for (auto& e : response.entries()) {
       Clock clock;
       Data data;
       for (auto& [id, count] : e.clock().data()) {

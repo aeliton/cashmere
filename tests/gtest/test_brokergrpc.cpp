@@ -27,27 +27,35 @@ using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 
 TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 {
+  constexpr int32_t kPort = 10;
   auto broker = std::make_shared<BrokerGrpc>(1000);
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::Connection resp;
-  resp.set_port(10);
+  resp.set_port(kPort);
   (*resp.mutable_version()->mutable_data())[0xBB] = 1;
 
   EXPECT_CALL(*stub, Connect(_, _, _))
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(resp), Return(grpc::Status::OK)));
 
-  Grpc::EntryList entries;
-  auto entry = entries.add_data();
+  Grpc::QueryResponse queryResponse;
+  auto entry = queryResponse.add_entries();
   entry->mutable_data()->set_id(0xBB);
   entry->mutable_data()->set_value(1000);
   (*entry->mutable_clock()->mutable_data())[0xBB] = 1;
 
-  EXPECT_CALL(*stub, Query(_, _, _))
+  Grpc::Clock c;
+
+  EXPECT_CALL(
+    *stub,
+    Query(
+      _, ResultOf([](Grpc::QueryRequest in) { return in.port(); }, Eq(kPort)), _
+    )
+  )
     .Times(1)
-    .WillOnce(DoAll(SetArgPointee<2>(entries), Return(grpc::Status::OK)));
+    .WillOnce(DoAll(SetArgPointee<2>(queryResponse), Return(grpc::Status::OK)));
 
   auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
   auto brokerStub =

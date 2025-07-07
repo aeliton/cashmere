@@ -21,6 +21,18 @@ import "google/protobuf/empty.proto";
 
 message Clock { map<fixed64, uint64> data = 1; };
 
+message Entry {
+  Clock clock = 1;
+  Data data = 2;
+}
+
+message QueryRequest {
+  uint32 port = 1;
+  map<fixed64, uint64> clock = 2;
+}
+
+message QueryResponse { repeated Entry entries = 1; }
+
 message Connection {
   uint32 port = 1;
   Clock version = 2;
@@ -33,16 +45,11 @@ message Data {
   Clock alters = 3;
 }
 
-message Entry {
-  Clock clock = 1;
-  Data data = 2;
-}
-
 message EntryList { repeated Entry data = 1; }
 
 service Broker {
   rpc Connect(Connection) returns(Connection) {}
-  rpc Query(Clock) returns(EntryList) {}
+  rpc Query(QueryRequest) returns(QueryResponse) {}
   rpc Insert(Entry) returns(Clock) {}
   rpc Refresh(Connection) returns(google.protobuf.Empty) {}
 }
