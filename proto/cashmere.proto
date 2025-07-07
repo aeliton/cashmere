@@ -17,6 +17,8 @@ syntax = "proto3";
 
 package Cashmere.Grpc;
 
+import "google/protobuf/empty.proto";
+
 message Clock { map<fixed64, uint64> data = 1; };
 
 message Connection {
@@ -42,5 +44,5 @@ service Broker {
   rpc Connect(Connection) returns(Connection) {}
   rpc Query(Clock) returns(EntryList) {}
   rpc Insert(Entry) returns(Clock) {}
-  rpc Refresh(Connection) returns(Clock) {}
+  rpc Refresh(Connection) returns(google.protobuf.Empty) {}
 }

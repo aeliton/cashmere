@@ -29,9 +29,15 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 {
   auto broker = std::make_shared<BrokerGrpc>(1000);
 
+  auto stub = std::make_unique<Grpc::MockBrokerStub>();
+
   Grpc::Connection resp;
   resp.set_port(10);
   (*resp.mutable_version()->mutable_data())[0xBB] = 1;
+
+  EXPECT_CALL(*stub, Connect(_, _, _))
+    .Times(1)
+    .WillOnce(DoAll(SetArgPointee<2>(resp), Return(grpc::Status::OK)));
 
   Grpc::EntryList entries;
   auto entry = entries.add_data();
@@ -39,11 +45,6 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
   entry->mutable_data()->set_value(1000);
   (*entry->mutable_clock()->mutable_data())[0xBB] = 1;
 
-  auto stub = std::make_unique<Grpc::MockBrokerStub>();
-
-  EXPECT_CALL(*stub, Connect(_, _, _))
-    .Times(1)
-    .WillOnce(DoAll(SetArgPointee<2>(resp), Return(grpc::Status::OK)));
   EXPECT_CALL(*stub, Query(_, _, _))
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(entries), Return(grpc::Status::OK)));
@@ -75,4 +76,29 @@ TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
     std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
 
   EXPECT_EQ(journal->connect(brokerStub), 1);
+}
+
+TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
+{
+  auto journal = std::make_shared<Broker>();
+
+  auto stub = std::make_unique<Grpc::MockBrokerStub>();
+
+  Grpc::Connection resp;
+  resp.set_port(10);
+
+  EXPECT_CALL(*stub, Connect(_, _, _))
+    .Times(1)
+    .WillOnce(DoAll(SetArgPointee<2>(resp), Return(grpc::Status::OK)));
+
+  EXPECT_CALL(*stub, Refresh(_, _, _))
+    .Times(1)
+    .WillOnce(Return(grpc::Status::OK));
+
+  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
+  auto brokerStub =
+    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+
+  EXPECT_EQ(journal->connect(brokerStub), 1);
+  EXPECT_EQ(journal->disconnect(1), 1);
 }

@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "brokergrpc.h"
 
+#include <google/protobuf/empty.pb.h>
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
 #include <proto/cashmere.grpc.pb.h>
@@ -137,6 +138,19 @@ bool BrokerGrpcStub::refresh(
   [[maybe_unused]] const ConnectionData& conn, [[maybe_unused]] Port sender
 )
 {
+
+  Grpc::Connection request;
+  request.set_port(conn.port);
+  for (const auto& [id, count] : conn.version) {
+    (*request.mutable_version()->mutable_data())[id] = count;
+  }
+
+  ::google::protobuf::Empty response;
+  ::grpc::ClientContext context;
+  if (_stub->Refresh(&context, request, &response).ok()) {
+    return true;
+  }
+
   return {};
 }
 
