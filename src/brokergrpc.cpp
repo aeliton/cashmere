@@ -58,22 +58,24 @@ IdConnectionInfoMap BrokerGrpcStub::provides([[maybe_unused]] Port sender) const
 
 Clock BrokerGrpcStub::insert(const Entry& data, [[maybe_unused]] Port sender)
 {
-  Grpc::Entry entry;
+  Grpc::InsertRequest request;
+  auto entry = request.mutable_entry();
   for (const auto& [id, count] : data.clock) {
-    (*entry.mutable_clock()->mutable_data())[id] = count;
+    (*entry->mutable_clock())[id] = count;
   }
-  entry.mutable_data()->set_id(data.entry.id);
-  entry.mutable_data()->set_value(data.entry.value);
-  auto alters = entry.mutable_data()->mutable_alters()->mutable_data();
+  entry->mutable_data()->set_id(data.entry.id);
+  entry->mutable_data()->set_value(data.entry.value);
+
+  auto alters = entry->mutable_data()->mutable_alters();
   for (const auto& [id, count] : data.entry.alters) {
     (*alters)[id] = count;
   }
 
-  Grpc::Clock clock;
+  Grpc::InsertResponse response;
   ::grpc::ClientContext context;
-  if (_stub->Insert(&context, entry, &clock).ok()) {
+  if (_stub->Insert(&context, request, &response).ok()) {
     Clock out;
-    for (const auto& [id, count] : clock.data()) {
+    for (const auto& [id, count] : response.version()) {
       out[id] = count;
     }
     return out;
@@ -96,12 +98,12 @@ EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
     for (auto& e : response.entries()) {
       Clock clock;
       Data data;
-      for (auto& [id, count] : e.clock().data()) {
+      for (auto& [id, count] : e.clock()) {
         clock[id] = count;
       }
       data.id = e.data().id();
       data.value = e.data().value();
-      for (auto& [id, count] : e.data().alters().data()) {
+      for (auto& [id, count] : e.data().alters()) {
         data.alters[id] = count;
       }
       out.push_back({clock, data});
@@ -114,13 +116,13 @@ EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
 ConnectionData BrokerGrpcStub::connect(Connection conn)
 {
   ::grpc::ClientContext context;
-  Grpc::Connection request;
+  Grpc::ConnectionRequest request;
   request.set_port(conn.port());
-  Grpc::Connection response;
+  Grpc::ConnectionResponse response;
 
   if (_stub->Connect(&context, request, &response).ok()) {
     Clock clock;
-    for (auto& [id, count] : response.version().data()) {
+    for (auto& [id, count] : response.version()) {
       clock[id] = count;
     }
     return ConnectionData{response.port(), clock, {}};
@@ -133,10 +135,10 @@ bool BrokerGrpcStub::refresh(
 )
 {
 
-  Grpc::Connection request;
+  Grpc::RefreshRequest request;
   request.set_port(conn.port);
   for (const auto& [id, count] : conn.version) {
-    (*request.mutable_version()->mutable_data())[id] = count;
+    (*request.mutable_version())[id] = count;
   }
 
   ::google::protobuf::Empty response;

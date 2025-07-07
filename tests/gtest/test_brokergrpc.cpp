@@ -32,9 +32,9 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
-  Grpc::Connection resp;
+  Grpc::ConnectionResponse resp;
   resp.set_port(kPort);
-  (*resp.mutable_version()->mutable_data())[0xBB] = 1;
+  (*resp.mutable_version())[0xBB] = 1;
 
   EXPECT_CALL(*stub, Connect(_, _, _))
     .Times(1)
@@ -44,9 +44,7 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
   auto entry = queryResponse.add_entries();
   entry->mutable_data()->set_id(0xBB);
   entry->mutable_data()->set_value(1000);
-  (*entry->mutable_clock()->mutable_data())[0xBB] = 1;
-
-  Grpc::Clock c;
+  (*entry->mutable_clock())[0xBB] = 1;
 
   EXPECT_CALL(
     *stub,
@@ -72,12 +70,12 @@ TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
-  Grpc::Clock outClock;
-  (*outClock.mutable_data())[0xAA] = 1;
+  Grpc::InsertResponse response;
+  (*response.mutable_version())[0xAA] = 1;
 
   EXPECT_CALL(*stub, Insert(_, _, _))
     .Times(1)
-    .WillOnce(DoAll(SetArgPointee<2>(outClock), Return(grpc::Status::OK)));
+    .WillOnce(DoAll(SetArgPointee<2>(response), Return(grpc::Status::OK)));
 
   auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
   auto brokerStub =
@@ -92,7 +90,7 @@ TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
-  Grpc::Connection resp;
+  Grpc::ConnectionResponse resp;
   resp.set_port(10);
 
   EXPECT_CALL(*stub, Connect(_, _, _))
