@@ -39,12 +39,12 @@ message ConnectionRequest {
 }
 
 message InsertRequest {
-  uint32 port = 1;
+  uint32 sender = 1;
   Entry entry = 2;
 }
 
 message QueryRequest {
-  uint32 port = 1;
+  uint32 sender = 1;
   map<fixed64, uint64> clock = 2;
 }
 
@@ -55,9 +55,10 @@ message ConnectionResponse {
 }
 
 message RefreshRequest {
-  uint32 port = 1;
-  map<fixed64, uint64> version = 2;
-  map<int32, Clock> sources = 3;
+  uint32 sender = 1;
+  uint32 port = 2;
+  map<fixed64, uint64> version = 3;
+  map<int32, Clock> sources = 4;
 }
 
 message InsertResponse { map<fixed64, uint64> version = 1; }

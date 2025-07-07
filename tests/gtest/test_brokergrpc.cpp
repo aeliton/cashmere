@@ -50,7 +50,8 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
   EXPECT_CALL(
     *stub,
     Query(
-      _, ResultOf([](Grpc::QueryRequest in) { return in.port(); }, Eq(kPort)), _
+      _, ResultOf([](Grpc::QueryRequest in) { return in.sender(); }, Eq(kPort)),
+      _
     )
   )
     .Times(1)
@@ -84,8 +85,8 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
   EXPECT_CALL(
     *stub,
     Insert(
-      _, ResultOf([](Grpc::InsertRequest in) { return in.port(); }, Eq(kPort)),
-      _
+      _,
+      ResultOf([](Grpc::InsertRequest in) { return in.sender(); }, Eq(kPort)), _
     )
   )
     .Times(1)

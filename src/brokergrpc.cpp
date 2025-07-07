@@ -59,7 +59,7 @@ IdConnectionInfoMap BrokerGrpcStub::provides([[maybe_unused]] Port sender) const
 Clock BrokerGrpcStub::insert(const Entry& data, Port sender)
 {
   Grpc::InsertRequest request;
-  request.set_port(sender);
+  request.set_sender(sender);
   auto entry = request.mutable_entry();
   for (const auto& [id, count] : data.clock) {
     (*entry->mutable_clock())[id] = count;
@@ -88,7 +88,7 @@ EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
 {
   ::grpc::ClientContext context;
   Grpc::QueryRequest request;
-  request.set_port(sender);
+  request.set_sender(sender);
   for (auto& [id, count] : from) {
     (*request.mutable_clock())[id] = count;
   }
@@ -131,12 +131,11 @@ ConnectionData BrokerGrpcStub::connect(Connection conn)
   return {};
 }
 
-bool BrokerGrpcStub::refresh(
-  [[maybe_unused]] const ConnectionData& conn, [[maybe_unused]] Port sender
-)
+bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
 {
 
   Grpc::RefreshRequest request;
+  request.set_sender(sender);
   request.set_port(conn.port);
   for (const auto& [id, count] : conn.version) {
     (*request.mutable_version())[id] = count;
