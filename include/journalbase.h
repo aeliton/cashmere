@@ -35,11 +35,12 @@ public:
   virtual bool save(const Entry& entry) = 0;
   virtual Data entry(Clock time) const = 0;
   virtual EntryList entries() const = 0;
+  IdConnectionInfoMap provides(Port sender = 0) const override;
 
   Clock insert(const Entry& data, Port source = 0) override;
   EntryList query(const Clock& from = {}, Port source = 0) const override;
 
-  Id id() const override;
+  Id id() const;
   Id bookId() const;
   bool append(Amount value);
   bool append(const Data& entry);

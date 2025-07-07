@@ -41,11 +41,6 @@ BrokerGrpcStub::BrokerGrpcStub(const std::string& url)
 {
 }
 
-Id BrokerGrpcStub::id() const
-{
-  return {};
-}
-
 Clock BrokerGrpcStub::clock() const
 {
   return {};
@@ -56,7 +51,6 @@ IdClockMap BrokerGrpcStub::versions() const
   return {};
 }
 
-void BrokerGrpcStub::setClock([[maybe_unused]] const Clock& clock) {}
 IdConnectionInfoMap BrokerGrpcStub::provides([[maybe_unused]] Port sender) const
 {
   return {};
@@ -152,21 +146,6 @@ bool BrokerGrpcStub::refresh(
   }
 
   return {};
-}
-
-Port BrokerGrpcStub::disconnect([[maybe_unused]] Port port)
-{
-  return {};
-}
-
-std::set<Port> BrokerGrpcStub::connectedPorts() const
-{
-  return {};
-}
-
-BrokerBasePtr BrokerGrpcStub::ptr()
-{
-  return shared_from_this();
 }
 
 BrokerGrpc::BrokerGrpc(uint16_t port)

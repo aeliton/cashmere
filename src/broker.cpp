@@ -114,17 +114,11 @@ IdConnectionInfoMap Broker::provides(Port sender) const
       }
     }
   }
-  if (id() > 0) {
-    out[id()] = {0, clock()};
-  }
   return out;
 }
 
 EntryList Broker::query(const Clock& from, Port sender) const
 {
-  if (id() > 0) {
-    return query(from);
-  }
   for (size_t i = 1; i < _connections.size(); i++) {
     auto conn = _connections[i];
     if (i == static_cast<size_t>(sender) || conn.provides().empty()) {
@@ -195,10 +189,6 @@ IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides)
   return provides;
 }
 
-Id Broker::id() const
-{
-  return 0;
-}
 std::set<Port> Broker::connectedPorts() const
 {
   std::set<Port> connected;

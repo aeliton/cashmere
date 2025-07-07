@@ -34,7 +34,6 @@ public:
 
   virtual ~Broker();
 
-  virtual Id id() const override;
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;
   virtual IdConnectionInfoMap provides(Port sender = 0) const override;
@@ -42,17 +41,17 @@ public:
   virtual EntryList
   query(const Clock& from = {}, Port sender = 0) const override;
 
-  virtual Port disconnect(Port port) override;
+  Port disconnect(Port port);
   virtual bool refresh(const ConnectionData& conn, Port port) override;
-  virtual std::set<Port> connectedPorts() const override;
+  virtual std::set<Port> connectedPorts() const;
 
-  virtual BrokerBasePtr ptr() override;
+  virtual BrokerBasePtr ptr();
 
   Port connect(BrokerStubPtr other);
 
 private:
   void refreshConnections(Port ignore = 0);
-  void setClock(const Clock& clock) override;
+  void setClock(const Clock& clock);
   ConnectionData connect(Connection conn) override;
 
   std::vector<Connection> _connections;
