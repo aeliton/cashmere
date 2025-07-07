@@ -23,11 +23,12 @@
 using namespace ::Cashmere;
 using namespace ::testing;
 
+constexpr int32_t kPort = 10;
+
 using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 
 TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 {
-  constexpr int32_t kPort = 10;
   auto broker = std::make_shared<BrokerGrpc>(1000);
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
@@ -61,6 +62,40 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 
   EXPECT_EQ(broker->connect(brokerStub), 1);
   EXPECT_EQ(broker->clock(), Clock({{0xBB, 1}}));
+}
+
+TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
+{
+  auto journal = std::make_shared<Journal>(0xAA);
+  journal->append(1000);
+
+  auto stub = std::make_unique<Grpc::MockBrokerStub>();
+
+  Grpc::ConnectionResponse resp;
+  resp.set_port(kPort);
+
+  EXPECT_CALL(*stub, Connect(_, _, _))
+    .Times(1)
+    .WillOnce(DoAll(SetArgPointee<2>(resp), Return(grpc::Status::OK)));
+
+  Grpc::InsertResponse response;
+  (*response.mutable_version())[0xAA] = 1;
+
+  EXPECT_CALL(
+    *stub,
+    Insert(
+      _, ResultOf([](Grpc::InsertRequest in) { return in.port(); }, Eq(kPort)),
+      _
+    )
+  )
+    .Times(1)
+    .WillOnce(DoAll(SetArgPointee<2>(response), Return(grpc::Status::OK)));
+
+  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
+  auto brokerStub =
+    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+
+  EXPECT_EQ(journal->connect(brokerStub), 1);
 }
 
 TEST(BrokerGrpcStub, InsertIsCalledOnConnect)

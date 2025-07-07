@@ -38,7 +38,10 @@ message ConnectionRequest {
   map<int32, Clock> sources = 3;
 }
 
-message InsertRequest { Entry entry = 1; }
+message InsertRequest {
+  uint32 port = 1;
+  Entry entry = 2;
+}
 
 message QueryRequest {
   uint32 port = 1;

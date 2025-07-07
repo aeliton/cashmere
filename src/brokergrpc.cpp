@@ -56,9 +56,10 @@ IdConnectionInfoMap BrokerGrpcStub::provides([[maybe_unused]] Port sender) const
   return {};
 }
 
-Clock BrokerGrpcStub::insert(const Entry& data, [[maybe_unused]] Port sender)
+Clock BrokerGrpcStub::insert(const Entry& data, Port sender)
 {
   Grpc::InsertRequest request;
+  request.set_port(sender);
   auto entry = request.mutable_entry();
   for (const auto& [id, count] : data.clock) {
     (*entry->mutable_clock())[id] = count;
