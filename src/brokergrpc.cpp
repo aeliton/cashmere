@@ -34,8 +34,7 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
 
 ::grpc::Status BrokerGrpc::Connect(
   [[maybe_unused]] ::grpc::ServerContext* context,
-  const ::Cashmere::Grpc::ConnectionRequest* request,
-  ::Cashmere::Grpc::ConnectionResponse* response
+  const Grpc::ConnectionRequest* request, Grpc::ConnectionResponse* response
 )
 {
   Clock version;
@@ -43,8 +42,21 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
     version[id] = count;
   }
 
+  IdConnectionInfoMap sources;
+  for (const auto& [id, info] : request->sources()) {
+    sources[id].distance = info.distance();
+    for (const auto& [i, c] : info.version()) {
+      sources[id].version[i] = c;
+    }
+  }
+
+  std::cout << "Connection request from: [" << request->broker().url()
+            << "] with port: " << request->port() << ", version: " << version
+            << std::endl
+            << ", sources: " << sources << std::endl;
+
   ConnectionData conn{
-    BrokerStub(request->broker().url()), request->port(), version, {}
+    BrokerStub(request->broker().url()), request->port(), version, sources
   };
 
   ConnectionData out = connect(conn);
@@ -54,34 +66,99 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
     (*response->mutable_version())[id] = count;
   }
 
+  for (const auto& [id, info] : out.sources) {
+    auto source = (*response->mutable_sources())[id];
+    source.set_distance(info.distance);
+    for (const auto& [id, count] : info.version) {
+      (*source.mutable_version())[id] = count;
+    }
+  }
+
   return ::grpc::Status::OK;
 }
 ::grpc::Status BrokerGrpc::Query(
   [[maybe_unused]] ::grpc::ServerContext* context,
-  [[maybe_unused]] const ::Cashmere::Grpc::QueryRequest* request,
-  [[maybe_unused]] ::Cashmere::Grpc::QueryResponse* response
+  const Grpc::QueryRequest* request, Grpc::QueryResponse* response
 )
 {
+  Clock clock;
+  for (const auto& [id, count] : request->clock()) {
+    clock[id] = count;
+  }
+
+  auto sender = request->sender();
+  for (auto& entry : query(clock, sender)) {
+    auto out = response->add_entries();
+    for (const auto& [id, count] : entry.clock) {
+      (*out->mutable_clock())[id] = count;
+    }
+    out->mutable_data()->set_id(entry.entry.id);
+    out->mutable_data()->set_value(entry.entry.value);
+    for (const auto& [id, count] : entry.entry.alters) {
+      (*out->mutable_data()->mutable_alters())[id] = count;
+    }
+  }
+
   return ::grpc::Status::OK;
 }
 ::grpc::Status BrokerGrpc::Insert(
   [[maybe_unused]] ::grpc::ServerContext* context,
-  [[maybe_unused]] const ::Cashmere::Grpc::InsertRequest* request,
-  [[maybe_unused]] ::Cashmere::Grpc::InsertResponse* response
+  const Grpc::InsertRequest* request, Grpc::InsertResponse* response
 )
 {
-  return ::grpc::Status::OK;
+  Port sender = request->sender();
+  Entry entry;
+  for (const auto& [id, count] : request->entry().clock()) {
+    entry.clock[id] = count;
+  }
+  entry.entry.id = request->entry().data().id();
+  entry.entry.value = request->entry().data().value();
+
+  for (const auto& [id, count] : request->entry().data().alters()) {
+    entry.entry.alters[id] = count;
+  }
+
+  std::cout << "Insert request from sender: [" << sender << "] entry: " << entry
+            << std::endl;
+
+  if (insert(entry, sender).valid()) {
+    for (const auto& [id, count] : clock()) {
+      (*response->mutable_version())[id] = count;
+    }
+    return ::grpc::Status::OK;
+  }
+
+  return ::grpc::Status::CANCELLED;
 }
 ::grpc::Status BrokerGrpc::Refresh(
   [[maybe_unused]] ::grpc::ServerContext* context,
-  [[maybe_unused]] const ::Cashmere::Grpc::RefreshRequest* request,
+  const Grpc::RefreshRequest* request,
   [[maybe_unused]] ::google::protobuf::Empty* response
 )
 {
+
+  auto sender = request->sender();
+  ConnectionData conn;
+  conn.port = request->port();
+  Clock version;
+  for (const auto& [id, count] : request->version()) {
+    version[id] = count;
+  }
+  conn.version = version;
+  for (const auto& [id, info] : request->sources()) {
+    conn.sources[id].distance = info.distance();
+    for (const auto& [i, c] : info.version()) {
+      conn.sources[id].version[i] = c;
+    }
+  }
+  refresh(conn, sender);
+  std::cout << "Refresh called!" << std::endl;
   return ::grpc::Status::OK;
 }
-void BrokerGrpc::start()
+
+std::unique_ptr<grpc::Server> BrokerGrpc::start()
 {
+  std::cout << "BrokerGrpc running on port: " << _port << std::endl;
   std::stringstream ss;
   ss << "0.0.0.0:" << _port;
 
@@ -89,8 +166,7 @@ void BrokerGrpc::start()
   builder.AddListeningPort(ss.str(), grpc::InsecureServerCredentials());
 
   builder.RegisterService(this);
-  std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-  server->Wait();
+  return builder.BuildAndStart();
 }
 
 BrokerStub BrokerGrpc::stub()

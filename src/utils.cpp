@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "utils.h"
+#include "random.h"
+
 #include <algorithm>
+#include <cassert>
 #include <filesystem>
 #include <fstream>
 
@@ -91,6 +94,23 @@ size_t LineCount(const std::string& filename)
   }
   std::ifstream file(filename);
   return std::count(isbuf_it(file), isbuf_it(), kLineFeed);
+}
+
+std::string CreateTempDir()
+{
+  std::string tempDir;
+  do {
+    tempDir = fs::temp_directory_path() / std::to_string(Random{}.next());
+  } while (fs::exists(tempDir));
+  fs::create_directories(tempDir);
+  return tempDir;
+}
+
+void DeleteTempDir(std::string tempDir)
+{
+  assert(fs::exists(tempDir));
+  [[maybe_unused]] const bool deleted = fs::remove_all(tempDir);
+  assert(deleted);
 }
 
 }

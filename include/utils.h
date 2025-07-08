@@ -27,6 +27,10 @@ constexpr char kOpenCurly = '{';
 constexpr char kCloseCurly = '}';
 constexpr char kLineFeed = '\n';
 
+std::string CreateTempDir();
+
+void DeleteTempDir(std::string tempDir);
+
 bool ReadSpaces(std::istream& in);
 
 bool ReadChar(std::istream& in, const char expected);
@@ -38,6 +42,19 @@ bool SeekToLine(std::fstream& file, size_t line);
 std::string Filename(const std::string& base, Id id);
 
 size_t LineCount(const std::string& filename);
+
+struct TempDir
+{
+  TempDir()
+    : directory(CreateTempDir())
+  {
+  }
+  ~TempDir()
+  {
+    DeleteTempDir(directory);
+  }
+  std::string directory;
+};
 
 }
 

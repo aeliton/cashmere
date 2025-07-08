@@ -13,14 +13,93 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#include "brokerbase.h"
+#include "brokergrpc.h"
+#include "journalfile.h"
+#include "ledger.h"
+#include "utils.h"
+
+#include <grpcpp/server.h>
 #include <iostream>
+#include <thread>
+#include <unistd.h>
 
-int main()
+using namespace Cashmere;
+
+int main(int argc, char* argv[])
 {
-  auto broker = std::make_unique<Cashmere::BrokerGrpc>("0.0.0.0", 50001);
+  int opt;
+  uint16_t port;
+  uint64_t id;
+  while ((opt = getopt(argc, argv, "i:p:")) != -1) {
+    switch (opt) {
+      case 'i':
+      {
+        std::stringstream ss(optarg);
+        ss >> std::hex >> id >> std::dec;
+        break;
+      }
+      case 'p':
+        port = atoi(optarg);
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-p port] [-i id]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+  }
+  auto tempDir = TempDir();
+  auto broker = std::make_shared<BrokerGrpc>("0.0.0.0", port);
+  auto journal = std::make_shared<JournalFile>(id, tempDir.directory);
 
-  std::cout << "test" << std::endl;
+  journal->connect(BrokerStub{broker});
 
-  broker->start();
+  std::cout << "Journal " << std::hex << id << std::dec << " port: " << port
+            << " path: " << tempDir.directory << std::endl;
+
+  auto grpcBroker = broker->start();
+
+  std::thread brokerThread([&grpcBroker]() { grpcBroker->Wait(); });
+
+  brokerThread.detach();
+
+  std::string command;
+  while (true) {
+    std::cout << journal->clock() << "[" << Ledger::Balance(journal->entries())
+              << "]"
+              << "> ";
+
+    std::cin >> command;
+
+    if (command == "add") {
+      Amount value;
+      std::cin >> value;
+      if (std::cin.fail()) {
+        std::cerr << "add error: not a numeric value" << std::endl;
+        continue;
+      }
+      journal->append(value);
+    } else if (command == "connect") {
+      std::string url;
+      std::cin >> url;
+      Port success = broker->connect(BrokerStub(url));
+      if (success < 0) {
+        std::cerr << command << ": failed [" << port << "]" << std::endl;
+      }
+    } else if (command == "provides") {
+      std::cout << journal->provides() << std::endl;
+    } else if (command == "versions") {
+      for (const auto& [id, clock] : journal->versions()) {
+        std::cout << id << " " << clock << std::endl;
+      }
+    } else if (command == "q" || command == "quit") {
+      std::cout << "bye!" << std::endl;
+      break;
+    } else {
+      std::cerr << "unknown command: " << command << std::endl;
+    }
+  }
+
+  grpcBroker->Shutdown();
+
   return 0;
 }

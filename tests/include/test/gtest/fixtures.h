@@ -22,7 +22,7 @@
 #include <filesystem>
 
 #include "journalfile.h"
-#include "test/common.h"
+#include "utils.h"
 
 using ::testing::Return;
 

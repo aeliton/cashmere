@@ -44,6 +44,7 @@ Port Broker::connect(BrokerStub remote)
   if (!remote.broker()) {
     return -1;
   }
+
   const Port port = _connections.size();
   _connections.push_back(Connection(
     remote, remote.broker()->connect(ConnectionData{

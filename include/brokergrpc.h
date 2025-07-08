@@ -33,7 +33,7 @@ class BrokerGrpc : public Broker, public Grpc::Broker::Service
 public:
   BrokerGrpc(const std::string& hostname, uint16_t port);
 
-  void start();
+  std::unique_ptr<grpc::Server> start();
 
   BrokerStub stub() override;
 

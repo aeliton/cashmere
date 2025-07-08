@@ -119,14 +119,19 @@ ConnectionData BrokerGrpcStub::connect(ConnectionData conn)
   ::grpc::ClientContext context;
   Grpc::ConnectionRequest request;
   request.set_port(conn.port);
+  request.mutable_broker()->set_url(conn.broker.url());
   Grpc::ConnectionResponse response;
 
-  if (_stub->Connect(&context, request, &response).ok()) {
+  auto status = _stub->Connect(&context, request, &response);
+  if (status.ok()) {
     Clock clock;
     for (auto& [id, count] : response.version()) {
       clock[id] = count;
     }
     return ConnectionData{BrokerStub{}, response.port(), clock, {}};
+  } else {
+    std::cerr << "BrokerGrpcStub: error connecting to " << conn.broker.url()
+              << "[" << status.error_code() << "]" << std::endl;
   }
   return ConnectionData();
 }

@@ -19,7 +19,7 @@
 #include "broker.h"
 #include "journal.h"
 #include "journalfile.h"
-#include "test/common.h"
+#include "utils.h"
 
 #include <cassert>
 #include <filesystem>
