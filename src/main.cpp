@@ -17,6 +17,10 @@
 
 int main()
 {
+  auto broker = std::make_unique<Cashmere::BrokerGrpc>(50001);
+
   std::cout << "test" << std::endl;
+
+  broker->start();
   return 0;
 }

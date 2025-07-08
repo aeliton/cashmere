@@ -32,10 +32,18 @@ message Entry {
   Data data = 2;
 }
 
+enum Type { INVALID = 0; MEMORY = 1; GRPC = 2; }
+
+message BrokerData {
+  string url = 1;
+  Type type = 2;
+}
+
 message ConnectionRequest {
-  uint32 port = 1;
-  map<fixed64, uint64> version = 2;
-  map<int32, Clock> sources = 3;
+  BrokerData broker = 1;
+  uint32 port = 2;
+  map<fixed64, uint64> version = 3;
+  map<int32, Clock> sources = 4;
 }
 
 message InsertRequest {

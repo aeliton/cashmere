@@ -28,12 +28,35 @@ class BrokerGrpc;
 using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
 using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
 
-class BrokerGrpc : public Broker
+class BrokerGrpc : public Broker, public Grpc::Broker::Service
 {
 public:
   BrokerGrpc(uint16_t port);
 
+  void start();
+
 private:
+  ::grpc::Status Connect(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::ConnectionRequest* request,
+    ::Cashmere::Grpc::ConnectionResponse* response
+  ) override;
+  ::grpc::Status Query(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::QueryRequest* request,
+    ::Cashmere::Grpc::QueryResponse* response
+  ) override;
+  ::grpc::Status Insert(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::InsertRequest* request,
+    ::Cashmere::Grpc::InsertResponse* response
+  ) override;
+  ::grpc::Status Refresh(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::RefreshRequest* request,
+    ::google::protobuf::Empty* response
+  ) override;
+
   [[maybe_unused]] uint16_t _port;
 };
 

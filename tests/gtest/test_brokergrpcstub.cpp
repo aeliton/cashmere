@@ -178,5 +178,5 @@ TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
     std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
 
   EXPECT_EQ(broker->connect(brokerStub), 2);
-  EXPECT_TRUE(broker->refresh(ConnectionData{}, 1));
+  EXPECT_TRUE(broker->refresh(ConnectionData(), 1));
 }

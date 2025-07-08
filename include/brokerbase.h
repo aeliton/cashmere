@@ -40,15 +40,6 @@ class BrokerBase;
 using BrokerBasePtr = std::shared_ptr<BrokerBase>;
 using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 
-struct ConnectionData
-{
-  Port port;
-  Clock version;
-  IdConnectionInfoMap sources;
-  bool operator==(const ConnectionData& other) const;
-  friend std::ostream& operator<<(std::ostream& os, const ConnectionData& Data);
-};
-
 class BrokerStub;
 using BrokerStubPtr = std::shared_ptr<BrokerStub>;
 
@@ -68,14 +59,26 @@ public:
   explicit BrokerStub(BrokerBasePtr broker, Type type = Type::Memory);
   explicit BrokerStub(const std::string& url);
 
-  virtual BrokerBasePtr broker() const;
+  std::string url() const;
   Type type() const;
 
   void reset();
+  virtual BrokerBasePtr broker() const;
 
 private:
+  std::string _url;
   Type _type;
   BrokerBaseWeakPtr _broker;
+};
+
+struct ConnectionData
+{
+  BrokerStub broker;
+  Port port;
+  Clock version;
+  IdConnectionInfoMap sources;
+  bool operator==(const ConnectionData& other) const;
+  friend std::ostream& operator<<(std::ostream& os, const ConnectionData& Data);
 };
 
 class Connection
@@ -128,7 +131,7 @@ class BrokerBase
 public:
   virtual ~BrokerBase();
 
-  virtual ConnectionData connect(Connection conn) = 0;
+  virtual ConnectionData connect(ConnectionData conn) = 0;
   virtual bool refresh(const ConnectionData& conn, Port sender) = 0;
   virtual Clock insert(const Entry& data, Port sender = 0) = 0;
   Clock insert(const EntryList& entries, Port sender = 0);

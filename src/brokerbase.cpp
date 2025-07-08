@@ -25,19 +25,22 @@ namespace Cashmere
 BrokerStub::~BrokerStub() = default;
 
 BrokerStub::BrokerStub()
-  : _type(Type::Invalid)
+  : _url()
+  , _type(Type::Invalid)
   , _broker()
 {
 }
 
 BrokerStub::BrokerStub(BrokerBasePtr broker, Type type)
-  : _type(type)
+  : _url()
+  , _type(type)
   , _broker(broker)
 {
 }
 
 BrokerStub::BrokerStub(const std::string& url)
-  : _type(Type::Grpc)
+  : _url(url)
+  , _type(Type::Grpc)
   , _broker(std::make_shared<BrokerGrpcStub>(url))
 {
 }
@@ -71,7 +74,7 @@ Connection::Connection(
   BrokerStubPtr stub, Port port, Clock version, IdConnectionInfoMap provides
 )
   : _broker(stub)
-  , _cache({port, version, provides})
+  , _cache({BrokerStub{}, port, version, provides})
 {
 }
 
@@ -158,7 +161,7 @@ IdConnectionInfoMap& Connection::provides(Origin origin) const
 void Connection::disconnect()
 {
   if (auto b = broker()) {
-    b->refresh({}, _cache.port);
+    b->refresh(ConnectionData(), _cache.port);
     _broker.reset();
   }
 }
@@ -221,6 +224,11 @@ std::ostream& operator<<(std::ostream& os, const ConnectionData& info)
 std::ostream& operator<<(std::ostream& os, const Connection& info)
 {
   return os << "Connection{" << info._cache << "}";
+}
+
+std::string BrokerStub::url() const
+{
+  return _url;
 }
 
 }

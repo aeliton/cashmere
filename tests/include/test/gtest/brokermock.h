@@ -34,7 +34,7 @@ public:
   MOCK_METHOD(IdConnectionInfoMap, provides, (Port to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
   MOCK_METHOD(Clock, clock, (), (const, override));
-  MOCK_METHOD(ConnectionData, connect, (Connection conn), (override));
+  MOCK_METHOD(ConnectionData, connect, (ConnectionData conn), (override));
   MOCK_METHOD(
     bool, refresh, (const ConnectionData& data, Port port), (override)
   );

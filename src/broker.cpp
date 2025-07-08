@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "broker.h"
+#include "brokerbase.h"
 #include <cassert>
 #include <utility>
 
@@ -29,12 +30,17 @@ Broker::Broker()
 
 Broker::~Broker() = default;
 
-ConnectionData Broker::connect(Connection conn)
+ConnectionData Broker::connect(ConnectionData conn)
 {
   Port port = _connections.size();
-  _connections.push_back(conn);
+  Connection connection(
+    std::make_shared<BrokerStub>(conn.broker.broker()), conn
+  );
+  _connections.push_back(connection);
   refreshConnections(port);
-  return ConnectionData{port, clock(), UpdateProvides(provides(port))};
+  return ConnectionData{
+    BrokerStub{}, port, clock(), UpdateProvides(provides(port))
+  };
 }
 
 Port Broker::connect(BrokerStubPtr remote)
@@ -44,9 +50,8 @@ Port Broker::connect(BrokerStubPtr remote)
   }
   const Port port = _connections.size();
   _connections.push_back(Connection(
-    remote, remote->broker()->connect(Connection{
-              std::make_shared<BrokerStub>(ptr()), port, clock(),
-              UpdateProvides(provides(port))
+    remote, remote->broker()->connect(ConnectionData{
+              BrokerStub{ptr()}, port, clock(), UpdateProvides(provides(port))
             })
   ));
   auto& conn = _connections.at(port);
@@ -205,7 +210,9 @@ void Broker::refreshConnections(Port ignore)
       continue;
     }
     auto& conn = _connections.at(i);
-    conn.refresh({static_cast<Port>(i), clock(), UpdateProvides(provides(i))});
+    conn.refresh(
+      {BrokerStub{}, static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
+    );
   }
 }
 

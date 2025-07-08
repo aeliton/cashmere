@@ -48,11 +48,11 @@ public:
   virtual BrokerBasePtr ptr();
 
   Port connect(BrokerStubPtr other);
+  ConnectionData connect(ConnectionData conn) override;
 
 private:
   void refreshConnections(Port ignore = 0);
   void setClock(const Clock& clock);
-  ConnectionData connect(Connection conn) override;
 
   std::vector<Connection> _connections;
 };

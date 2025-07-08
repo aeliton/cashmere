@@ -114,11 +114,11 @@ EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
   return {};
 }
 
-ConnectionData BrokerGrpcStub::connect(Connection conn)
+ConnectionData BrokerGrpcStub::connect(ConnectionData conn)
 {
   ::grpc::ClientContext context;
   Grpc::ConnectionRequest request;
-  request.set_port(conn.port());
+  request.set_port(conn.port);
   Grpc::ConnectionResponse response;
 
   if (_stub->Connect(&context, request, &response).ok()) {
@@ -126,9 +126,9 @@ ConnectionData BrokerGrpcStub::connect(Connection conn)
     for (auto& [id, count] : response.version()) {
       clock[id] = count;
     }
-    return ConnectionData{response.port(), clock, {}};
+    return ConnectionData{BrokerStub{}, response.port(), clock, {}};
   }
-  return {};
+  return ConnectionData();
 }
 
 bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
