@@ -116,10 +116,21 @@ EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
 
 ConnectionData BrokerGrpcStub::connect(ConnectionData conn)
 {
+  std::cout << "Broker grpc stub connect called with: " << conn << std::endl;
   ::grpc::ClientContext context;
   Grpc::ConnectionRequest request;
   request.set_port(conn.port);
+  for (const auto& [id, count] : conn.version) {
+    (*request.mutable_version())[id] = count;
+  }
   request.mutable_broker()->set_url(conn.broker.url());
+  for (const auto& [id, info] : conn.sources) {
+    (*request.mutable_sources())[id].set_distance(info.distance);
+    for (const auto& [i, c] : info.version) {
+      (*(*request.mutable_sources())[id].mutable_version())[i] = c;
+    }
+  }
+
   Grpc::ConnectionResponse response;
 
   auto status = _stub->Connect(&context, request, &response);
@@ -144,6 +155,13 @@ bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
   request.set_port(conn.port);
   for (const auto& [id, count] : conn.version) {
     (*request.mutable_version())[id] = count;
+  }
+  for (const auto& [id, info] : conn.sources) {
+    auto source = (*request.mutable_sources())[id];
+    source.set_distance(info.distance);
+    for (const auto& [id, count] : info.version) {
+      (*source.mutable_version())[id] = count;
+    }
   }
 
   ::google::protobuf::Empty response;

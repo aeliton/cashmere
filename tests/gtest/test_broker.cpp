@@ -229,6 +229,12 @@ TEST(Broker, ExchangeEntriesOnConnect)
         ConnectionInfo{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
     )
   );
+  EXPECT_EQ(
+    hub->versions(),
+    IdClockMap(
+      {{0xAA, Clock{{0xAA, 1}, {0xBB, 1}}}, {0xBB, Clock{{0xAA, 1}, {0xBB, 1}}}}
+    )
+  );
 }
 
 TEST(Broker, PropagatesProvidedConnections)

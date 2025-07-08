@@ -145,6 +145,7 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const IdConnectionInfoMap& data);
+std::ostream& operator<<(std::ostream& os, const IdClockMap& data);
 
 }
 #endif

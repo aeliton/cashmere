@@ -216,6 +216,20 @@ std::ostream& operator<<(std::ostream& os, const IdConnectionInfoMap& data)
   return os << "}";
 }
 
+std::ostream& operator<<(std::ostream& os, const IdClockMap& data)
+{
+  os << "IdClockMap{";
+  auto it = data.cbegin();
+  if (it != data.cend()) {
+    os << "{" << std::hex << it->first << std::dec << ", " << it->second << "}";
+    for (++it; it != data.cend(); ++it) {
+      os << ", {" << std::hex << it->first << std::dec << ", " << it->second
+         << "}";
+    }
+  }
+  return os << "}";
+}
+
 std::ostream& operator<<(std::ostream& os, const ConnectionData& info)
 {
   return os << "ConnectionData{ .port = " << info.port

@@ -88,9 +88,11 @@ int main(int argc, char* argv[])
     } else if (command == "provides") {
       std::cout << journal->provides() << std::endl;
     } else if (command == "versions") {
-      for (const auto& [id, clock] : journal->versions()) {
-        std::cout << id << " " << clock << std::endl;
-      }
+      std::cout << journal->versions() << std::endl;
+    } else if (command == "disconnect") {
+      Port port;
+      std::cin >> port;
+      broker->disconnect(port);
     } else if (command == "q" || command == "quit") {
       std::cout << "bye!" << std::endl;
       break;
