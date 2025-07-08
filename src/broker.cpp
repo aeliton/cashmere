@@ -66,14 +66,14 @@ Port Broker::connect(BrokerStubPtr remote)
   return port;
 }
 
-bool Broker::refresh(const ConnectionData& data, Port port)
+bool Broker::refresh(const ConnectionData& data, Port sender)
 {
-  if (port <= 0 || _connections.size() <= static_cast<size_t>(port)) {
+  if (sender <= 0 || static_cast<size_t>(sender) >= _connections.size()) {
     return false;
   }
-  _connections[port].update(data);
+  _connections[sender].update(data);
 
-  refreshConnections(port);
+  refreshConnections(sender);
   return true;
 }
 

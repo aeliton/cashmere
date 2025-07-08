@@ -18,6 +18,7 @@
 
 #include "brokergrpc.h"
 #include "journal.h"
+#include "test/gtest/brokermock.h"
 #include <proto/cashmere_mock.grpc.pb.h>
 
 using namespace ::Cashmere;
@@ -143,4 +144,39 @@ TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
 
   EXPECT_EQ(journal->connect(brokerStub), 1);
   EXPECT_EQ(journal->disconnect(1), 1);
+}
+
+TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
+{
+  auto broker = std::make_shared<Broker>();
+
+  auto other = std::make_shared<BrokerMock>();
+  broker->connect(std::make_shared<BrokerStub>(other));
+
+  auto stub = std::make_unique<Grpc::MockBrokerStub>();
+
+  Grpc::ConnectionResponse resp;
+  resp.set_port(kPort);
+
+  EXPECT_CALL(*stub, Connect(_, _, _))
+    .Times(1)
+    .WillOnce(DoAll(SetArgPointee<2>(resp), Return(grpc::Status::OK)));
+
+  EXPECT_CALL(
+    *stub,
+    Refresh(
+      _,
+      ResultOf([](Grpc::RefreshRequest in) { return in.sender(); }, Eq(kPort)),
+      _
+    )
+  )
+    .Times(1)
+    .WillOnce(Return(grpc::Status::OK));
+
+  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
+  auto brokerStub =
+    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+
+  EXPECT_EQ(broker->connect(brokerStub), 2);
+  EXPECT_TRUE(broker->refresh(ConnectionData{}, 1));
 }
