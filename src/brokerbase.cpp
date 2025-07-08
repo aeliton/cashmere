@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "brokerbase.h"
-#include "brokergrpc.h"
+#include "brokergrpcstub.h"
 
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>

@@ -57,6 +57,7 @@ add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpc.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
@@ -114,7 +115,7 @@ find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 enable_testing()
 add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_broker.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpc.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journalfile.cpp
 )
 target_link_libraries (gtests

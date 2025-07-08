@@ -16,7 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "brokergrpc.h"
+#include "brokergrpcstub.h"
 #include "journal.h"
 #include "test/gtest/brokermock.h"
 #include <proto/cashmere_mock.grpc.pb.h>
@@ -30,7 +30,7 @@ using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 
 TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 {
-  auto broker = std::make_shared<BrokerGrpc>(1000);
+  auto broker = std::make_shared<Broker>();
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 

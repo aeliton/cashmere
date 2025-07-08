@@ -28,31 +28,6 @@ class BrokerGrpc;
 using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
 using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
 
-class BrokerGrpcStub;
-using BrokerGrpcStubPtr = std::shared_ptr<BrokerGrpcStub>;
-using BrokerGrpcStubWeakPtr = std::weak_ptr<BrokerGrpcStub>;
-
-class BrokerGrpcStub : public BrokerBase,
-                       public std::enable_shared_from_this<BrokerGrpcStub>
-{
-public:
-  explicit BrokerGrpcStub(const std::string& url);
-  explicit BrokerGrpcStub(std::unique_ptr<Grpc::Broker::StubInterface>&& stub);
-  virtual Clock clock() const override;
-  virtual IdClockMap versions() const override;
-  virtual IdConnectionInfoMap provides(Port sender = 0) const override;
-  virtual Clock insert(const Entry& data, Port sender = 0) override;
-  virtual EntryList
-  query(const Clock& from = {}, Port sender = 0) const override;
-
-  virtual ConnectionData connect(Connection conn) override;
-  virtual bool refresh(const ConnectionData& conn, Port sender) override;
-
-private:
-  std::string _url;
-  std::unique_ptr<Grpc::Broker::StubInterface> _stub;
-};
-
 class BrokerGrpc : public Broker
 {
 public:
