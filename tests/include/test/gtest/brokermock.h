@@ -38,6 +38,7 @@ public:
   MOCK_METHOD(
     bool, refresh, (const ConnectionData& data, Port port), (override)
   );
+  MOCK_METHOD(BrokerStub, stub, (), (override));
 };
 
 }

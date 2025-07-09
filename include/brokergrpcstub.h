@@ -43,6 +43,7 @@ public:
 
   virtual ConnectionData connect(ConnectionData conn) override;
   virtual bool refresh(const ConnectionData& conn, Port sender) override;
+  virtual BrokerStub stub() override;
 
 private:
   std::string _url;

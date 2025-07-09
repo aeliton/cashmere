@@ -31,9 +31,11 @@ using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
 class BrokerGrpc : public Broker, public Grpc::Broker::Service
 {
 public:
-  BrokerGrpc(uint16_t port);
+  BrokerGrpc(const std::string& hostname, uint16_t port);
 
   void start();
+
+  BrokerStub stub() override;
 
 private:
   ::grpc::Status Connect(
@@ -57,7 +59,8 @@ private:
     ::google::protobuf::Empty* response
   ) override;
 
-  [[maybe_unused]] uint16_t _port;
+  std::string _hostname;
+  uint16_t _port;
 };
 
 }

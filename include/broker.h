@@ -46,6 +46,7 @@ public:
   virtual std::set<Port> connectedPorts() const;
 
   virtual BrokerBasePtr ptr();
+  virtual BrokerStub stub() override;
 
   Port connect(BrokerStubPtr other);
   ConnectionData connect(ConnectionData conn) override;

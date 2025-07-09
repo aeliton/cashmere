@@ -140,6 +140,7 @@ public:
   virtual Clock clock() const = 0;
   virtual IdClockMap versions() const = 0;
   virtual IdConnectionInfoMap provides(Port sender = 0) const = 0;
+  virtual BrokerStub stub() = 0;
 };
 
 std::ostream& operator<<(std::ostream& os, const IdConnectionInfoMap& data);

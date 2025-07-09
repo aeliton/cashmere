@@ -38,9 +38,7 @@ ConnectionData Broker::connect(ConnectionData conn)
   );
   _connections.push_back(connection);
   refreshConnections(port);
-  return ConnectionData{
-    BrokerStub{}, port, clock(), UpdateProvides(provides(port))
-  };
+  return ConnectionData{stub(), port, clock(), UpdateProvides(provides(port))};
 }
 
 Port Broker::connect(BrokerStubPtr remote)
@@ -51,7 +49,7 @@ Port Broker::connect(BrokerStubPtr remote)
   const Port port = _connections.size();
   _connections.push_back(Connection(
     remote, remote->broker()->connect(ConnectionData{
-              BrokerStub{ptr()}, port, clock(), UpdateProvides(provides(port))
+              BrokerStub{stub()}, port, clock(), UpdateProvides(provides(port))
             })
   ));
   auto& conn = _connections.at(port);
@@ -214,6 +212,11 @@ void Broker::refreshConnections(Port ignore)
       {BrokerStub{}, static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
     );
   }
+}
+
+BrokerStub Broker::stub()
+{
+  return BrokerStub(ptr());
 }
 
 }

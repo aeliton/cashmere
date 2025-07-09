@@ -25,8 +25,9 @@
 namespace Cashmere
 {
 
-BrokerGrpc::BrokerGrpc(uint16_t port)
+BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   : Broker()
+  , _hostname(hostname)
   , _port(port)
 {
 }
@@ -91,4 +92,10 @@ void BrokerGrpc::start()
   std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
   server->Wait();
 }
+
+BrokerStub BrokerGrpc::stub()
+{
+  return BrokerStub(_hostname + ":" + std::to_string(_port));
+}
+
 }

@@ -150,4 +150,9 @@ bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
   return {};
 }
 
+BrokerStub BrokerGrpcStub::stub()
+{
+  return BrokerStub(shared_from_this());
+}
+
 }
