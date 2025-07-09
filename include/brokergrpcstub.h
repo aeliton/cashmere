@@ -28,8 +28,7 @@ class BrokerGrpcStub;
 using BrokerGrpcStubPtr = std::shared_ptr<BrokerGrpcStub>;
 using BrokerGrpcStubWeakPtr = std::weak_ptr<BrokerGrpcStub>;
 
-class BrokerGrpcStub : public BrokerBase,
-                       public std::enable_shared_from_this<BrokerGrpcStub>
+class BrokerGrpcStub : public BrokerBase
 {
 public:
   explicit BrokerGrpcStub(const std::string& url);

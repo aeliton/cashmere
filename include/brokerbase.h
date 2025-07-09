@@ -68,7 +68,8 @@ public:
 private:
   std::string _url;
   Type _type;
-  BrokerBaseWeakPtr _broker;
+  BrokerBaseWeakPtr _memoryStub;
+  BrokerBasePtr _grpcStub;
 };
 
 struct ConnectionData
@@ -90,9 +91,9 @@ public:
     Remote
   };
   explicit Connection();
-  Connection(BrokerStubPtr stub, ConnectionData data);
+  Connection(BrokerStub stub, ConnectionData data);
   Connection(
-    BrokerStubPtr stub, Port port, Clock version, IdConnectionInfoMap provides
+    BrokerStub stub, Port port, Clock version, IdConnectionInfoMap provides
   );
   Connection(
     const std::string& url, Port port, Clock version,
@@ -122,7 +123,7 @@ protected:
 
   void update(const ConnectionData& data);
 
-  BrokerStubPtr _broker;
+  BrokerStub _broker;
   mutable ConnectionData _cache;
 };
 

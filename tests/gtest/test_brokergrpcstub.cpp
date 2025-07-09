@@ -58,9 +58,9 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(queryResponse), Return(grpc::Status::OK)));
 
-  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
-  auto brokerStub =
-    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+  auto brokerStub = BrokerStub{
+    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+  };
 
   EXPECT_EQ(broker->connect(brokerStub), 1);
   EXPECT_EQ(broker->clock(), Clock({{0xBB, 1}}));
@@ -93,9 +93,9 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(response), Return(grpc::Status::OK)));
 
-  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
-  auto brokerStub =
-    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+  auto brokerStub = BrokerStub{
+    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+  };
 
   EXPECT_EQ(journal->connect(brokerStub), 1);
 }
@@ -114,9 +114,9 @@ TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(response), Return(grpc::Status::OK)));
 
-  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
-  auto brokerStub =
-    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+  auto brokerStub = BrokerStub{
+    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+  };
 
   EXPECT_EQ(journal->connect(brokerStub), 1);
 }
@@ -138,9 +138,9 @@ TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
     .Times(1)
     .WillOnce(Return(grpc::Status::OK));
 
-  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
-  auto brokerStub =
-    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+  auto brokerStub = BrokerStub{
+    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+  };
 
   EXPECT_EQ(journal->connect(brokerStub), 1);
   EXPECT_EQ(journal->disconnect(1), 1);
@@ -151,7 +151,7 @@ TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
   auto broker = std::make_shared<Broker>();
 
   auto other = std::make_shared<BrokerMock>();
-  broker->connect(std::make_shared<BrokerStub>(other));
+  broker->connect(BrokerStub{other});
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
@@ -173,9 +173,9 @@ TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
     .Times(1)
     .WillOnce(Return(grpc::Status::OK));
 
-  auto grpcBrokerStub = std::make_shared<BrokerGrpcStub>(std::move(stub));
-  auto brokerStub =
-    std::make_shared<BrokerStub>(grpcBrokerStub, BrokerStub::Type::Grpc);
+  auto brokerStub = BrokerStub{
+    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+  };
 
   EXPECT_EQ(broker->connect(brokerStub), 2);
   EXPECT_TRUE(broker->refresh(ConnectionData(), 1));

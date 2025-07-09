@@ -40,7 +40,7 @@ TEST(Broker, BrokerFirstConnectionUsesPortOne)
       BrokerStub{}, 1, Clock{}, IdConnectionInfoMap{{0xAA, {0, {}}}}
     }));
 
-  EXPECT_EQ(hub->connect(std::make_shared<BrokerStub>(aa)), 1);
+  EXPECT_EQ(hub->connect(BrokerStub{aa}), 1);
   EXPECT_EQ(hub->connectedPorts(), std::set<Port>{1});
 }
 
@@ -58,7 +58,7 @@ TEST(Broker, BrokerForwardsInserts)
     ));
   EXPECT_CALL(*aa, insert(entry, 1)).Times(1);
 
-  EXPECT_EQ(hub->connect(std::make_shared<BrokerStub>(aa)), 1);
+  EXPECT_EQ(hub->connect(BrokerStub{aa}), 1);
 
   hub->insert(entry, 0);
 }
@@ -75,7 +75,7 @@ TEST(Broker, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
     .WillOnce(Return(ConnectionData{BrokerStub{}, 1, {}, {{0xAA, {0, {}}}}}));
   EXPECT_CALL(*aa, insert(entry, 1)).Times(0);
 
-  const Port port = hub->connect(std::make_shared<BrokerStub>(aa));
+  const Port port = hub->connect(BrokerStub{aa});
 
   EXPECT_EQ(port, 1);
 
@@ -95,8 +95,8 @@ TEST(Broker, BrokeHubConnectionsAreFullDuplex)
     .Times(1)
     .WillOnce(Return(ConnectionData{BrokerStub{}, 1, {}, {{0xAA, {0, {}}}}}));
 
-  const Port hub1Port = hub0->connect(std::make_shared<BrokerStub>(hub1));
-  const Port aaPort = hub0->connect(std::make_shared<BrokerStub>(aa));
+  const Port hub1Port = hub0->connect(BrokerStub{hub1});
+  const Port aaPort = hub0->connect(BrokerStub{aa});
 
   EXPECT_EQ(hub1Port, 1);
   EXPECT_EQ(aaPort, 2);
@@ -129,7 +129,7 @@ TEST(Broker, UpdatesItsClockDuringConnect)
     .Times(1)
     .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
 
-  hub->connect(std::make_shared<BrokerStub>(aa));
+  hub->connect(BrokerStub{aa});
 
   EXPECT_EQ(hub->clock(), aaClock);
 }
@@ -151,7 +151,7 @@ TEST(Broker, UpdateConnectionProvidedSourcesOnAttach)
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
 
-  hub->connect(std::make_shared<BrokerStub>(aa));
+  hub->connect(BrokerStub{aa});
 }
 
 TEST(Broker, ExchangeEntriesOnConnect)
@@ -214,8 +214,8 @@ TEST(Broker, ExchangeEntriesOnConnect)
     .Times(1)
     .WillOnce(Return(EntryList{bbEntry}));
 
-  const Port aaPort = hub->connect(std::make_shared<BrokerStub>(aa));
-  const Port bbPort = hub->connect(std::make_shared<BrokerStub>(bb));
+  const Port aaPort = hub->connect(BrokerStub{aa});
+  const Port bbPort = hub->connect(BrokerStub{bb});
 
   EXPECT_EQ(aaPort, 1);
   EXPECT_EQ(bbPort, 2);
@@ -271,6 +271,6 @@ TEST(Broker, PropagatesProvidedConnections)
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
 
-  broker->connect(std::make_shared<BrokerStub>(hub));
-  broker->connect(std::make_shared<BrokerStub>(journal));
+  broker->connect(BrokerStub{hub});
+  broker->connect(BrokerStub{journal});
 }

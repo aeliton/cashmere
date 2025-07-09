@@ -33,23 +33,21 @@ Broker::~Broker() = default;
 ConnectionData Broker::connect(ConnectionData conn)
 {
   Port port = _connections.size();
-  Connection connection(
-    std::make_shared<BrokerStub>(conn.broker.broker()), conn
-  );
+  Connection connection(conn.broker, conn);
   _connections.push_back(connection);
   refreshConnections(port);
   return ConnectionData{stub(), port, clock(), UpdateProvides(provides(port))};
 }
 
-Port Broker::connect(BrokerStubPtr remote)
+Port Broker::connect(BrokerStub remote)
 {
-  if (!remote || !remote->broker()) {
+  if (!remote.broker()) {
     return -1;
   }
   const Port port = _connections.size();
   _connections.push_back(Connection(
-    remote, remote->broker()->connect(ConnectionData{
-              BrokerStub{stub()}, port, clock(), UpdateProvides(provides(port))
+    remote, remote.broker()->connect(ConnectionData{
+              stub(), port, clock(), UpdateProvides(provides(port))
             })
   ));
   auto& conn = _connections.at(port);
@@ -153,7 +151,7 @@ Port Broker::disconnect(Port port)
   auto& conn = _connections.at(port);
   if (conn.active()) {
     conn.disconnect();
-    refreshConnections();
+    refreshConnections(port);
     return port;
   }
   return -1;

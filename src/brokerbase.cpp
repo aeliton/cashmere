@@ -27,21 +27,24 @@ BrokerStub::~BrokerStub() = default;
 BrokerStub::BrokerStub()
   : _url()
   , _type(Type::Invalid)
-  , _broker()
+  , _memoryStub()
+  , _grpcStub()
 {
 }
 
 BrokerStub::BrokerStub(BrokerBasePtr broker, Type type)
   : _url()
   , _type(type)
-  , _broker(broker)
+  , _memoryStub(_type == Type::Memory ? broker : nullptr)
+  , _grpcStub(_type == Type::Grpc ? broker : nullptr)
 {
 }
 
 BrokerStub::BrokerStub(const std::string& url)
   : _url(url)
   , _type(Type::Grpc)
-  , _broker(std::make_shared<BrokerGrpcStub>(url))
+  , _memoryStub()
+  , _grpcStub(std::make_shared<BrokerGrpcStub>(url))
 {
 }
 
@@ -53,32 +56,31 @@ BrokerStub::Type BrokerStub::type() const
 void BrokerStub::reset()
 {
   if (_type == Type::Memory) {
-    _broker.reset();
+    _memoryStub.reset();
   }
 }
 
 BrokerBasePtr BrokerStub::broker() const
 {
-  if (_type == Type::Memory) {
-    return _broker.lock();
-  }
-  if (_type == Type::Grpc) {
-    return _broker.lock();
-  }
-  return nullptr;
+  return _type == Type::Memory ? _memoryStub.lock() : _grpcStub;
+}
+
+std::string BrokerStub::url() const
+{
+  return _url;
 }
 
 Connection::Connection() = default;
 
 Connection::Connection(
-  BrokerStubPtr stub, Port port, Clock version, IdConnectionInfoMap provides
+  BrokerStub stub, Port port, Clock version, IdConnectionInfoMap provides
 )
   : _broker(stub)
   , _cache({BrokerStub{}, port, version, provides})
 {
 }
 
-Connection::Connection(BrokerStubPtr stub, ConnectionData data)
+Connection::Connection(BrokerStub stub, ConnectionData data)
   : _broker(stub)
   , _cache(data)
 {
@@ -93,7 +95,7 @@ Port Connection::port() const
 
 BrokerBasePtr Connection::broker() const
 {
-  return _broker ? _broker->broker() : nullptr;
+  return _broker.broker();
 }
 
 Clock Connection::insert(const Entry& data) const
@@ -224,11 +226,6 @@ std::ostream& operator<<(std::ostream& os, const ConnectionData& info)
 std::ostream& operator<<(std::ostream& os, const Connection& info)
 {
   return os << "Connection{" << info._cache << "}";
-}
-
-std::string BrokerStub::url() const
-{
-  return _url;
 }
 
 }

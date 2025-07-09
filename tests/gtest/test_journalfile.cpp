@@ -46,7 +46,7 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
     .Times(1)
     .WillOnce(Return(EntryList{{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}}}));
 
-  journal->connect(std::make_shared<BrokerStub>(broker));
+  journal->connect(BrokerStub{broker});
 
   std::ifstream file(journal->filename());
   EXPECT_EQ(file.peek(), std::ifstream::traits_type::eof());

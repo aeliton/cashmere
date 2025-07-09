@@ -48,7 +48,7 @@ public:
   virtual BrokerBasePtr ptr();
   virtual BrokerStub stub() override;
 
-  Port connect(BrokerStubPtr other);
+  Port connect(BrokerStub other);
   ConnectionData connect(ConnectionData conn) override;
 
 private:
