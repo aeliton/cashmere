@@ -40,15 +40,14 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
 {
   const Clock version = Utils::ClockFrom(request->version());
   const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
+  auto stub = Utils::BrokerStubFrom(request->broker());
 
   std::cout << "Connection request from: [" << request->broker().url()
             << "] with port: " << request->port() << ", version: " << version
             << std::endl
             << ", sources: " << sources << std::endl;
 
-  ConnectionData conn{
-    BrokerStub(request->broker().url()), request->port(), version, sources
-  };
+  ConnectionData conn{stub, request->port(), version, sources};
 
   ConnectionData out = connect(conn);
 

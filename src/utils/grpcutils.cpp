@@ -100,4 +100,9 @@ void SetSources(
   }
 }
 
+BrokerStub BrokerStubFrom(const Grpc::BrokerData& data)
+{
+  return BrokerStub(data.url());
+}
+
 }
