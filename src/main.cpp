@@ -17,7 +17,7 @@
 #include "brokergrpc.h"
 #include "journalfile.h"
 #include "ledger.h"
-#include "utils.h"
+#include "utils/fileutils.h"
 
 #include <grpcpp/server.h>
 #include <iostream>

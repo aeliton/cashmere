@@ -13,8 +13,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_UTILS_H
-#define CASHMERE_UTILS_H
+#ifndef CASHMERE_UTILS_FILEUTILS_H
+#define CASHMERE_UTILS_FILEUTILS_H
 
 #include "cashmere.h"
 #include <istream>
