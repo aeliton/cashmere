@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "brokergrpc.h"
+#include "utils/grpcutils.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpcpp/create_channel.h>
@@ -37,18 +38,8 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   const Grpc::ConnectionRequest* request, Grpc::ConnectionResponse* response
 )
 {
-  Clock version;
-  for (const auto& [id, count] : request->version()) {
-    version[id] = count;
-  }
-
-  IdConnectionInfoMap sources;
-  for (const auto& [id, info] : request->sources()) {
-    sources[id].distance = info.distance();
-    for (const auto& [i, c] : info.version()) {
-      sources[id].version[i] = c;
-    }
-  }
+  const Clock version = Utils::ClockFrom(request->version());
+  const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
 
   std::cout << "Connection request from: [" << request->broker().url()
             << "] with port: " << request->port() << ", version: " << version
@@ -62,17 +53,8 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   ConnectionData out = connect(conn);
 
   response->set_port(out.port);
-  for (const auto& [id, count] : out.version) {
-    (*response->mutable_version())[id] = count;
-  }
-
-  for (const auto& [id, info] : out.sources) {
-    auto source = (*response->mutable_sources())[id];
-    source.set_distance(info.distance);
-    for (const auto& [id, count] : info.version) {
-      (*source.mutable_version())[id] = count;
-    }
-  }
+  Utils::SetClock(response->mutable_version(), out.version);
+  Utils::SetSources(response->mutable_sources(), out.sources);
 
   return ::grpc::Status::OK;
 }
@@ -81,22 +63,12 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   const Grpc::QueryRequest* request, Grpc::QueryResponse* response
 )
 {
-  Clock clock;
-  for (const auto& [id, count] : request->clock()) {
-    clock[id] = count;
-  }
-
   auto sender = request->sender();
+  Clock clock = Utils::ClockFrom(request->clock());
+
   for (auto& entry : query(clock, sender)) {
     auto out = response->add_entries();
-    for (const auto& [id, count] : entry.clock) {
-      (*out->mutable_clock())[id] = count;
-    }
-    out->mutable_data()->set_id(entry.entry.id);
-    out->mutable_data()->set_value(entry.entry.value);
-    for (const auto& [id, count] : entry.entry.alters) {
-      (*out->mutable_data()->mutable_alters())[id] = count;
-    }
+    Utils::SetEntry(out, entry);
   }
 
   return ::grpc::Status::OK;
@@ -107,24 +79,13 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
 )
 {
   Port sender = request->sender();
-  Entry entry;
-  for (const auto& [id, count] : request->entry().clock()) {
-    entry.clock[id] = count;
-  }
-  entry.entry.id = request->entry().data().id();
-  entry.entry.value = request->entry().data().value();
-
-  for (const auto& [id, count] : request->entry().data().alters()) {
-    entry.entry.alters[id] = count;
-  }
+  Entry entry = Utils::EntryFrom(request->entry());
 
   std::cout << "Insert request from sender: [" << sender << "] entry: " << entry
             << std::endl;
 
   if (insert(entry, sender).valid()) {
-    for (const auto& [id, count] : clock()) {
-      (*response->mutable_version())[id] = count;
-    }
+    Utils::SetClock(response->mutable_version(), clock());
     return ::grpc::Status::OK;
   }
 
@@ -136,22 +97,11 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   [[maybe_unused]] ::google::protobuf::Empty* response
 )
 {
-
-  auto sender = request->sender();
   ConnectionData conn;
   conn.port = request->port();
-  Clock version;
-  for (const auto& [id, count] : request->version()) {
-    version[id] = count;
-  }
-  conn.version = version;
-  for (const auto& [id, info] : request->sources()) {
-    conn.sources[id].distance = info.distance();
-    for (const auto& [i, c] : info.version()) {
-      conn.sources[id].version[i] = c;
-    }
-  }
-  refresh(conn, sender);
+  conn.version = Utils::ClockFrom(request->version());
+  conn.sources = Utils::SourcesFrom(request->sources());
+  refresh(conn, request->sender());
   std::cout << "Refresh called!" << std::endl;
   return ::grpc::Status::OK;
 }

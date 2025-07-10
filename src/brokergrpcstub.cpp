@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "brokergrpcstub.h"
+#include "utils/grpcutils.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpc/grpc.h>
@@ -60,25 +61,12 @@ Clock BrokerGrpcStub::insert(const Entry& data, Port sender)
 {
   Grpc::InsertRequest request;
   request.set_sender(sender);
-  auto entry = request.mutable_entry();
-  for (const auto& [id, count] : data.clock) {
-    (*entry->mutable_clock())[id] = count;
-  }
-  entry->mutable_data()->set_id(data.entry.id);
-  entry->mutable_data()->set_value(data.entry.value);
-
-  auto alters = entry->mutable_data()->mutable_alters();
-  for (const auto& [id, count] : data.entry.alters) {
-    (*alters)[id] = count;
-  }
+  Utils::SetEntry(request.mutable_entry(), data);
 
   Grpc::InsertResponse response;
   ::grpc::ClientContext context;
   if (_stub->Insert(&context, request, &response).ok()) {
-    Clock out;
-    for (const auto& [id, count] : response.version()) {
-      out[id] = count;
-    }
+    Clock out = Utils::ClockFrom(response.version());
     return out;
   }
   return {};
@@ -88,26 +76,16 @@ EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
 {
   ::grpc::ClientContext context;
   Grpc::QueryRequest request;
+
   request.set_sender(sender);
-  for (auto& [id, count] : from) {
-    (*request.mutable_clock())[id] = count;
-  }
+  Utils::SetClock(request.mutable_clock(), from);
+
   Grpc::QueryResponse response;
 
   EntryList out;
   if (_stub->Query(&context, request, &response).ok()) {
-    for (auto& e : response.entries()) {
-      Clock clock;
-      Data data;
-      for (auto& [id, count] : e.clock()) {
-        clock[id] = count;
-      }
-      data.id = e.data().id();
-      data.value = e.data().value();
-      for (auto& [id, count] : e.data().alters()) {
-        data.alters[id] = count;
-      }
-      out.push_back({clock, data});
+    for (auto& entry : response.entries()) {
+      out.push_back(Utils::EntryFrom(entry));
     }
     return out;
   }
@@ -118,27 +96,20 @@ ConnectionData BrokerGrpcStub::connect(ConnectionData conn)
 {
   std::cout << "Broker grpc stub connect called with: " << conn << std::endl;
   ::grpc::ClientContext context;
+
   Grpc::ConnectionRequest request;
   request.set_port(conn.port);
-  for (const auto& [id, count] : conn.version) {
-    (*request.mutable_version())[id] = count;
-  }
+  Utils::SetClock(request.mutable_version(), conn.version);
+
   request.mutable_broker()->set_url(conn.broker.url());
-  for (const auto& [id, info] : conn.sources) {
-    (*request.mutable_sources())[id].set_distance(info.distance);
-    for (const auto& [i, c] : info.version) {
-      (*(*request.mutable_sources())[id].mutable_version())[i] = c;
-    }
-  }
+
+  Utils::SetSources(request.mutable_sources(), conn.sources);
 
   Grpc::ConnectionResponse response;
 
   auto status = _stub->Connect(&context, request, &response);
   if (status.ok()) {
-    Clock clock;
-    for (auto& [id, count] : response.version()) {
-      clock[id] = count;
-    }
+    Clock clock = Utils::ClockFrom(response.version());
     return ConnectionData{BrokerStub{}, response.port(), clock, {}};
   } else {
     std::cerr << "BrokerGrpcStub: error connecting to " << conn.broker.url()
@@ -153,16 +124,9 @@ bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
   Grpc::RefreshRequest request;
   request.set_sender(sender);
   request.set_port(conn.port);
-  for (const auto& [id, count] : conn.version) {
-    (*request.mutable_version())[id] = count;
-  }
-  for (const auto& [id, info] : conn.sources) {
-    auto source = (*request.mutable_sources())[id];
-    source.set_distance(info.distance);
-    for (const auto& [id, count] : info.version) {
-      (*source.mutable_version())[id] = count;
-    }
-  }
+
+  Utils::SetClock(request.mutable_version(), conn.version);
+  Utils::SetSources(request.mutable_sources(), conn.sources);
 
   ::google::protobuf::Empty response;
   ::grpc::ClientContext context;
