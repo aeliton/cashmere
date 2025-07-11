@@ -63,7 +63,10 @@ private:
     const ::Cashmere::Grpc::RelayInsertRequest* request,
     ::Cashmere::Grpc::InsertResponse* response
   ) override;
-
+  ::grpc::Status GetClock(
+    ::grpc::ServerContext* context, const ::google::protobuf::Empty* request,
+    ::Cashmere::Grpc::ClockResponse* response
+  ) override;
   std::string _hostname;
   uint16_t _port;
 };

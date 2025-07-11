@@ -79,6 +79,8 @@ message RelayInsertRequest {
   Entry entry = 2;
 }
 
+message ClockResponse { map<fixed64, uint64> clock = 1; }
+
 message InsertResponse { map<fixed64, uint64> version = 1; }
 
 message QueryResponse { repeated Entry entries = 1; }
@@ -89,4 +91,5 @@ service Broker {
   rpc Insert(InsertRequest) returns(InsertResponse) {}
   rpc Refresh(RefreshRequest) returns(google.protobuf.Empty) {}
   rpc Relay(RelayInsertRequest) returns(InsertResponse) {}
+  rpc GetClock(google.protobuf.Empty) returns(ClockResponse) {}
 }

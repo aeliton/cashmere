@@ -69,13 +69,31 @@ int main(int argc, char* argv[])
       std::cout << "-i <id> and a command are required in command mode";
       return EXIT_FAILURE;
     }
-    auto stub = std::make_shared<BrokerGrpcStub>(hostname, port);
-    std::cout << "requesting to " << hostname << ":" << port
-              << " to relay [insert 500]; response: "
-              << stub->relay(Entry{{{0xAA, 1}}, {0xAA, 500, {}}}, 0)
-              << std::endl;
 
-    return 0;
+    if (optind == argc) {
+      std::cout << "Error: <command> [command_args...] expected" << std::endl;
+      return EXIT_FAILURE;
+    }
+
+    auto stub = std::make_shared<BrokerGrpcStub>(hostname, port);
+    Clock clock = stub->clock().tick(id);
+
+    const std::string command(argv[optind++]);
+    if (command == "add") {
+      if (optind == argc) {
+        std::cout << "Error: command " << command << " requires an argument"
+                  << std::endl;
+        return EXIT_FAILURE;
+      }
+      Amount value = std::stol(argv[optind++]);
+
+      std::cout << "requesting to " << hostname << ":" << port
+                << " to relay [insert " << value
+                << "]; response: " << stub->relay({clock, {id, value, {}}}, 0)
+                << std::endl;
+
+      return 0;
+    }
   }
 
   auto tempDir = TempDir();

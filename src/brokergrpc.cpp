@@ -130,6 +130,15 @@ std::unique_ptr<grpc::Server> BrokerGrpc::start()
   return builder.BuildAndStart();
 }
 
+::grpc::Status BrokerGrpc::GetClock(
+  [[maybe_unused]] ::grpc::ServerContext* context,
+  const ::google::protobuf::Empty*, Grpc::ClockResponse* response
+)
+{
+  Utils::SetClock(response->mutable_clock(), clock());
+  return ::grpc::Status::OK;
+}
+
 BrokerStub BrokerGrpc::stub()
 {
   return BrokerStub(_hostname + ":" + std::to_string(_port));

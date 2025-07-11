@@ -50,7 +50,13 @@ BrokerGrpcStub::BrokerGrpcStub(const std::string& hostname, uint32_t port)
 
 Clock BrokerGrpcStub::clock() const
 {
-  return {};
+  ::grpc::ClientContext context;
+  ::google::protobuf::Empty empty;
+  Grpc::ClockResponse response;
+  if (_stub->GetClock(&context, empty, &response).ok()) {
+    return Utils::ClockFrom(response.clock());
+  }
+  return {{0, 0}};
 }
 
 IdClockMap BrokerGrpcStub::versions() const
