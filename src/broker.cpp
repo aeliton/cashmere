@@ -33,10 +33,16 @@ Broker::~Broker() = default;
 ConnectionData Broker::connect(ConnectionData conn)
 {
   Port port = _connections.size();
+  auto version = clock();
+
+  for (auto& [id, info] : conn.sources) {
+    info.version = info.version.merge(version);
+  }
+
   Connection connection(conn.broker, conn);
   _connections.push_back(connection);
   refreshConnections(port);
-  return ConnectionData{stub(), port, clock(), UpdateProvides(provides(port))};
+  return ConnectionData{stub(), port, version, UpdateProvides(provides(port))};
 }
 
 Port Broker::connect(BrokerStub remote)
@@ -208,7 +214,7 @@ void Broker::refreshConnections(Port ignore)
     }
     auto& conn = _connections.at(i);
     conn.refresh(
-      {BrokerStub{}, static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
+      {stub(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
     );
   }
 }

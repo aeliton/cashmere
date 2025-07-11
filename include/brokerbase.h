@@ -135,7 +135,7 @@ public:
   virtual ConnectionData connect(ConnectionData conn) = 0;
   virtual bool refresh(const ConnectionData& conn, Port sender) = 0;
   virtual Clock insert(const Entry& data, Port sender = 0) = 0;
-  Clock insert(const EntryList& entries, Port sender = 0);
+  virtual Clock insert(const EntryList& entries, Port sender = 0);
 
   virtual EntryList query(const Clock& from = {}, Port sender = 0) const = 0;
   virtual Clock clock() const = 0;

@@ -13,35 +13,33 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_GTESTS_BROKERMOCK_H
-#define CASHMERE_GTESTS_BROKERMOCK_H
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "brokerbase.h"
+#include "journal.h"
+#include "test/gtest/brokermock.h"
 
-namespace Cashmere
+using namespace Cashmere;
+
+TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
 {
+  const auto aa = std::make_shared<Journal>(0xAA);
+  const auto bb = std::make_shared<BrokerMock>();
 
-class BrokerMock : public BrokerBase
-{
-public:
-  MOCK_METHOD(Clock, insert, (const Entry& data, Port sender), (override));
-  MOCK_METHOD(Clock, insert, (const EntryList& data, Port sender), (override));
-  MOCK_METHOD(
-    EntryList, query, (const Clock& from, Port sender), (const, override)
-  );
-  MOCK_METHOD(IdConnectionInfoMap, provides, (Port to), (const, override));
-  MOCK_METHOD(IdClockMap, versions, (), (const, override));
-  MOCK_METHOD(Clock, clock, (), (const, override));
-  MOCK_METHOD(ConnectionData, connect, (ConnectionData conn), (override));
-  MOCK_METHOD(
-    bool, refresh, (const ConnectionData& data, Port port), (override)
-  );
-  MOCK_METHOD(BrokerStub, stub, (), (override));
-};
+  aa->append(10);
 
+  aa->connect(ConnectionData{
+    BrokerStub{bb}, 1, Clock{},
+    IdConnectionInfoMap{{0xBB, {.distance = 1, .version = {}}}}
+  });
+
+  const auto sources = IdConnectionInfoMap{
+    {0xAA, {.distance = 0, .version = Clock{{0xAA, 1}}}},
+    {0xBB, {.distance = 1, .version = Clock{{0xAA, 1}}}}
+  };
+
+  EXPECT_EQ(aa->provides(), sources);
+
+  const auto versions = IdClockMap{{0xAA, {{0xAA, 1}}}, {0xBB, {{0xAA, 1}}}};
+  EXPECT_EQ(aa->versions(), versions);
 }
-
-#endif

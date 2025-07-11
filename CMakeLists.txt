@@ -117,6 +117,7 @@ enable_testing()
 add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_broker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpcstub.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journal.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journalfile.cpp
 )
 target_link_libraries (gtests

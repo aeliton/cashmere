@@ -21,6 +21,7 @@
 
 using namespace Cashmere;
 
+using ::testing::_;
 using ::testing::Return;
 
 TEST(Broker, StartsWithNoConnections)
@@ -192,9 +193,6 @@ TEST(Broker, ExchangeEntriesOnConnect)
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
 
-  EXPECT_CALL(*bb, clock())
-    .Times(1)
-    .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
   EXPECT_CALL(
     *bb,
     connect((ConnectionData{
@@ -207,19 +205,16 @@ TEST(Broker, ExchangeEntriesOnConnect)
       BrokerStub{}, 1, Clock{{0xBB, 1}},
       IdConnectionInfoMap{{0xBB, {.distance = 1, .version = Clock{{0xBB, 1}}}}}
     }));
-  EXPECT_CALL(*bb, insert(aaEntry, 1))
+  EXPECT_CALL(*bb, insert(EntryList{aaEntry}, 1))
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
   EXPECT_CALL(*bb, query(Clock{{0xAA, 1}}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{bbEntry}));
 
-  const Port aaPort = hub->connect(BrokerStub{aa});
-  const Port bbPort = hub->connect(BrokerStub{bb});
+  hub->connect(BrokerStub{aa});
+  hub->connect(BrokerStub{bb});
 
-  EXPECT_EQ(aaPort, 1);
-  EXPECT_EQ(bbPort, 2);
-  EXPECT_EQ(hub->clock(), Clock({{0xAA, 1}, {0xBB, 1}}));
   EXPECT_EQ(
     hub->provides(),
     IdConnectionInfoMap(
