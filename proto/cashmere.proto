@@ -74,6 +74,11 @@ message RefreshRequest {
   map<int32, ConnectionInfo> sources = 4;
 }
 
+message RelayInsertRequest {
+  uint32 sender = 1;
+  Entry entry = 2;
+}
+
 message InsertResponse { map<fixed64, uint64> version = 1; }
 
 message QueryResponse { repeated Entry entries = 1; }
@@ -83,4 +88,5 @@ service Broker {
   rpc Query(QueryRequest) returns(QueryResponse) {}
   rpc Insert(InsertRequest) returns(InsertResponse) {}
   rpc Refresh(RefreshRequest) returns(google.protobuf.Empty) {}
+  rpc Relay(RelayInsertRequest) returns(InsertResponse) {}
 }

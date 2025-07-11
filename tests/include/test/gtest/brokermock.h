@@ -40,6 +40,7 @@ public:
     bool, refresh, (const ConnectionData& data, Port port), (override)
   );
   MOCK_METHOD(BrokerStub, stub, (), (override));
+  MOCK_METHOD(Clock, relay, (const Entry& data, Port port), (override));
 };
 
 }

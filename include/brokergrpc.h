@@ -58,6 +58,11 @@ private:
     const ::Cashmere::Grpc::RefreshRequest* request,
     ::google::protobuf::Empty* response
   ) override;
+  ::grpc::Status Relay(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::RelayInsertRequest* request,
+    ::Cashmere::Grpc::InsertResponse* response
+  ) override;
 
   std::string _hostname;
   uint16_t _port;

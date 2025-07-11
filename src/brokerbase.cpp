@@ -186,6 +186,11 @@ void Connection::update(const ConnectionData& data)
   _cache = data;
 }
 
+Clock Connection::relay(const Entry& entry) const
+{
+  return broker()->relay(entry, _cache.port);
+}
+
 BrokerBase::~BrokerBase() = default;
 
 Clock BrokerBase::insert(const EntryList& entries, Port sender)

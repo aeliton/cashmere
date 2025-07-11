@@ -114,6 +114,7 @@ public:
   Port port() const;
   Clock& version(Origin origin = Origin::Cache) const;
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
+  Clock relay(const Entry& entry) const;
 
   bool operator==(const Connection& other) const;
   friend std::ostream& operator<<(std::ostream& os, const Connection& data);
@@ -141,6 +142,7 @@ public:
   virtual Clock clock() const = 0;
   virtual IdClockMap versions() const = 0;
   virtual IdConnectionInfoMap provides(Port sender = 0) const = 0;
+  virtual Clock relay(const Entry& entry, Port sender) = 0;
   virtual BrokerStub stub() = 0;
 };
 

@@ -32,6 +32,7 @@ class BrokerGrpcStub : public BrokerBase
 {
 public:
   explicit BrokerGrpcStub(const std::string& url);
+  explicit BrokerGrpcStub(const std::string& hostname, uint32_t port);
   explicit BrokerGrpcStub(std::unique_ptr<Grpc::Broker::StubInterface>&& stub);
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;
@@ -43,6 +44,7 @@ public:
   virtual ConnectionData connect(ConnectionData conn) override;
   virtual bool refresh(const ConnectionData& conn, Port sender) override;
   virtual BrokerStub stub() override;
+  virtual Clock relay(const Entry& entry, Port sender) override;
 
 private:
   std::string _url;

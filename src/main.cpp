@@ -15,8 +15,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "brokerbase.h"
 #include "brokergrpc.h"
+#include "brokergrpcstub.h"
 #include "journalfile.h"
 #include "ledger.h"
+#include "random.h"
 #include "utils/fileutils.h"
 
 #include <grpcpp/server.h>
@@ -29,24 +31,53 @@ using namespace Cashmere;
 int main(int argc, char* argv[])
 {
   int opt;
-  uint16_t port;
-  uint64_t id;
-  while ((opt = getopt(argc, argv, "i:p:")) != -1) {
+  uint16_t port = 5432;
+  uint64_t id = Random{}.next();
+  std::string hostname = "0.0.0.0";
+  bool idProvided = false;
+  bool server = false;
+  while ((opt = getopt(argc, argv, "i:h:p:s")) != -1) {
     switch (opt) {
       case 'i':
       {
+        idProvided = true;
         std::stringstream ss(optarg);
         ss >> std::hex >> id >> std::dec;
         break;
       }
+      case 'h':
+        hostname = std::string(optarg);
+        break;
       case 'p':
         port = atoi(optarg);
         break;
+      case 's':
+        server = true;
+        break;
       default:
-        fprintf(stderr, "Usage: %s [-p port] [-i id]\n", argv[0]);
+        fprintf(
+          stderr,
+          "Usage: %s  [-s] [-h hostname] [-p port] [-i id] [<command>...]\n",
+          argv[0]
+        );
         exit(EXIT_FAILURE);
     }
   }
+
+  if (!server) {
+    if (!idProvided) {
+      std::cout << "-i <id> and a command are required in command mode";
+      return EXIT_FAILURE;
+    }
+    auto stub = std::make_shared<BrokerGrpcStub>(hostname, port);
+    std::cout << "requesting to " << hostname << ":" << port
+              << " to relay [insert 500]; response: "
+              << stub->relay(Entry{{{0xAA, 1}}, {0xAA, 500, {}}}, 0)
+              << std::endl;
+
+    return 0;
+  }
+
   auto tempDir = TempDir();
   auto broker = std::make_shared<BrokerGrpc>("0.0.0.0", port);
   auto journal = std::make_shared<JournalFile>(id, tempDir.directory);

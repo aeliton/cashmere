@@ -40,6 +40,12 @@ BrokerGrpcStub::BrokerGrpcStub(const std::string& url)
       grpc::CreateChannel(_url, grpc::InsecureChannelCredentials())
     ))
 {
+  std::cout << _url << std::endl;
+}
+
+BrokerGrpcStub::BrokerGrpcStub(const std::string& hostname, uint32_t port)
+  : BrokerGrpcStub(hostname + ":" + std::to_string(port))
+{
 }
 
 Clock BrokerGrpcStub::clock() const
@@ -120,7 +126,6 @@ ConnectionData BrokerGrpcStub::connect(ConnectionData conn)
 
 bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
 {
-
   Grpc::RefreshRequest request;
   request.set_sender(sender);
   request.set_port(conn.port);
@@ -135,6 +140,23 @@ bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
   }
 
   return {};
+}
+
+Clock BrokerGrpcStub::relay(const Entry& entry, Port sender)
+{
+  ::grpc::ClientContext context;
+  Grpc::RelayInsertRequest request;
+  Grpc::InsertResponse response;
+  request.set_sender(sender);
+  Utils::SetEntry(request.mutable_entry(), entry);
+  const auto status = _stub->Relay(&context, request, &response);
+  if (status.ok()) {
+    return Utils::ClockFrom(response.version());
+  } else {
+    std::cerr << "failed relaying message.. status " << status.error_code()
+              << " " << status.error_details() << std::endl;
+  }
+  return {{0, 0}};
 }
 
 BrokerStub BrokerGrpcStub::stub()
