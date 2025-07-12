@@ -119,6 +119,7 @@ add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journal.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journalfile.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_options.cpp
 )
 target_link_libraries (gtests
   GTest::gmock

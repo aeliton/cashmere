@@ -40,7 +40,6 @@ BrokerGrpcStub::BrokerGrpcStub(const std::string& url)
       grpc::CreateChannel(_url, grpc::InsecureChannelCredentials())
     ))
 {
-  std::cout << _url << std::endl;
 }
 
 BrokerGrpcStub::BrokerGrpcStub(const std::string& hostname, uint32_t port)

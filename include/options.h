@@ -16,23 +16,62 @@
 #ifndef BARK_OPTIONS_BARK
 #define BARK_OPTIONS_BARK
 
+#include "entry.h"
 #include <string>
-#include <unordered_map>
 
-using OptionsMap = std::unordered_map<std::string, std::string>;
-
-class Options
+struct Command
 {
-public:
-  Options(int argc, char* argv[]);
+  enum class Type
+  {
+    Invalid,
+    Append,
+    Relay
+  };
+  Type type = Type::Invalid;
+  Cashmere::Data data = {};
+};
 
-  bool contains(const std::string& option) const;
-  size_t size() const;
+struct Options
+{
+  enum class Status
+  {
+    Ok,
+    InvalidArgument,
+    InvalidOptionArgument,
+    MissingCommand,
+    MissingCommandArgument,
+    MissingOption
+  };
 
-  static OptionsMap parse(int argc, char* argv[]);
+  struct Error
+  {
+    Status status = Status::Ok;
+    char option;
+    std::string optionArgument;
+  };
+
+  explicit Options();
+  explicit Options(int argc, char* argv[]);
+
+  Error error() const;
+
+  bool ok() const
+  {
+    return _error.status == Status::Ok;
+  }
+
+  Cashmere::Id id = 0;
+  Cashmere::Port port = 54321;
+  std::string hostname = "0.0.0.0";
+  bool service = false;
+  Command command = {};
 
 private:
-  OptionsMap _options;
+  Error _error;
 };
+
+bool operator==(const Command& a, const Command& b);
+bool operator==(const Options& a, const Options& b);
+bool operator==(const Options::Error& a, const Options::Error& b);
 
 #endif

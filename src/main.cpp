@@ -18,7 +18,7 @@
 #include "brokergrpcstub.h"
 #include "journalfile.h"
 #include "ledger.h"
-#include "random.h"
+#include "options.h"
 #include "utils/fileutils.h"
 
 #include <grpcpp/server.h>
@@ -30,80 +30,43 @@ using namespace Cashmere;
 
 int main(int argc, char* argv[])
 {
-  int opt;
-  uint16_t port = 5432;
-  uint64_t id = Random{}.next();
-  std::string hostname = "0.0.0.0";
-  bool idProvided = false;
-  bool server = false;
-  while ((opt = getopt(argc, argv, "i:h:p:s")) != -1) {
-    switch (opt) {
-      case 'i':
-      {
-        idProvided = true;
-        std::stringstream ss(optarg);
-        ss >> std::hex >> id >> std::dec;
-        break;
-      }
-      case 'h':
-        hostname = std::string(optarg);
-        break;
-      case 'p':
-        port = atoi(optarg);
-        break;
-      case 's':
-        server = true;
-        break;
-      default:
-        fprintf(
-          stderr,
-          "Usage: %s  [-s] [-h hostname] [-p port] [-i id] [<command>...]\n",
-          argv[0]
-        );
-        exit(EXIT_FAILURE);
-    }
+  Options options(argc, argv);
+  if (!options.ok()) {
+    std::cerr
+      << "usage: %s  [-s] [-h hostname] [-p port] [-i id] [<command>...]"
+      << std::endl
+      << "status: " << static_cast<int>(options.error().status) << std::endl;
+    exit(EXIT_FAILURE);
   }
 
-  if (!server) {
-    if (!idProvided) {
-      std::cout << "-i <id> and a command are required in command mode";
-      return EXIT_FAILURE;
-    }
-
-    if (optind == argc) {
-      std::cout << "Error: <command> [command_args...] expected" << std::endl;
-      return EXIT_FAILURE;
-    }
-
-    auto stub = std::make_shared<BrokerGrpcStub>(hostname, port);
-    Clock clock = stub->clock().tick(id);
-
-    const std::string command(argv[optind++]);
-    if (command == "add") {
-      if (optind == argc) {
-        std::cout << "Error: command " << command << " requires an argument"
+  if (!options.service) {
+    auto stub = BrokerGrpcStub(options.hostname, options.port);
+    auto clock = stub.clock();
+    if (clock.valid()) {
+      Entry entry{clock.tick(options.id), options.command.data};
+      if (options.command.type == Command::Type::Append) {
+        auto clock = stub.relay(entry, 0);
+        std::cerr << "requesting to " << options.hostname << ":" << options.port
+                  << " to relay [insert " << entry << "]; response: " << clock
                   << std::endl;
-        return EXIT_FAILURE;
       }
-      Amount value = std::stol(argv[optind++]);
-
-      std::cout << "requesting to " << hostname << ":" << port
-                << " to relay [insert " << value
-                << "]; response: " << stub->relay({clock, {id, value, {}}}, 0)
-                << std::endl;
-
-      return 0;
+    } else {
+      std::cerr << "Error: failed retrieving version from " << options.hostname
+                << ":" << options.port << std::endl;
+      exit(EXIT_FAILURE);
     }
+    return 0;
   }
 
   auto tempDir = TempDir();
-  auto broker = std::make_shared<BrokerGrpc>("0.0.0.0", port);
-  auto journal = std::make_shared<JournalFile>(id, tempDir.directory);
+  auto broker = std::make_shared<BrokerGrpc>(options.hostname, options.port);
+  auto journal = std::make_shared<JournalFile>(options.id, tempDir.directory);
 
   journal->connect(BrokerStub{broker});
 
-  std::cout << "Journal " << std::hex << id << std::dec << " port: " << port
-            << " path: " << tempDir.directory << std::endl;
+  std::cout << "Journal " << std::hex << options.id << std::dec
+            << " port: " << options.port << " path: " << tempDir.directory
+            << std::endl;
 
   auto grpcBroker = broker->start();
 
@@ -132,7 +95,8 @@ int main(int argc, char* argv[])
       std::cin >> url;
       Port success = broker->connect(BrokerStub(url));
       if (success < 0) {
-        std::cerr << command << ": failed [" << port << "]" << std::endl;
+        std::cerr << command << ": failed [" << options.port << "]"
+                  << std::endl;
       }
     } else if (command == "provides") {
       std::cout << journal->provides() << std::endl;

@@ -15,23 +15,97 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "options.h"
 
-Options::Options([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
-  : _options()
+#include <sstream>
+#include <unistd.h>
+
+Options::Options() = default;
+
+Options::Options(int argc, char* argv[])
 {
+  int opt;
+  while (_error.status == Status::Ok &&
+         (opt = getopt(argc, argv, "i:h:p:s")) != -1) {
+    switch (opt) {
+      case 'i':
+      {
+        std::stringstream ss(optarg);
+        ss >> std::hex >> id >> std::dec;
+        if (ss.fail()) {
+          _error.status = Status::InvalidOptionArgument;
+        }
+        break;
+      }
+      case 'p':
+        try {
+          port = std::stoi(optarg);
+        } catch (std::exception) {
+          _error.status = Status::InvalidOptionArgument;
+        }
+        break;
+      case 'h':
+        hostname = std::string(optarg);
+        break;
+      case 's':
+        service = true;
+        break;
+      case '?':
+        break;
+      default:
+        break;
+    }
+  }
+
+  switch (_error.status) {
+    case Status::InvalidArgument:
+      break;
+    case Status::InvalidOptionArgument:
+      _error.option = static_cast<char>(opt);
+      _error.optionArgument = optarg;
+      break;
+    case Status::Ok:
+      if (!service) {
+        if (id == 0) {
+          _error.status = Status::MissingOption;
+          _error.option = 'i';
+        } else if (optind >= argc) {
+          _error.status = Status::MissingCommand;
+        } else {
+          const std::string arg = std::string(argv[optind++]);
+          command.type = Command::Type::Append;
+          if (arg == "add") {
+            if (optind >= argc) {
+              _error.status = Status::MissingCommandArgument;
+            } else {
+              command.data.id = id;
+              command.data.value = std::stol(argv[optind++]);
+            }
+          }
+        }
+      }
+      break;
+    default:
+      break;
+  }
 }
 
-bool Options::contains(const std::string& option) const
+Options::Error Options::error() const
 {
-  return _options.find(option) != _options.end();
+  return _error;
 }
 
-size_t Options::size() const
+bool operator==(const Command& a, const Command& b)
 {
-  return _options.size();
+  return a.type == b.type && a.data == b.data;
 }
 
-OptionsMap
-Options::parse([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
+bool operator==(const Options& a, const Options& b)
 {
-  return {};
+  return a.id == b.id && a.port == b.port && a.hostname == b.hostname &&
+         a.service == b.service && a.command == b.command;
+}
+
+bool operator==(const Options::Error& a, const Options::Error& b)
+{
+  return a.status == b.status && a.option == b.option &&
+         a.optionArgument == b.optionArgument;
 }
