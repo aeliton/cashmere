@@ -58,6 +58,7 @@ add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpc.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp

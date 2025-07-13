@@ -16,35 +16,7 @@
 #ifndef BARK_OPTIONS_BARK
 #define BARK_OPTIONS_BARK
 
-#include "entry.h"
-#include <string>
-
-struct Command
-{
-  enum class Type
-  {
-    Unknown,
-    Connect,
-    Disconnect,
-    Append,
-    Relay,
-    Sources,
-    Versions,
-    ListCommands,
-    Quit
-  };
-  std::istream& read(std::istream& in);
-
-  std::string name() const;
-
-  Type type = Type::Unknown;
-  std::string url;
-  Cashmere::Port port;
-  Cashmere::Data data = {};
-
-private:
-  std::string _name;
-};
+#include "command.h"
 
 struct Options
 {
@@ -85,7 +57,6 @@ private:
   Error _error;
 };
 
-bool operator==(const Command& a, const Command& b);
 bool operator==(const Options& a, const Options& b);
 bool operator==(const Options::Error& a, const Options::Error& b);
 
