@@ -23,12 +23,27 @@ struct Command
 {
   enum class Type
   {
-    Invalid,
+    Unknown,
+    Connect,
+    Disconnect,
     Append,
-    Relay
+    Relay,
+    Sources,
+    Versions,
+    ListCommands,
+    Quit
   };
-  Type type = Type::Invalid;
+  std::istream& read(std::istream& in);
+
+  std::string name() const;
+
+  Type type = Type::Unknown;
+  std::string url;
+  Cashmere::Port port;
   Cashmere::Data data = {};
+
+private:
+  std::string _name;
 };
 
 struct Options

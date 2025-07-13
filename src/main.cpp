@@ -74,43 +74,44 @@ int main(int argc, char* argv[])
 
   brokerThread.detach();
 
-  std::string command;
-  while (true) {
+  Command command;
+  while (command.type != Command::Type::Quit) {
     std::cout << journal->clock() << "[" << Ledger::Balance(journal->entries())
               << "]"
               << "> ";
 
-    std::cin >> command;
-
-    if (command == "add") {
-      Amount value;
-      std::cin >> value;
-      if (std::cin.fail()) {
-        std::cerr << "add error: not a numeric value" << std::endl;
-        continue;
-      }
-      journal->append(value);
-    } else if (command == "connect") {
-      std::string url;
-      std::cin >> url;
-      Port success = broker->connect(BrokerStub(url));
-      if (success < 0) {
-        std::cerr << command << ": failed [" << options.port << "]"
-                  << std::endl;
-      }
-    } else if (command == "provides") {
-      std::cout << journal->provides() << std::endl;
-    } else if (command == "versions") {
-      std::cout << journal->versions() << std::endl;
-    } else if (command == "disconnect") {
-      Port port;
-      std::cin >> port;
-      broker->disconnect(port);
-    } else if (command == "q" || command == "quit") {
-      std::cout << "bye!" << std::endl;
-      break;
-    } else {
-      std::cerr << "unknown command: " << command << std::endl;
+    command.read(std::cin);
+    switch (command.type) {
+      case Command::Type::Unknown:
+        std::cerr << "unknown command: " << command.name() << std::endl;
+        break;
+      case Command::Type::Connect:
+        if (broker->connect(BrokerStub(command.url)) < 0) {
+          std::cerr << command.name() << ": failed [" << options.port << "]"
+                    << std::endl;
+        }
+        break;
+      case Command::Type::Disconnect:
+        broker->disconnect(command.port);
+        break;
+      case Command::Type::Append:
+        journal->append(command.data.value);
+        break;
+      case Command::Type::Relay:
+        std::cerr << "not implemented" << std::endl;
+        break;
+      case Command::Type::Sources:
+        std::cout << journal->provides() << std::endl;
+        break;
+      case Command::Type::Versions:
+        std::cout << journal->versions() << std::endl;
+        break;
+      case Command::Type::ListCommands:
+        std::cerr << "not implemented" << std::endl;
+        break;
+      case Command::Type::Quit:
+        std::cout << "bye!" << std::endl;
+        break;
     }
   }
 

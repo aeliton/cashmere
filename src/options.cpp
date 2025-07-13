@@ -17,6 +17,28 @@
 
 #include <sstream>
 #include <unistd.h>
+#include <unordered_map>
+
+static const std::unordered_map<std::string, Command::Type> kNameTypeMap = {
+  {"connect", Command::Type::Connect},
+  {"disconnect", Command::Type::Disconnect},
+  {"add", Command::Type::Append},
+  {"relay", Command::Type::Relay},
+  {"sources", Command::Type::Sources},
+  {"list", Command::Type::ListCommands},
+  {"quit", Command::Type::Quit}
+};
+
+static const std::unordered_map<Command::Type, std::string> kTypeNameMap = {
+  {Command::Type::Unknown, "<unknown>"},
+  {Command::Type::Connect, "connect"},
+  {Command::Type::Disconnect, "disconnect"},
+  {Command::Type::Append, "add"},
+  {Command::Type::Relay, "relay"},
+  {Command::Type::Sources, "sources"},
+  {Command::Type::ListCommands, "list"},
+  {Command::Type::Quit, "quit"}
+};
 
 Options::Options() = default;
 
@@ -108,4 +130,46 @@ bool operator==(const Options::Error& a, const Options::Error& b)
 {
   return a.status == b.status && a.option == b.option &&
          a.optionArgument == b.optionArgument;
+}
+
+std::istream& Command::read(std::istream& in)
+{
+  *this = {};
+
+  in >> _name;
+
+  const auto it = kNameTypeMap.find(_name);
+  if (it == kNameTypeMap.cend()) {
+    return in;
+  }
+
+  type = it->second;
+
+  std::string argument;
+  switch (it->second) {
+    case Type::Connect:
+      in >> url;
+      break;
+    case Type::Relay:
+      in >> argument;
+      data.id = std::stoull(argument);
+      [[fallthrough]];
+    case Type::Append:
+      in >> argument;
+      data.value = std::stoul(argument);
+      break;
+    case Type::Disconnect:
+      in >> argument;
+      port = std::stoi(argument);
+      break;
+    default:
+      break;
+  }
+
+  return in;
+}
+
+std::string Command::name() const
+{
+  return _name;
 }
