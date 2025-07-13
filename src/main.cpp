@@ -28,6 +28,9 @@
 
 using namespace Cashmere;
 
+void runService(const Options& options);
+void runCommand(const Options& options);
+
 int main(int argc, char* argv[])
 {
   Options options(argc, argv);
@@ -39,25 +42,37 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  if (!options.service) {
-    auto stub = BrokerGrpcStub(options.hostname, options.port);
-    auto clock = stub.clock();
-    if (clock.valid()) {
-      Entry entry{clock.tick(options.id), options.command.data};
-      if (options.command.type == Command::Type::Append) {
-        auto clock = stub.relay(entry, 0);
-        std::cerr << "requesting to " << options.hostname << ":" << options.port
-                  << " to relay [insert " << entry << "]; response: " << clock
-                  << std::endl;
-      }
-    } else {
-      std::cerr << "Error: failed retrieving version from " << options.hostname
-                << ":" << options.port << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    return 0;
+  if (options.service) {
+    runService(options);
+  } else {
+    runCommand(options);
   }
 
+  return 0;
+}
+
+void runCommand(const Options& options)
+{
+  auto stub = BrokerGrpcStub(options.hostname, options.port);
+  auto clock = stub.clock();
+  if (!clock.valid()) {
+    std::cerr << "Error: failed retrieving version from " << options.hostname
+              << ":" << options.port << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  Entry entry{clock.tick(options.id), options.command.data};
+  if (options.command.type == Command::Type::Append) {
+    if (!stub.relay(entry, 0).valid()) {
+      std::cerr << "Error: failed inserting:" << entry << options.hostname
+                << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+void runService(const Options& options)
+{
   auto tempDir = TempDir();
   auto broker = std::make_shared<BrokerGrpc>(options.hostname, options.port);
   auto journal = std::make_shared<JournalFile>(options.id, tempDir.directory);
@@ -116,6 +131,4 @@ int main(int argc, char* argv[])
   }
 
   grpcBroker->Shutdown();
-
-  return 0;
 }
