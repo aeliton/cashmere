@@ -62,8 +62,9 @@ std::istream& Command::read(std::istream& in)
       data.id = std::stoull(argument);
       [[fallthrough]];
     case Type::Append:
-      in >> argument;
-      data.value = std::stoul(argument);
+      if (!Cashmere::Data::Read(in, data)) {
+        type = Type::Unknown;
+      }
       break;
     case Type::Disconnect:
       in >> argument;

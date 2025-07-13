@@ -64,10 +64,7 @@ Options::Options(int argc, char* argv[])
       break;
     case Status::Ok:
       if (!service) {
-        if (id == 0) {
-          _error.status = Status::MissingOption;
-          _error.option = 'i';
-        } else if (optind >= argc) {
+        if (optind >= argc) {
           _error.status = Status::MissingCommand;
         } else {
           const std::string arg = std::string(argv[optind++]);
@@ -78,6 +75,12 @@ Options::Options(int argc, char* argv[])
             } else {
               command.data.id = id;
               command.data.value = std::stol(argv[optind++]);
+              if (optind < argc) {
+                std::stringstream ss(argv[optind++]);
+                if (!Cashmere::Clock::Read(ss, command.data.alters)) {
+                  _error.status = Status::InvalidArgument;
+                }
+              }
             }
           }
         }

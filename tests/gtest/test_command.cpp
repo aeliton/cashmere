@@ -1,0 +1,40 @@
+// Cashmere - a distributed conflict-free replicated database.
+// Copyright (C) 2025 Aeliton G. Silva
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#include "command.h"
+#include <gtest/gtest.h>
+
+#include <sstream>
+
+using namespace Cashmere;
+
+TEST(Command, AppendCommandReadsValue)
+{
+  std::stringstream ss("add {aa, 10}");
+  Command cmd;
+  cmd.read(ss);
+  const auto expected = Data{.id = 0xAA, .value = 10, .alters = Clock{}};
+  ASSERT_EQ(cmd.data, expected);
+}
+
+TEST(Command, AppendCommandReadsValueAndClock)
+{
+  std::stringstream ss("add {aa, 10, {{bb, 1}}}");
+  Command cmd;
+  cmd.read(ss);
+  const auto expected =
+    Data{.id = 0xAA, .value = 10, .alters = Clock{{0xBB, 1}}};
+  ASSERT_EQ(cmd.data, expected);
+}
