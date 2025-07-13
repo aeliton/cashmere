@@ -23,7 +23,7 @@ struct Command
 {
   enum class Type
   {
-    Unknown,
+    Invalid,
     Connect,
     Disconnect,
     Append,
@@ -33,11 +33,12 @@ struct Command
     ListCommands,
     Quit
   };
-  std::istream& read(std::istream& in);
+  static Command Read(std::istream& in);
 
   std::string name() const;
+  bool ok() const;
 
-  Type type = Type::Unknown;
+  Type type = Type::Invalid;
   std::string url;
   Cashmere::Port port;
   Cashmere::Data data = {};
@@ -47,5 +48,8 @@ private:
 };
 
 bool operator==(const Command& a, const Command& b);
+
+bool ReadValueAndOptionalClock(std::istream& in, Cashmere::Data& data);
+bool ReadData(std::istream& in, Cashmere::Data& data);
 
 #endif

@@ -21,17 +21,17 @@ class Args
 public:
   Args(std::vector<std::string> arguments)
     : argc(arguments.size())
-    , argv(new char*[argc + 1])
+    , argv(new char*[argc + 1]())
   {
     for (int i = 0; i < argc; i++) {
-      *(argv + i) = strdup(arguments[i].c_str());
+      argv[i] = strdup(arguments[i].c_str());
     }
     argv[argc] = nullptr;
   }
   ~Args()
   {
     for (int i = 0; i < argc; i++) {
-      delete *(argv + i);
+      delete argv[i];
     }
     delete[] argv;
   }
@@ -45,6 +45,7 @@ TEST(OptionsParse, NoOptionsOrArgumentsPrintsHelp)
   Args args({"anyname"});
   Options options(args.argc, args.argv);
   ASSERT_EQ(options, Options{});
+  EXPECT_EQ(options.error().status, Options::Status::MissingCommand);
 }
 
 TEST(OptionsParse, IdOptionArgumentShouldBeHexadecimal)
@@ -94,5 +95,14 @@ TEST(OptionsParse, ParseHostname)
   Args args({"anyname", "-h", "cafe", "-s"});
   Options options(args.argc, args.argv);
   ASSERT_EQ(options.hostname, "cafe");
+  EXPECT_TRUE(options.ok());
+}
+
+TEST(OptionsParse, ParseAddCommandsWithoutClock)
+{
+  Args args({"anyname", "add", "aa", "10"});
+  Options options(args.argc, args.argv);
+  const auto data = Cashmere::Data{0xAA, 10, {}};
+  ASSERT_EQ(options.command.data, data);
   EXPECT_TRUE(options.ok());
 }

@@ -147,13 +147,13 @@ bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
   return {};
 }
 
-Clock BrokerGrpcStub::relay(const Entry& entry, Port sender)
+Clock BrokerGrpcStub::relay(const Data& entry, Port sender)
 {
   ::grpc::ClientContext context;
   Grpc::RelayInsertRequest request;
   Grpc::InsertResponse response;
   request.set_sender(sender);
-  Utils::SetEntry(request.mutable_entry(), entry);
+  Utils::SetData(request.mutable_entry(), entry);
   const auto status = _stub->Relay(&context, request, &response);
   if (status.ok()) {
     return Utils::ClockFrom(response.version());

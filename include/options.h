@@ -42,10 +42,7 @@ struct Options
 
   Error error() const;
 
-  bool ok() const
-  {
-    return _error.status == Status::Ok;
-  }
+  bool ok() const;
 
   Cashmere::Id id = 0;
   Cashmere::Port port = 54321;

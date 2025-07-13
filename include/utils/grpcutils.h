@@ -33,6 +33,7 @@ BrokerStub BrokerStubFrom(const Grpc::BrokerData& data);
 void SetClock(
   google::protobuf::Map<uint64_t, uint64_t>* version, const Clock& data
 );
+void SetData(Grpc::Data* entry, const Data& data);
 void SetEntry(Grpc::Entry* proto, const Entry& entry);
 void SetConnectionInfo(Grpc::ConnectionInfo& info, const ConnectionInfo& data);
 void SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data);

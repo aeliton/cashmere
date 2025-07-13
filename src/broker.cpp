@@ -219,13 +219,13 @@ void Broker::refreshConnections(Port ignore)
   }
 }
 
-Clock Broker::relay(const Entry& entry, Port sender)
+Clock Broker::relay(const Data& entry, Port sender)
 {
   long distance = std::numeric_limits<long>::max();
   for (const auto& [id, info] : provides()) {
-    if (id == entry.entry.id) {
+    if (id == entry.id) {
       if (info.distance == 0) {
-        return insert(entry);
+        return insert({clock().tick(id), entry});
       } else if (info.distance < distance) {
         distance = info.distance;
       }
@@ -242,8 +242,8 @@ Clock Broker::relay(const Entry& entry, Port sender)
     }
     auto& conn = _connections.at(i);
     auto sources = conn.provides();
-    const auto it = std::as_const(sources).find(entry.entry.id);
-    if (sources.find(entry.entry.id) != sources.cend() &&
+    const auto it = std::as_const(sources).find(entry.id);
+    if (sources.find(entry.id) != sources.cend() &&
         it->second.distance == distance) {
       return conn.relay(entry);
     }
@@ -255,5 +255,4 @@ BrokerStub Broker::stub()
 {
   return BrokerStub(ptr());
 }
-
 }

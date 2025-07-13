@@ -51,7 +51,7 @@ public:
   Port connect(BrokerStub other);
   ConnectionData connect(ConnectionData conn) override;
 
-  Clock relay(const Entry& entry, Port sender) override;
+  Clock relay(const Data& entry, Port sender) override;
 
 private:
   void refreshConnections(Port ignore = 0);

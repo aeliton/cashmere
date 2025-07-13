@@ -44,7 +44,7 @@ public:
   virtual ConnectionData connect(ConnectionData conn) override;
   virtual bool refresh(const ConnectionData& conn, Port sender) override;
   virtual BrokerStub stub() override;
-  virtual Clock relay(const Entry& entry, Port sender) override;
+  virtual Clock relay(const Data& entry, Port sender) override;
 
 private:
   std::string _url;

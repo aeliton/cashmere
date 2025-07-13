@@ -76,7 +76,7 @@ message RefreshRequest {
 
 message RelayInsertRequest {
   uint32 sender = 1;
-  Entry entry = 2;
+  Data entry = 2;
 }
 
 message ClockResponse { map<fixed64, uint64> clock = 1; }

@@ -61,11 +61,10 @@ void runCommand(const Options& options)
     exit(EXIT_FAILURE);
   }
 
-  Entry entry{clock.tick(options.id), options.command.data};
   if (options.command.type == Command::Type::Append) {
-    if (!stub.relay(entry, 0).valid()) {
-      std::cerr << "Error: failed inserting:" << entry << options.hostname
-                << std::endl;
+    if (!stub.relay(options.command.data, 0).valid()) {
+      std::cerr << "Error: failed inserting:" << options.command.data
+                << options.hostname << std::endl;
       exit(EXIT_FAILURE);
     }
   }
@@ -89,15 +88,19 @@ void runService(const Options& options)
 
   brokerThread.detach();
 
+  if (options.command.type == Command::Type::Append) {
+    broker->relay(options.command.data, 0);
+  }
+
   Command command;
   while (command.type != Command::Type::Quit) {
     std::cout << journal->clock() << "[" << Ledger::Balance(journal->entries())
               << "]"
               << "> ";
+    command = Command::Read(std::cin);
 
-    command.read(std::cin);
     switch (command.type) {
-      case Command::Type::Unknown:
+      case Command::Type::Invalid:
         std::cerr << "unknown command: " << command.name() << std::endl;
         break;
       case Command::Type::Connect:
@@ -110,7 +113,8 @@ void runService(const Options& options)
         broker->disconnect(command.port);
         break;
       case Command::Type::Append:
-        journal->append(command.data.value);
+        command.data.id = journal->id();
+        journal->append(command.data);
         break;
       case Command::Type::Relay:
         std::cerr << "not implemented" << std::endl;

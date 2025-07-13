@@ -71,12 +71,17 @@ void SetClock(
   }
 }
 
+void SetData(Grpc::Data* entry, const Data& data)
+{
+  entry->set_id(data.id);
+  entry->set_value(data.value);
+  SetClock(entry->mutable_alters(), data.alters);
+}
+
 void SetEntry(Grpc::Entry* entry, const Entry& data)
 {
   SetClock(entry->mutable_clock(), data.clock);
-  entry->mutable_data()->set_id(data.entry.id);
-  entry->mutable_data()->set_value(data.entry.value);
-  SetClock(entry->mutable_data()->mutable_alters(), data.entry.alters);
+  SetData(entry->mutable_data(), data.entry);
 }
 
 void SetConnectionInfo(Grpc::ConnectionInfo& info, const ConnectionInfo& data)

@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "options.h"
 
+#include <cassert>
 #include <sstream>
 #include <unistd.h>
 
@@ -23,6 +24,7 @@ Options::Options() = default;
 Options::Options(int argc, char* argv[])
 {
   int opt;
+  optind = 1;
   while (_error.status == Status::Ok &&
          (opt = getopt(argc, argv, "i:h:p:s")) != -1) {
     switch (opt) {
@@ -63,27 +65,20 @@ Options::Options(int argc, char* argv[])
       _error.optionArgument = optarg;
       break;
     case Status::Ok:
-      if (!service) {
-        if (optind >= argc) {
-          _error.status = Status::MissingCommand;
-        } else {
-          const std::string arg = std::string(argv[optind++]);
+      if (optind < argc) {
+        const std::string arg = std::string(argv[optind++]);
+        if (arg == "add") {
           command.type = Command::Type::Append;
-          if (arg == "add") {
-            if (optind >= argc) {
-              _error.status = Status::MissingCommandArgument;
-            } else {
-              command.data.id = id;
-              command.data.value = std::stol(argv[optind++]);
-              if (optind < argc) {
-                std::stringstream ss(argv[optind++]);
-                if (!Cashmere::Clock::Read(ss, command.data.alters)) {
-                  _error.status = Status::InvalidArgument;
-                }
-              }
-            }
+          std::stringstream ss;
+          for (; optind < argc; optind++) {
+            ss << argv[optind] << " ";
+          }
+          if (!ReadData(ss, command.data)) {
+            _error.status = Status::MissingCommandArgument;
           }
         }
+      } else if (!service) {
+        _error.status = Status::MissingCommand;
       }
       break;
     default:
@@ -106,4 +101,9 @@ bool operator==(const Options::Error& a, const Options::Error& b)
 {
   return a.status == b.status && a.option == b.option &&
          a.optionArgument == b.optionArgument;
+}
+
+bool Options::ok() const
+{
+  return _error.status == Status::Ok;
 }

@@ -22,19 +22,17 @@ using namespace Cashmere;
 
 TEST(Command, AppendCommandReadsValue)
 {
-  std::stringstream ss("add {aa, 10}");
-  Command cmd;
-  cmd.read(ss);
-  const auto expected = Data{.id = 0xAA, .value = 10, .alters = Clock{}};
+  std::stringstream ss("add 10");
+  Command cmd = Command::Read(ss);
+  const auto expected = Data{.id = 0x00, .value = 10, .alters = Clock{}};
   ASSERT_EQ(cmd.data, expected);
 }
 
 TEST(Command, AppendCommandReadsValueAndClock)
 {
-  std::stringstream ss("add {aa, 10, {{bb, 1}}}");
-  Command cmd;
-  cmd.read(ss);
+  std::stringstream ss("add 10 {{bb, 1}}");
+  Command cmd = Command::Read(ss);
   const auto expected =
-    Data{.id = 0xAA, .value = 10, .alters = Clock{{0xBB, 1}}};
+    Data{.id = 0x00, .value = 10, .alters = Clock{{0xBB, 1}}};
   ASSERT_EQ(cmd.data, expected);
 }

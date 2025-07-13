@@ -186,7 +186,7 @@ void Connection::update(const ConnectionData& data)
   _cache = data;
 }
 
-Clock Connection::relay(const Entry& entry) const
+Clock Connection::relay(const Data& entry) const
 {
   return broker()->relay(entry, _cache.port);
 }

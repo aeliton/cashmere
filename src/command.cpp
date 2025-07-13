@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "command.h"
+#include "utils/fileutils.h"
 
 #include <istream>
 #include <unordered_map>
@@ -29,7 +30,7 @@ static const std::unordered_map<std::string, Command::Type> kNameTypeMap = {
 };
 
 static const std::unordered_map<Command::Type, std::string> kTypeNameMap = {
-  {Command::Type::Unknown, "<unknown>"},
+  {Command::Type::Invalid, "<unknown>"},
   {Command::Type::Connect, "connect"},
   {Command::Type::Disconnect, "disconnect"},
   {Command::Type::Append, "add"},
@@ -39,42 +40,44 @@ static const std::unordered_map<Command::Type, std::string> kTypeNameMap = {
   {Command::Type::Quit, "quit"}
 };
 
-std::istream& Command::read(std::istream& in)
+Command Command::Read(std::istream& in)
 {
-  *this = {};
+  Command command = {};
 
-  in >> _name;
+  in >> command._name;
 
-  const auto it = kNameTypeMap.find(_name);
+  const auto it = kNameTypeMap.find(command._name);
   if (it == kNameTypeMap.cend()) {
-    return in;
+    return command;
   }
 
-  type = it->second;
+  command.type = it->second;
 
   std::string argument;
   switch (it->second) {
     case Type::Connect:
-      in >> url;
+      in >> command.url;
       break;
     case Type::Relay:
       in >> argument;
-      data.id = std::stoull(argument);
+      if (!ReadData(in, command.data)) {
+        command.type = Type::Invalid;
+      }
       [[fallthrough]];
     case Type::Append:
-      if (!Cashmere::Data::Read(in, data)) {
-        type = Type::Unknown;
+      if (!ReadValueAndOptionalClock(in, command.data)) {
+        command.type = Type::Invalid;
       }
       break;
     case Type::Disconnect:
       in >> argument;
-      port = std::stoi(argument);
+      command.port = std::stoi(argument);
       break;
     default:
       break;
   }
 
-  return in;
+  return command;
 }
 
 std::string Command::name() const
@@ -85,4 +88,31 @@ std::string Command::name() const
 bool operator==(const Command& a, const Command& b)
 {
   return a.type == b.type && a.data == b.data;
+}
+
+bool Command::ok() const
+{
+  return type != Type::Invalid;
+}
+
+bool ReadValueAndOptionalClock(std::istream& in, Cashmere::Data& data)
+{
+  in >> data.value;
+  if (in.fail()) {
+    return false;
+  }
+  Cashmere::ReadSpaces(in);
+  if ((in.peek() == Cashmere::kLineFeed || in.eof())) {
+    return true;
+  }
+  return Cashmere::Clock::Read(in, data.alters);
+}
+
+bool ReadData(std::istream& in, Cashmere::Data& data)
+{
+  in >> std::hex >> data.id >> std::dec;
+  if (in.fail()) {
+    return false;
+  }
+  return ReadValueAndOptionalClock(in, data);
 }

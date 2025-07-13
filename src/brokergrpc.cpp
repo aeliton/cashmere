@@ -110,9 +110,9 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   const Grpc::RelayInsertRequest* request, Grpc::InsertResponse* response
 )
 {
-  std::cout << "Relay message received: " << Utils::EntryFrom(request->entry())
+  std::cout << "Relay message received: " << Utils::DataFrom(request->entry())
             << " and sender: " << request->sender() << std::endl;
-  Clock clock = relay(Utils::EntryFrom(request->entry()), request->sender());
+  Clock clock = relay(Utils::DataFrom(request->entry()), request->sender());
   Utils::SetClock(response->mutable_version(), clock);
   return ::grpc::Status::OK;
 }
