@@ -21,11 +21,12 @@ class Args
 public:
   Args(std::vector<std::string> arguments)
     : argc(arguments.size())
-    , argv(new char*[argc])
+    , argv(new char*[argc + 1])
   {
     for (int i = 0; i < argc; i++) {
       *(argv + i) = strdup(arguments[i].c_str());
     }
+    argv[argc] = nullptr;
   }
   ~Args()
   {
