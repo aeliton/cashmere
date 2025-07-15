@@ -25,6 +25,7 @@ TEST(Command, AppendCommandReadsValue)
   std::stringstream ss("add 10");
   Command cmd = Command::Read(ss);
   const auto expected = Data{.id = 0x00, .value = 10, .alters = Clock{}};
+  EXPECT_EQ(cmd.type, Command::Type::Append);
   ASSERT_EQ(cmd.data, expected);
 }
 
@@ -34,5 +35,6 @@ TEST(Command, AppendCommandReadsValueAndClock)
   Command cmd = Command::Read(ss);
   const auto expected =
     Data{.id = 0x00, .value = 10, .alters = Clock{{0xBB, 1}}};
+  EXPECT_EQ(cmd.type, Command::Type::Append);
   ASSERT_EQ(cmd.data, expected);
 }
