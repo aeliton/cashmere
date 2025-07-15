@@ -38,22 +38,26 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   const Grpc::ConnectionRequest* request, Grpc::ConnectionResponse* response
 )
 {
-  const Clock version = Utils::ClockFrom(request->version());
-  const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
   auto stub = Utils::BrokerStubFrom(request->broker());
+  if (request->port() == 0) {
+    response->set_port(connect(stub));
+  } else {
+    const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
+    const Clock version = Utils::ClockFrom(request->version());
 
-  std::cout << "Connection request from: [" << request->broker().url()
-            << "] with port: " << request->port() << ", version: " << version
-            << std::endl
-            << ", sources: " << sources << std::endl;
+    std::cout << "Connection request from: [" << request->broker().url()
+              << "] with port: " << request->port() << ", version: " << version
+              << std::endl
+              << ", sources: " << sources << std::endl;
 
-  ConnectionData conn{stub, request->port(), version, sources};
+    ConnectionData conn{stub, request->port(), version, sources};
 
-  ConnectionData out = connect(conn);
+    ConnectionData out = connect(conn);
 
-  response->set_port(out.port);
-  Utils::SetClock(response->mutable_version(), out.version);
-  Utils::SetSources(response->mutable_sources(), out.sources);
+    response->set_port(out.port);
+    Utils::SetClock(response->mutable_version(), out.version);
+    Utils::SetSources(response->mutable_sources(), out.sources);
+  }
 
   return ::grpc::Status::OK;
 }

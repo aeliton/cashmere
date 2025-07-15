@@ -54,19 +54,37 @@ int main(int argc, char* argv[])
 void runCommand(const Options& options)
 {
   auto stub = BrokerGrpcStub(options.hostname, options.port);
-  auto clock = stub.clock();
-  if (!clock.valid()) {
-    std::cerr << "Error: failed retrieving version from " << options.hostname
-              << ":" << options.port << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  if (options.command.type == Command::Type::Append) {
-    if (!stub.relay(options.command.data, 0).valid()) {
-      std::cerr << "Error: failed inserting:" << options.command.data
-                << options.hostname << std::endl;
-      exit(EXIT_FAILURE);
-    }
+  switch (options.command.type) {
+    case Command::Type::Invalid:
+      break;
+    case Command::Type::Connect:
+      std::cout << "connect to " << options.command.url << std::endl;
+      stub.connect(ConnectionData(BrokerStub(options.command.url)));
+      break;
+    case Command::Type::Disconnect:
+      break;
+    case Command::Type::Append:
+      if (!stub.relay(options.command.data, 0).valid()) {
+        std::cerr << "Error: failed inserting:" << options.command.data
+                  << options.hostname << std::endl;
+        exit(EXIT_FAILURE);
+      }
+      break;
+    case Command::Type::Relay:
+      if (!stub.relay(options.command.data, 0).valid()) {
+        std::cerr << "Error: failed inserting:" << options.command.data
+                  << options.hostname << std::endl;
+        exit(EXIT_FAILURE);
+      }
+      break;
+    case Command::Type::Sources:
+      break;
+    case Command::Type::Versions:
+      break;
+    case Command::Type::ListCommands:
+      break;
+    case Command::Type::Quit:
+      break;
   }
 }
 

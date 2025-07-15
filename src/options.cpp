@@ -66,17 +66,11 @@ Options::Options(int argc, char* argv[])
       break;
     case Status::Ok:
       if (optind < argc) {
-        const std::string arg = std::string(argv[optind++]);
-        if (arg == "add") {
-          command.type = Command::Type::Append;
-          std::stringstream ss;
-          for (; optind < argc; optind++) {
-            ss << argv[optind] << " ";
-          }
-          if (!ReadData(ss, command.data)) {
-            _error.status = Status::MissingCommandArgument;
-          }
+        std::stringstream ss;
+        for (; optind < argc; optind++) {
+          ss << argv[optind] << " ";
         }
+        command = Command::Read(ss);
       } else if (!service) {
         _error.status = Status::MissingCommand;
       }

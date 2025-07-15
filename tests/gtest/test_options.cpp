@@ -100,9 +100,9 @@ TEST(OptionsParse, ParseHostname)
 
 TEST(OptionsParse, ParseAddCommandsWithoutClock)
 {
-  Args args({"anyname", "add", "aa", "10"});
+  Args args({"anyname", "add", "10"});
   Options options(args.argc, args.argv);
-  const auto data = Cashmere::Data{0xAA, 10, {}};
+  const auto data = Cashmere::Data{0x00, 10, {}};
   ASSERT_EQ(options.command.data, data);
   EXPECT_TRUE(options.ok());
 }

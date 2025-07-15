@@ -57,3 +57,12 @@ TEST(Command, RelayReadsIdAndValueAndClock)
   EXPECT_EQ(cmd.type, Command::Type::Relay);
   ASSERT_EQ(cmd.data, expected);
 }
+
+TEST(Command, ConnectReadsAaUrl)
+{
+  std::string url("0.0.0.0:5000");
+  std::stringstream ss(std::string("connect ") + url);
+  Command cmd = Command::Read(ss);
+  EXPECT_EQ(cmd.type, Command::Type::Connect);
+  ASSERT_EQ(cmd.url, url);
+}

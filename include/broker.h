@@ -48,10 +48,11 @@ public:
   virtual BrokerBasePtr ptr();
   virtual BrokerStub stub() override;
 
-  Port connect(BrokerStub other);
   ConnectionData connect(ConnectionData conn) override;
 
   Clock relay(const Data& entry, Port sender) override;
+
+  Port connect(BrokerStub other);
 
 private:
   void refreshConnections(Port ignore = 0);
