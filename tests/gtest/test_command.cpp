@@ -38,3 +38,22 @@ TEST(Command, AppendCommandReadsValueAndClock)
   EXPECT_EQ(cmd.type, Command::Type::Append);
   ASSERT_EQ(cmd.data, expected);
 }
+
+TEST(Command, RelayReadsIdAndValue)
+{
+  std::stringstream ss("relay aa 10");
+  Command cmd = Command::Read(ss);
+  const auto expected = Data{.id = 0xAA, .value = 10, .alters = Clock{}};
+  EXPECT_EQ(cmd.type, Command::Type::Relay);
+  ASSERT_EQ(cmd.data, expected);
+}
+
+TEST(Command, RelayReadsIdAndValueAndClock)
+{
+  std::stringstream ss("relay aa 10 {{bb, 1}}");
+  Command cmd = Command::Read(ss);
+  const auto expected =
+    Data{.id = 0xAA, .value = 10, .alters = Clock{{0xBB, 1}}};
+  EXPECT_EQ(cmd.type, Command::Type::Relay);
+  ASSERT_EQ(cmd.data, expected);
+}

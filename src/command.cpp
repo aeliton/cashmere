@@ -59,11 +59,10 @@ Command Command::Read(std::istream& in)
       in >> command.url;
       break;
     case Type::Relay:
-      in >> argument;
       if (!ReadData(in, command.data)) {
         command.type = Type::Invalid;
       }
-      [[fallthrough]];
+      break;
     case Type::Append:
       if (!ReadValueAndOptionalClock(in, command.data)) {
         command.type = Type::Invalid;
