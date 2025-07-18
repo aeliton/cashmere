@@ -59,7 +59,7 @@ void runCommand(const Options& options)
       break;
     case Command::Type::Connect:
       std::cout << "connect to " << options.command.url << std::endl;
-      stub.connect(ConnectionData(BrokerStub(options.command.url)));
+      stub.connect(Connection(BrokerStub(options.command.url)));
       break;
     case Command::Type::Disconnect:
       break;
@@ -122,11 +122,14 @@ void runService(const Options& options)
         std::cerr << "unknown command: " << command.name() << std::endl;
         break;
       case Command::Type::Connect:
-        if (broker->connect(BrokerStub(command.url)) < 0) {
+      {
+        const auto conn = broker->connect(BrokerStub(command.url));
+        if (!conn.valid()) {
           std::cerr << command.name() << ": failed [" << options.port << "]"
                     << std::endl;
         }
         break;
+      }
       case Command::Type::Disconnect:
         broker->disconnect(command.port);
         break;

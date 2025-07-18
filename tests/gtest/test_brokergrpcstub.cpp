@@ -62,7 +62,7 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
     std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
   };
 
-  EXPECT_EQ(broker->connect(brokerStub), 1);
+  broker->connect(brokerStub);
   EXPECT_EQ(broker->clock(), Clock({{0xBB, 1}}));
 }
 
@@ -97,7 +97,7 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
     std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
   };
 
-  EXPECT_EQ(journal->connect(brokerStub), 1);
+  journal->connect(brokerStub);
 }
 
 TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
@@ -118,7 +118,7 @@ TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
     std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
   };
 
-  EXPECT_EQ(journal->connect(brokerStub), 1);
+  journal->connect(brokerStub);
 }
 
 TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
@@ -142,7 +142,7 @@ TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
     std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
   };
 
-  EXPECT_EQ(journal->connect(brokerStub), 1);
+  journal->connect(brokerStub);
   EXPECT_EQ(journal->disconnect(1), 1);
 }
 
@@ -177,6 +177,6 @@ TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
     std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
   };
 
-  EXPECT_EQ(broker->connect(brokerStub), 2);
-  EXPECT_TRUE(broker->refresh(ConnectionData(), 1));
+  broker->connect(brokerStub);
+  EXPECT_TRUE(broker->refresh(Connection(), 1));
 }

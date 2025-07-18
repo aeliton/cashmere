@@ -103,40 +103,40 @@ EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
   return {};
 }
 
-ConnectionData BrokerGrpcStub::connect(ConnectionData conn)
+Connection BrokerGrpcStub::connect(Connection conn)
 {
   std::cout << "Broker grpc stub connect called with: " << conn << std::endl;
   ::grpc::ClientContext context;
 
   Grpc::ConnectionRequest request;
-  request.set_port(conn.port);
-  Utils::SetClock(request.mutable_version(), conn.version);
+  request.set_port(conn.port());
+  Utils::SetClock(request.mutable_version(), conn.version());
 
-  request.mutable_broker()->set_url(conn.broker.url());
+  request.mutable_broker()->set_url(conn.stub().url());
 
-  Utils::SetSources(request.mutable_sources(), conn.sources);
+  Utils::SetSources(request.mutable_sources(), conn.provides());
 
   Grpc::ConnectionResponse response;
 
   auto status = _stub->Connect(&context, request, &response);
   if (status.ok()) {
     Clock clock = Utils::ClockFrom(response.version());
-    return ConnectionData{BrokerStub{}, response.port(), clock, {}};
+    return Connection{BrokerStub{_url}, response.port(), clock, {}};
   } else {
-    std::cerr << "BrokerGrpcStub: error connecting to " << conn.broker.url()
+    std::cerr << "BrokerGrpcStub: error connecting to " << conn.stub().url()
               << "[" << status.error_code() << "]" << std::endl;
   }
-  return ConnectionData();
+  return Connection();
 }
 
-bool BrokerGrpcStub::refresh(const ConnectionData& conn, Port sender)
+bool BrokerGrpcStub::refresh(const Connection& conn, Port sender)
 {
   Grpc::RefreshRequest request;
   request.set_sender(sender);
-  request.set_port(conn.port);
+  request.set_port(conn.port());
 
-  Utils::SetClock(request.mutable_version(), conn.version);
-  Utils::SetSources(request.mutable_sources(), conn.sources);
+  Utils::SetClock(request.mutable_version(), conn.version());
+  Utils::SetSources(request.mutable_sources(), conn.provides());
 
   ::google::protobuf::Empty response;
   ::grpc::ClientContext context;

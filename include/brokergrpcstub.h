@@ -41,8 +41,8 @@ public:
   virtual EntryList
   query(const Clock& from = {}, Port sender = 0) const override;
 
-  virtual ConnectionData connect(ConnectionData conn) override;
-  virtual bool refresh(const ConnectionData& conn, Port sender) override;
+  virtual Connection connect(Connection conn) override;
+  virtual bool refresh(const Connection& conn, Port sender) override;
   virtual BrokerStub stub() override;
   virtual Clock relay(const Data& entry, Port sender) override;
 

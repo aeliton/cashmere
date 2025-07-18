@@ -75,9 +75,11 @@ struct StringMaker<Cashmere::IdConnectionInfoMap>
 
 using namespace Cashmere;
 
-TEST_CASE_METHOD(Broker, "broker connect ignores nullptr")
+TEST_CASE("broker connect ignores nullptr")
 {
-  REQUIRE(connect(BrokerStub{}) == -1);
+  auto broker = std::make_shared<Broker>();
+  const auto conn = broker->connect(Connection{});
+  REQUIRE(conn.port() == -1);
 }
 
 TEST_CASE_METHOD(Broker, "broker without journals has an empty clock")
@@ -99,11 +101,11 @@ SCENARIO("Journal is connected")
     WHEN("the journal with an entry is connected")
     {
       auto aa = std::make_shared<SingleEntryMock>(0xAA, 10);
-      const bool success = broker0->connect(BrokerStub{aa});
+      const auto conn = broker0->connect(BrokerStub{aa});
 
       THEN("the connect is successful")
       {
-        REQUIRE(success);
+        REQUIRE(conn.valid());
       }
 
       THEN("the broker has its clock updated")

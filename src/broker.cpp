@@ -30,60 +30,52 @@ Broker::Broker()
 
 Broker::~Broker() = default;
 
-ConnectionData Broker::connect(ConnectionData conn)
+Connection Broker::connect(Connection conn)
 {
-  ConnectionData out;
+  Connection out(stub());
 
-  if (conn.port == 0) {
-    out.port = connect(conn.broker);
+  if (conn.port() == 0) {
+    if (!conn.broker()) {
+      out.port() = -1;
+      return out;
+    }
+
+    out.port() = _connections.size();
+    _connections.push_back(conn.stub());
+
+    auto& conn = _connections.at(out.port());
+    conn.update(conn.broker()->connect(Connection{
+      stub(), out.port(), clock(), UpdateProvides(provides(out.port()))
+    }));
+
+    auto thisEntries = query(conn.version(), out.port());
+    auto brokerEntries = conn.entries(clock());
+
+    if (brokerEntries.size() > 0) {
+      BrokerBase::insert(brokerEntries, out.port());
+    }
+    if (thisEntries.size() > 0) {
+      conn.insert(thisEntries);
+    }
+
+    refreshConnections(out.port());
   } else {
-    out.port = _connections.size();
+    out.port() = _connections.size();
 
     auto version = clock();
-    for (auto& [id, info] : conn.sources) {
+    for (auto& [id, info] : conn.provides()) {
       info.version = info.version.merge(version);
     }
 
-    Connection connection(conn.broker, conn);
-    _connections.push_back(connection);
-    refreshConnections(out.port);
-    out.broker = stub();
-    out.version = version;
-    out.sources = UpdateProvides(provides(out.port));
+    _connections.push_back(conn);
+    refreshConnections(out.port());
+    out.version() = version;
+    out.provides() = UpdateProvides(provides(out.port()));
   }
   return out;
 }
 
-Port Broker::connect(BrokerStub remote)
-{
-  if (!remote.broker()) {
-    return -1;
-  }
-
-  const Port port = _connections.size();
-  _connections.push_back(Connection(
-    remote, remote.broker()->connect(ConnectionData{
-              stub(), port, clock(), UpdateProvides(provides(port))
-            })
-  ));
-  auto& conn = _connections.at(port);
-
-  auto thisEntries = query(conn.version(), port);
-  auto brokerEntries = conn.entries(clock());
-
-  if (brokerEntries.size() > 0) {
-    BrokerBase::insert(brokerEntries, port);
-  }
-  if (thisEntries.size() > 0) {
-    conn.insert(thisEntries);
-  }
-
-  refreshConnections(port);
-
-  return port;
-}
-
-bool Broker::refresh(const ConnectionData& data, Port sender)
+bool Broker::refresh(const Connection& data, Port sender)
 {
   if (sender <= 0 || static_cast<size_t>(sender) >= _connections.size()) {
     return false;

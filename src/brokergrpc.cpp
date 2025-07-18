@@ -40,7 +40,8 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
 {
   auto stub = Utils::BrokerStubFrom(request->broker());
   if (request->port() == 0) {
-    response->set_port(connect(stub));
+    const auto conn = connect(stub);
+    response->set_port(conn.port());
   } else {
     const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
     const Clock version = Utils::ClockFrom(request->version());
@@ -50,13 +51,13 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
               << std::endl
               << ", sources: " << sources << std::endl;
 
-    ConnectionData conn{stub, request->port(), version, sources};
+    Connection conn{stub, request->port(), version, sources};
 
-    ConnectionData out = connect(conn);
+    Connection out = connect(conn);
 
-    response->set_port(out.port);
-    Utils::SetClock(response->mutable_version(), out.version);
-    Utils::SetSources(response->mutable_sources(), out.sources);
+    response->set_port(out.port());
+    Utils::SetClock(response->mutable_version(), out.version());
+    Utils::SetSources(response->mutable_sources(), out.provides());
   }
 
   return ::grpc::Status::OK;
@@ -100,10 +101,10 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   [[maybe_unused]] ::google::protobuf::Empty* response
 )
 {
-  ConnectionData conn;
-  conn.port = request->port();
-  conn.version = Utils::ClockFrom(request->version());
-  conn.sources = Utils::SourcesFrom(request->sources());
+  Connection conn;
+  conn.port() = request->port();
+  conn.version() = Utils::ClockFrom(request->version());
+  conn.provides() = Utils::SourcesFrom(request->sources());
   refresh(conn, request->sender());
   std::cout << "Refresh called!" << std::endl;
   return ::grpc::Status::OK;

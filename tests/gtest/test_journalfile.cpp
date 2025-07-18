@@ -33,12 +33,12 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
 
   EXPECT_CALL(
     *broker,
-    connect(ConnectionData{
+    connect(Connection{
       BrokerStub(journal), 1, {}, {{kFixtureId, {.distance = 1, .version = {}}}}
     })
   )
     .Times(1)
-    .WillOnce(Return(ConnectionData{
+    .WillOnce(Return(Connection{
       BrokerStub{}, 1, Clock{{0xBB, 1}},
       IdConnectionInfoMap{{0xBB, {1, Clock{{0xBB, 1}}}}}
     }));

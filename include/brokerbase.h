@@ -74,10 +74,9 @@ private:
 
 struct ConnectionData
 {
-  BrokerStub broker;
-  Port port;
-  Clock version;
-  IdConnectionInfoMap sources;
+  Port port = 0;
+  Clock version = {};
+  IdConnectionInfoMap sources = {};
   bool operator==(const ConnectionData& other) const;
   friend std::ostream& operator<<(std::ostream& os, const ConnectionData& Data);
 };
@@ -91,13 +90,10 @@ public:
     Remote
   };
   explicit Connection();
+  Connection(BrokerStub stub);
   Connection(BrokerStub stub, ConnectionData data);
   Connection(
     BrokerStub stub, Port port, Clock version, IdConnectionInfoMap provides
-  );
-  Connection(
-    const std::string& url, Port port, Clock version,
-    IdConnectionInfoMap provides
   );
 
   virtual ~Connection();
@@ -109,21 +105,23 @@ public:
   Clock insert(const EntryList& data) const;
   EntryList entries(const Clock& clock = {}) const;
   bool active() const;
-  bool refresh(const ConnectionData& conn) const;
+  bool refresh(const Connection& conn) const;
 
-  Port port() const;
+  Port& port() const;
   Clock& version(Origin origin = Origin::Cache) const;
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
   Clock relay(const Data& entry) const;
 
   bool operator==(const Connection& other) const;
   friend std::ostream& operator<<(std::ostream& os, const Connection& data);
+  void update(const Connection& data);
+
+  BrokerStub& stub();
+  ConnectionData cache() const;
+
+  bool valid() const;
 
 protected:
-  friend class Broker;
-
-  void update(const ConnectionData& data);
-
   BrokerStub _broker;
   mutable ConnectionData _cache;
 };
@@ -133,8 +131,8 @@ class BrokerBase
 public:
   virtual ~BrokerBase();
 
-  virtual ConnectionData connect(ConnectionData conn) = 0;
-  virtual bool refresh(const ConnectionData& conn, Port sender) = 0;
+  virtual Connection connect(Connection conn) = 0;
+  virtual bool refresh(const Connection& conn, Port sender) = 0;
   virtual Clock insert(const Entry& data, Port sender = 0) = 0;
   virtual Clock insert(const EntryList& entries, Port sender = 0);
 

@@ -42,17 +42,15 @@ public:
   query(const Clock& from = {}, Port sender = 0) const override;
 
   Port disconnect(Port port);
-  virtual bool refresh(const ConnectionData& conn, Port port) override;
+  virtual bool refresh(const Connection& conn, Port port) override;
   virtual std::set<Port> connectedPorts() const;
 
   virtual BrokerBasePtr ptr();
   virtual BrokerStub stub() override;
 
-  ConnectionData connect(ConnectionData conn) override;
+  Connection connect(Connection conn) override;
 
   Clock relay(const Data& entry, Port sender) override;
-
-  Port connect(BrokerStub other);
 
 private:
   void refreshConnections(Port ignore = 0);

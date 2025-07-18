@@ -28,7 +28,7 @@ TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
 
   aa->append(10);
 
-  aa->connect(ConnectionData{
+  aa->connect(Connection{
     BrokerStub{bb}, 1, Clock{},
     IdConnectionInfoMap{{0xBB, {.distance = 1, .version = {}}}}
   });

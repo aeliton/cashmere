@@ -76,19 +76,19 @@ Connection::Connection(
   BrokerStub stub, Port port, Clock version, IdConnectionInfoMap provides
 )
   : _broker(stub)
-  , _cache({BrokerStub{}, port, version, provides})
+  , _cache({port, version, provides})
 {
 }
 
-Connection::Connection(BrokerStub stub, ConnectionData data)
+Connection::Connection(BrokerStub stub)
   : _broker(stub)
-  , _cache(data)
+  , _cache()
 {
 }
 
 Connection::~Connection() = default;
 
-Port Connection::port() const
+Port& Connection::port() const
 {
   return _cache.port;
 }
@@ -163,12 +163,12 @@ IdConnectionInfoMap& Connection::provides(Origin origin) const
 void Connection::disconnect()
 {
   if (auto b = broker()) {
-    b->refresh(ConnectionData(), _cache.port);
+    b->refresh(Connection(), _cache.port);
     _broker.reset();
   }
 }
 
-bool Connection::refresh(const ConnectionData& data) const
+bool Connection::refresh(const Connection& data) const
 {
   if (auto source = broker()) {
     return source->refresh(data, _cache.port);
@@ -181,9 +181,9 @@ bool Connection::active() const
   return broker() != nullptr;
 }
 
-void Connection::update(const ConnectionData& data)
+void Connection::update(const Connection& data)
 {
-  _cache = data;
+  _cache = data._cache;
 }
 
 Clock Connection::relay(const Data& entry) const
@@ -245,6 +245,20 @@ std::ostream& operator<<(std::ostream& os, const ConnectionData& info)
 std::ostream& operator<<(std::ostream& os, const Connection& info)
 {
   return os << "Connection{" << info._cache << "}";
+}
+
+BrokerStub& Connection::stub()
+{
+  return _broker;
+}
+ConnectionData Connection::cache() const
+{
+  return _cache;
+}
+
+bool Connection::valid() const
+{
+  return _cache.port >= 0;
 }
 
 }
