@@ -138,7 +138,7 @@ void runService(const Options& options)
         journal->append(command.data);
         break;
       case Command::Type::Relay:
-        std::cerr << "not implemented" << std::endl;
+        broker->relay(command.data, 0);
         break;
       case Command::Type::Sources:
         std::cout << journal->provides() << std::endl;
