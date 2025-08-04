@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 cmake_minimum_required(VERSION 3.30)
 
-project(cash VERSION 0.0.1)
+project(cashmere VERSION 0.0.1 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -53,7 +53,7 @@ protobuf_generate(
   PLUGIN_OPTIONS "generate_mock_code=true"
 )
 
-add_library(cash_objects OBJECT
+add_library(cashmere
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpc.cpp
@@ -70,25 +70,27 @@ add_library(cash_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
 )
-target_link_libraries(cash_objects PUBLIC cashmere_proto)
+target_link_libraries(cashmere PUBLIC cashmere_proto)
 
-target_include_directories(cash_objects PUBLIC
+target_include_directories(cashmere PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+add_library(cashmere::cashmere ALIAS cashmere)
 
 add_executable(cash)
 target_sources(cash PRIVATE
  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
 
-target_link_libraries(cash PRIVATE cash_objects)
+target_link_libraries(cash PRIVATE cashmere::cashmere)
 
 add_library(test_helper INTERFACE)
 target_include_directories(test_helper INTERFACE
-  $<BUILD_INTERFACE:${cash_SOURCE_DIR}/tests/include>
+  $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/tests/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_link_libraries(test_helper INTERFACE cash_objects)
+target_link_libraries(test_helper INTERFACE cashmere::cashmere)
 
 find_package(Catch2 3 REQUIRED)
 
@@ -103,7 +105,7 @@ target_sources(catch_tests PRIVATE
 )
 target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
-  cash_objects
+  cashmere::cashmere
   test_helper
   signal
 )
@@ -126,7 +128,7 @@ add_executable (gtests
 target_link_libraries (gtests
   GTest::gmock
   GTest::gtest_main
-  cash_objects
+  cashmere::cashmere
   test_helper
   cashmere_proto
 )
