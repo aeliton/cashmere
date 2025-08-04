@@ -20,7 +20,6 @@
 #include <memory>
 
 #include "entry.h"
-#include <proto/cashmere.grpc.pb.h>
 
 namespace Cashmere
 {

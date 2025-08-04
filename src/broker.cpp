@@ -16,6 +16,7 @@
 #include "broker.h"
 #include "brokerbase.h"
 #include <cassert>
+#include <limits>
 #include <utility>
 
 namespace Cashmere
