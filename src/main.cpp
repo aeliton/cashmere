@@ -100,9 +100,7 @@ void runService(const Options& options)
             << " port: " << options.port << " path: " << tempDir.directory
             << std::endl;
 
-  auto grpcBroker = broker->start();
-
-  std::thread brokerThread([&grpcBroker]() { grpcBroker->Wait(); });
+  std::thread brokerThread = broker->start();
 
   brokerThread.detach();
 
@@ -155,5 +153,5 @@ void runService(const Options& options)
     }
   }
 
-  grpcBroker->Shutdown();
+  broker->stop();
 }

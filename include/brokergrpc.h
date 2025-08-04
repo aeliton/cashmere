@@ -17,9 +17,7 @@
 #define CASHMERE_BROKER_GRPC_H
 
 #include "broker.h"
-
-#include <proto/cashmere.grpc.pb.h>
-#include <proto/cashmere.pb.h>
+#include <thread>
 
 namespace Cashmere
 {
@@ -28,47 +26,24 @@ class BrokerGrpc;
 using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
 using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
 
-class BrokerGrpc : public Broker, public Grpc::Broker::Service
+class BrokerGrpc : public Broker
 {
 public:
   BrokerGrpc(const std::string& hostname, uint16_t port);
 
-  std::unique_ptr<grpc::Server> start();
+  ~BrokerGrpc();
+
+  std::thread start();
+  void stop();
 
   BrokerStub stub() override;
 
 private:
-  ::grpc::Status Connect(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::ConnectionRequest* request,
-    ::Cashmere::Grpc::ConnectionResponse* response
-  ) override;
-  ::grpc::Status Query(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::QueryRequest* request,
-    ::Cashmere::Grpc::QueryResponse* response
-  ) override;
-  ::grpc::Status Insert(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::InsertRequest* request,
-    ::Cashmere::Grpc::InsertResponse* response
-  ) override;
-  ::grpc::Status Refresh(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::RefreshRequest* request,
-    ::google::protobuf::Empty* response
-  ) override;
-  ::grpc::Status Relay(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::RelayInsertRequest* request,
-    ::Cashmere::Grpc::InsertResponse* response
-  ) override;
-  ::grpc::Status GetClock(
-    ::grpc::ServerContext* context, const ::google::protobuf::Empty* request,
-    ::Cashmere::Grpc::ClockResponse* response
-  ) override;
   std::string _hostname;
   uint16_t _port;
+
+  class Impl;
+  std::unique_ptr<Impl> _impl;
 };
 
 }

@@ -17,30 +17,88 @@
 #include "utils/grpcutils.h"
 
 #include <google/protobuf/empty.pb.h>
-#include <grpcpp/create_channel.h>
-#include <proto/cashmere.grpc.pb.h>
-
 #include <grpc/grpc.h>
+#include <grpcpp/create_channel.h>
 #include <grpcpp/server_builder.h>
+#include <proto/cashmere.grpc.pb.h>
+#include <proto/cashmere.pb.h>
+#include <thread>
 
 namespace Cashmere
 {
 
-BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
-  : Broker()
-  , _hostname(hostname)
-  , _port(port)
+class BrokerGrpc::Impl : public Grpc::Broker::Service
+{
+public:
+  Impl();
+
+  ~Impl();
+
+  void setBroker(BrokerPtr broker);
+
+  BrokerPtr broker() const
+  {
+    return _broker.lock();
+  }
+
+  std::thread start(const std::string& url);
+  void stop();
+
+private:
+  ::grpc::Status Connect(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::ConnectionRequest* request,
+    ::Cashmere::Grpc::ConnectionResponse* response
+  ) override;
+  ::grpc::Status Query(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::QueryRequest* request,
+    ::Cashmere::Grpc::QueryResponse* response
+  ) override;
+  ::grpc::Status Insert(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::InsertRequest* request,
+    ::Cashmere::Grpc::InsertResponse* response
+  ) override;
+  ::grpc::Status Refresh(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::RefreshRequest* request,
+    ::google::protobuf::Empty* response
+  ) override;
+  ::grpc::Status Relay(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::RelayInsertRequest* request,
+    ::Cashmere::Grpc::InsertResponse* response
+  ) override;
+  ::grpc::Status GetClock(
+    ::grpc::ServerContext* context, const ::google::protobuf::Empty* request,
+    ::Cashmere::Grpc::ClockResponse* response
+  ) override;
+
+  std::weak_ptr<Broker> _broker;
+  std::unique_ptr<grpc::Server> _server;
+};
+
+void BrokerGrpc::Impl::setBroker(BrokerPtr broker)
+{
+  _broker = broker;
+}
+
+BrokerGrpc::Impl::~Impl() {}
+
+BrokerGrpc::Impl::Impl()
+  : _broker()
 {
 }
 
-::grpc::Status BrokerGrpc::Connect(
+::grpc::Status BrokerGrpc::Impl::Connect(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::ConnectionRequest* request, Grpc::ConnectionResponse* response
 )
 {
   auto stub = Utils::BrokerStubFrom(request->broker());
   if (request->port() == 0) {
-    const auto conn = connect(stub);
+    const auto conn = broker()->connect(stub);
     response->set_port(conn.port());
   } else {
     const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
@@ -53,7 +111,7 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
 
     Connection conn{stub, request->port(), version, sources};
 
-    Connection out = connect(conn);
+    Connection out = broker()->connect(conn);
 
     response->set_port(out.port());
     Utils::SetClock(response->mutable_version(), out.version());
@@ -62,7 +120,8 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
 
   return ::grpc::Status::OK;
 }
-::grpc::Status BrokerGrpc::Query(
+
+::grpc::Status BrokerGrpc::Impl::Query(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::QueryRequest* request, Grpc::QueryResponse* response
 )
@@ -70,14 +129,15 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   auto sender = request->sender();
   Clock clock = Utils::ClockFrom(request->clock());
 
-  for (auto& entry : query(clock, sender)) {
+  for (auto& entry : broker()->query(clock, sender)) {
     auto out = response->add_entries();
     Utils::SetEntry(out, entry);
   }
 
   return ::grpc::Status::OK;
 }
-::grpc::Status BrokerGrpc::Insert(
+
+::grpc::Status BrokerGrpc::Impl::Insert(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::InsertRequest* request, Grpc::InsertResponse* response
 )
@@ -88,14 +148,15 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   std::cout << "Insert request from sender: [" << sender << "] entry: " << entry
             << std::endl;
 
-  if (insert(entry, sender).valid()) {
-    Utils::SetClock(response->mutable_version(), clock());
+  if (broker()->insert(entry, sender).valid()) {
+    Utils::SetClock(response->mutable_version(), broker()->clock());
     return ::grpc::Status::OK;
   }
 
   return ::grpc::Status::CANCELLED;
 }
-::grpc::Status BrokerGrpc::Refresh(
+
+::grpc::Status BrokerGrpc::Impl::Refresh(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::RefreshRequest* request,
   [[maybe_unused]] ::google::protobuf::Empty* response
@@ -105,48 +166,76 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
   conn.port() = request->port();
   conn.version() = Utils::ClockFrom(request->version());
   conn.provides() = Utils::SourcesFrom(request->sources());
-  refresh(conn, request->sender());
+  broker()->refresh(conn, request->sender());
   std::cout << "Refresh called!" << std::endl;
   return ::grpc::Status::OK;
 }
 
-::grpc::Status BrokerGrpc::Relay(
+::grpc::Status BrokerGrpc::Impl::Relay(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::RelayInsertRequest* request, Grpc::InsertResponse* response
 )
 {
   std::cout << "Relay message received: " << Utils::DataFrom(request->entry())
             << " and sender: " << request->sender() << std::endl;
-  Clock clock = relay(Utils::DataFrom(request->entry()), request->sender());
+  Clock clock =
+    broker()->relay(Utils::DataFrom(request->entry()), request->sender());
   Utils::SetClock(response->mutable_version(), clock);
   return ::grpc::Status::OK;
 }
 
-std::unique_ptr<grpc::Server> BrokerGrpc::start()
+std::thread BrokerGrpc::Impl::start(const std::string& url)
 {
-  std::cout << "BrokerGrpc running on port: " << _port << std::endl;
-  std::stringstream ss;
-  ss << "0.0.0.0:" << _port;
-
   grpc::ServerBuilder builder;
-  builder.AddListeningPort(ss.str(), grpc::InsecureServerCredentials());
+  builder.AddListeningPort(url, grpc::InsecureServerCredentials());
 
   builder.RegisterService(this);
-  return builder.BuildAndStart();
+  _server = builder.BuildAndStart();
+  return std::thread([this]() { _server->Wait(); });
 }
 
-::grpc::Status BrokerGrpc::GetClock(
+void BrokerGrpc::Impl::stop()
+{
+  _server->Shutdown();
+}
+
+::grpc::Status BrokerGrpc::Impl::GetClock(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const ::google::protobuf::Empty*, Grpc::ClockResponse* response
 )
 {
-  Utils::SetClock(response->mutable_clock(), clock());
+  Utils::SetClock(response->mutable_clock(), broker()->clock());
   return ::grpc::Status::OK;
+}
+
+void BrokerGrpc::stop()
+{
+  _impl->stop();
+}
+
+BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
+  : Broker()
+  , _hostname(hostname)
+  , _port(port)
+  , _impl(std::make_unique<BrokerGrpc::Impl>())
+{
 }
 
 BrokerStub BrokerGrpc::stub()
 {
   return BrokerStub(_hostname + ":" + std::to_string(_port));
 }
+
+std::thread BrokerGrpc::start()
+{
+  _impl->setBroker(shared_from_this());
+
+  std::cout << "BrokerGrpc running on port: " << _port << std::endl;
+  std::stringstream ss;
+  ss << "0.0.0.0:" << _port;
+  return _impl->start(ss.str());
+}
+
+BrokerGrpc::~BrokerGrpc() = default;
 
 }
