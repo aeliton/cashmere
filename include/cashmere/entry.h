@@ -13,36 +13,45 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_CLOCK_H
-#define CASHMERE_CLOCK_H
+#ifndef CASHMERE_ENTRY_H
+#define CASHMERE_ENTRY_H
+
+#include "cashmere/clock.h"
 
 #include <list>
-#include <map>
-#include <ostream>
-
-#include "cashmere.h"
 
 namespace Cashmere
 {
 
-class CASHMERE_EXPORT Clock : public std::map<Id, Time>
-{
-public:
-  Clock();
-  Clock(const std::initializer_list<std::pair<const Id, Time>>& list);
-  Clock merge(const Clock& other) const;
-  Clock tick(Id id) const;
-  bool isNext(const Clock& other, Id id) const;
-  bool smallerThan(const Clock& other) const;
-  bool concurrent(const Clock& other) const;
-  bool valid() const;
+struct Data;
+struct Entry;
 
-  static bool Read(std::istream& in, Clock& clock);
+using ClockDataMap = std::map<Clock, Data>;
+using ClockEntryMap = std::map<Clock, Entry>;
+using EntryList = std::list<Entry>;
+
+struct CASHMERE_EXPORT Data
+{
+  Id id;
+  Amount value;
+  Clock alters;
+  bool operator==(const Data& other) const;
+  bool valid() const;
+  static bool Read(std::istream& in, Data& data);
   CASHMERE_EXPORT friend std::ostream&
-  operator<<(std::ostream& os, const Clock& clock);
+  operator<<(std::ostream& os, const Data& data);
 };
 
-using ClockList = std::list<Clock>;
-using IdClockMap = std::map<Id, Clock>;
+struct CASHMERE_EXPORT Entry
+{
+  Clock clock;
+  Data entry;
+  bool operator==(const Entry& other) const;
+  static bool Read(std::istream& in, Entry& entry);
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const Entry& data);
+};
+
 }
+
 #endif

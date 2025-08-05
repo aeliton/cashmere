@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "brokergrpcstub.h"
-#include "journal.h"
+#include "cashmere/journal.h"
 #include "test/gtest/brokermock.h"
 #include <proto/cashmere_mock.grpc.pb.h>
 

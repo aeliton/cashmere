@@ -16,7 +16,7 @@
 #ifndef CASHMERE_COMMAND_H
 #define CASHMERE_COMMAND_H
 
-#include "entry.h"
+#include "cashmere/entry.h"
 #include <string>
 
 struct Command

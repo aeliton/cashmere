@@ -16,7 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "journal.h"
+#include "cashmere/journal.h"
 #include "test/gtest/brokermock.h"
 
 using namespace Cashmere;

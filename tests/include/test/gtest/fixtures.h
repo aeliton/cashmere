@@ -21,7 +21,7 @@
 
 #include <filesystem>
 
-#include "journalfile.h"
+#include "cashmere/journalfile.h"
 #include "utils/fileutils.h"
 
 using ::testing::Return;

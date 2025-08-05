@@ -13,40 +13,32 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_LEDGER_H
-#define CASHMERE_LEDGER_H
+#ifndef CASHEMERE_JOURNAL_FILE_H
+#define CASHEMERE_JOURNAL_FILE_H
 
-#include "broker.h"
+#include "cashmere/journalbase.h"
 
 namespace Cashmere
 {
 
-using ClockEntryMap = std::map<Clock, Entry>;
+class JournalFile;
+using JournalFilePtr = std::shared_ptr<JournalFile>;
 
-class CASHMERE_EXPORT Ledger
+class CASHMERE_EXPORT JournalFile : public JournalBase
 {
 public:
-  enum class Action
-  {
-    Ignore,
-    Insert,
-    Replace
-  };
-  using ActionClock = std::tuple<Ledger::Action, Clock>;
-  Ledger() = delete;
-  explicit Ledger(BrokerPtr journal);
+  explicit JournalFile(const std::string& location);
+  explicit JournalFile(Id id, const std::string& location);
+  ~JournalFile();
 
-  Amount balance() const;
+  bool save(const Entry& data) override;
+  Data entry(Clock time) const override;
+  EntryList entries() const override;
 
-  static Amount Balance(const EntryList& entries);
-  static ActionClock Evaluate(const ClockEntryMap& rows, const Entry& incoming);
-  static ActionClock Replaces(const Entry& existing, const Entry& incoming);
+  std::string filename() const;
 
 private:
-  explicit Ledger(const EntryList& entries);
-  BrokerPtr _journal;
-  Amount _balance;
-  ClockEntryMap _rows;
+  const std::string _location;
 };
 
 }

@@ -19,7 +19,7 @@
 #include <cassert>
 #include <memory>
 
-#include "broker.h"
+#include "cashmere/broker.h"
 
 namespace Cashmere
 {

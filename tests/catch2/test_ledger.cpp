@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "ledger.h"
+#include "cashmere/ledger.h"
 #include <catch2/catch_all.hpp>
 
 using namespace Cashmere;

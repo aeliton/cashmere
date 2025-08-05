@@ -19,7 +19,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "brokerbase.h"
+#include "cashmere/brokerbase.h"
 
 namespace Cashmere
 {

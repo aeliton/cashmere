@@ -16,7 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "broker.h"
+#include "cashmere/broker.h"
 #include "test/gtest/brokermock.h"
 
 using namespace Cashmere;

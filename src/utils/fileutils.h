@@ -16,7 +16,7 @@
 #ifndef CASHMERE_UTILS_FILEUTILS_H
 #define CASHMERE_UTILS_FILEUTILS_H
 
-#include "cashmere.h"
+#include "cashmere/cashmere.h"
 #include <istream>
 
 namespace Cashmere

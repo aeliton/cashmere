@@ -16,7 +16,7 @@
 #ifndef CASHMERE_UTILS_GRPCUTILS_H
 #define CASHMERE_UTILS_GRPCUTILS_H
 
-#include "brokerbase.h"
+#include "cashmere/brokerbase.h"
 #include <google/protobuf/map.h>
 
 namespace Cashmere::Grpc

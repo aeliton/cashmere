@@ -13,34 +13,36 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHEMERE_JOURNAL_FILE_H
-#define CASHEMERE_JOURNAL_FILE_H
+#ifndef CASHMERE_CLOCK_H
+#define CASHMERE_CLOCK_H
 
-#include "journalbase.h"
+#include <list>
+#include <map>
+#include <ostream>
+
+#include "cashmere/cashmere.h"
 
 namespace Cashmere
 {
 
-class JournalFile;
-using JournalFilePtr = std::shared_ptr<JournalFile>;
-
-class CASHMERE_EXPORT JournalFile : public JournalBase
+class CASHMERE_EXPORT Clock : public std::map<Id, Time>
 {
 public:
-  explicit JournalFile(const std::string& location);
-  explicit JournalFile(Id id, const std::string& location);
-  ~JournalFile();
+  Clock();
+  Clock(const std::initializer_list<std::pair<const Id, Time>>& list);
+  Clock merge(const Clock& other) const;
+  Clock tick(Id id) const;
+  bool isNext(const Clock& other, Id id) const;
+  bool smallerThan(const Clock& other) const;
+  bool concurrent(const Clock& other) const;
+  bool valid() const;
 
-  bool save(const Entry& data) override;
-  Data entry(Clock time) const override;
-  EntryList entries() const override;
-
-  std::string filename() const;
-
-private:
-  const std::string _location;
+  static bool Read(std::istream& in, Clock& clock);
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const Clock& clock);
 };
 
+using ClockList = std::list<Clock>;
+using IdClockMap = std::map<Id, Clock>;
 }
-
 #endif

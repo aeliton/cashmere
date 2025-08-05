@@ -16,7 +16,7 @@
 #ifndef CASHMERE_BROKER_H
 #define CASHMERE_BROKER_H
 
-#include "brokerbase.h"
+#include "cashmere/brokerbase.h"
 #include <memory>
 #include <vector>
 

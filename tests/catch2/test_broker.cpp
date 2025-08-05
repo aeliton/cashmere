@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <catch2/catch_all.hpp>
 
-#include "broker.h"
+#include "cashmere/broker.h"
 #include "test/catch2/fixtures.h"
 
 namespace Catch

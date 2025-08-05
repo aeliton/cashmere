@@ -19,7 +19,7 @@
 #include <map>
 #include <memory>
 
-#include "entry.h"
+#include "cashmere/entry.h"
 
 namespace Cashmere
 {

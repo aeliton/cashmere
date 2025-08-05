@@ -16,9 +16,9 @@
 #ifndef CASHMERE_TEST_FIXTURES_H
 #define CASHMERE_TEST_FIXTURES_H
 
-#include "broker.h"
-#include "journal.h"
-#include "journalfile.h"
+#include "cashmere/broker.h"
+#include "cashmere/journal.h"
+#include "cashmere/journalfile.h"
 #include "utils/fileutils.h"
 
 #include <cassert>

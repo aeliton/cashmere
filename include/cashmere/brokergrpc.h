@@ -13,25 +13,37 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHEMERE_JOURNAL_H
-#define CASHEMERE_JOURNAL_H
+#ifndef CASHMERE_BROKER_GRPC_H
+#define CASHMERE_BROKER_GRPC_H
 
-#include "journalbase.h"
+#include "cashmere/broker.h"
+#include <thread>
 
 namespace Cashmere
 {
-class CASHMERE_EXPORT Journal : public JournalBase
+
+class BrokerGrpc;
+using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
+using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
+
+class CASHMERE_EXPORT BrokerGrpc : public Broker
 {
 public:
-  explicit Journal();
-  explicit Journal(Id id, const ClockDataMap& entries = {});
+  BrokerGrpc(const std::string& hostname, uint16_t port);
 
-  bool save(const Entry& data) override;
-  Data entry(Clock time) const override;
-  EntryList entries() const override;
+  ~BrokerGrpc();
+
+  std::thread start();
+  void stop();
+
+  BrokerStub stub() override;
 
 private:
-  ClockDataMap _entries;
+  std::string _hostname;
+  uint16_t _port;
+
+  class Impl;
+  std::unique_ptr<Impl> _impl;
 };
 
 }
