@@ -17,7 +17,15 @@
 #define CASHMERE_UTILS_GRPCUTILS_H
 
 #include "brokerbase.h"
-#include <proto/cashmere.pb.h>
+#include <google/protobuf/map.h>
+
+namespace Cashmere::Grpc
+{
+class Data;
+class Entry;
+class ConnectionInfo;
+class BrokerData;
+}
 
 namespace Cashmere::Utils
 {

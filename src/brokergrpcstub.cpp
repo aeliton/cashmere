@@ -20,6 +20,7 @@
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
 #include <proto/cashmere.grpc.pb.h>
+#include <proto/cashmere.pb.h>
 
 namespace Cashmere
 {

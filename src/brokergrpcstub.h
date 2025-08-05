@@ -17,9 +17,7 @@
 #define CASHMERE_BROKER_GRPC_STUB_H
 
 #include "brokerbase.h"
-
 #include <proto/cashmere.grpc.pb.h>
-#include <proto/cashmere.pb.h>
 
 namespace Cashmere
 {
