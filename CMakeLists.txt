@@ -19,8 +19,6 @@ project(cashmere VERSION 0.0.1 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
-add_subdirectory(signal)
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
@@ -133,7 +131,7 @@ target_link_libraries(cash PRIVATE
 
 install(
   TARGETS cashmere cash
-  EXPORT CashmereTargets
+  EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -157,14 +155,22 @@ write_basic_package_version_file(
 configure_package_config_file(
   "${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
 )
 
 install(
-  EXPORT CashmereTargets
-  FILE CashmereTargets.cmake
-  NAMESPACE cashmere::
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/cashmere
+  EXPORT ${PROJECT_NAME}Targets
+  FILE ${PROJECT_NAME}Targets.cmake
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
+)
+
+install(
+  FILES
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+  DESTINATION
+    ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
 )
 
 list( APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR} )
@@ -191,7 +197,6 @@ target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
   cashmere_objects
   test_helper
-  signal
 )
 target_include_directories(catch_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
