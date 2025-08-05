@@ -141,7 +141,6 @@ target_sources(cash PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
 )
 target_include_directories(cash
@@ -165,7 +164,6 @@ find_package(Catch2 3 REQUIRED)
 add_executable(catch_tests)
 target_sources(catch_tests PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_broker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_clock.cpp
