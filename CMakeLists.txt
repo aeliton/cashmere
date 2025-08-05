@@ -75,6 +75,7 @@ target_link_libraries(cashmere PUBLIC cashmere_proto)
 target_include_directories(cashmere PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+target_include_directories(cashmere PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(cashmere::cashmere ALIAS cashmere)
 
@@ -125,6 +126,9 @@ add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journalfile.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_options.cpp
 )
+
+target_include_directories(gtests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
 target_link_libraries (gtests
   GTest::gmock
   GTest::gtest_main
