@@ -34,7 +34,7 @@ endif()
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 
-add_library(cashmere_proto SHARED proto/cashmere.proto)
+add_library(cashmere_proto STATIC proto/cashmere.proto)
 target_link_libraries(cashmere_proto
     PUBLIC
         protobuf::libprotobuf
@@ -56,6 +56,10 @@ protobuf_generate(
   PLUGIN_OPTIONS "generate_mock_code=true"
 )
 
+set_target_properties(cashmere_proto PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+)
+
 include(GenerateExportHeader)
 
 add_library(cashmere SHARED
@@ -74,8 +78,6 @@ add_library(cashmere SHARED
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
 )
 
-target_link_libraries(cashmere PUBLIC cashmere_proto)
-
 target_include_directories(cashmere
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/export>
@@ -84,6 +86,8 @@ target_include_directories(cashmere
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
+
+target_link_libraries(cashmere PUBLIC $<BUILD_INTERFACE:cashmere_proto>)
 
 set_target_properties(cashmere PROPERTIES
   CXX_VISIBILITY_PRESET hidden
@@ -95,7 +99,7 @@ generate_export_header(cashmere EXPORT_FILE_NAME export/cashmere/cashmere_export
 add_library(cashmere::cashmere ALIAS cashmere)
 
 install(
-  TARGETS cashmere_proto cashmere
+  TARGETS cashmere
   EXPORT CashmereTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
