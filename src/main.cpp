@@ -16,6 +16,7 @@
 #include "brokergrpcstub.h"
 #include "cashmere/brokerbase.h"
 #include "cashmere/brokergrpc.h"
+#include "cashmere/brokergrpcclient.h"
 #include "cashmere/journalfile.h"
 #include "cashmere/ledger.h"
 #include "options.h"
@@ -53,7 +54,7 @@ int main(int argc, char* argv[])
 
 void runCommand(const Options& options)
 {
-  auto stub = BrokerGrpcStub(options.hostname, options.port);
+  auto stub = BrokerGrpcClient(options.hostname, options.port);
   switch (options.command.type) {
     case Command::Type::Invalid:
       break;
