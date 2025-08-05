@@ -27,7 +27,8 @@ class Broker;
 using BrokerPtr = std::shared_ptr<Broker>;
 using BrokerWeakPtr = std::weak_ptr<Broker>;
 
-class Broker : public std::enable_shared_from_this<Broker>, public BrokerBase
+class CASHMERE_EXPORT Broker : public std::enable_shared_from_this<Broker>,
+                               public BrokerBase
 {
 public:
   Broker();

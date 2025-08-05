@@ -23,7 +23,7 @@ namespace Cashmere
 
 using ClockEntryMap = std::map<Clock, Entry>;
 
-class Ledger
+class CASHMERE_EXPORT Ledger
 {
 public:
   enum class Action

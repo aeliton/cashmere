@@ -20,7 +20,7 @@
 
 namespace Cashmere
 {
-class Journal : public JournalBase
+class CASHMERE_EXPORT Journal : public JournalBase
 {
 public:
   explicit Journal();

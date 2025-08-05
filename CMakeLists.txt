@@ -34,7 +34,7 @@ endif()
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 
-add_library(cashmere_proto proto/cashmere.proto)
+add_library(cashmere_proto SHARED proto/cashmere.proto)
 target_link_libraries(cashmere_proto
     PUBLIC
         protobuf::libprotobuf
@@ -58,19 +58,17 @@ protobuf_generate(
 
 include(GenerateExportHeader)
 
-add_library(cashmere
+add_library(cashmere SHARED
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpc.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journalbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journalfile.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/ledger.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
@@ -134,7 +132,19 @@ install(
 
 add_executable(cash)
 target_sources(cash PRIVATE
- ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
+)
+target_include_directories(cash
+  PUBLIC
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
 target_link_libraries(cash PRIVATE cashmere::cashmere)
@@ -150,12 +160,15 @@ find_package(Catch2 3 REQUIRED)
 
 add_executable(catch_tests)
 target_sources(catch_tests PRIVATE
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_broker.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_clock.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_entry.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journal.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journalfile.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_ledger.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_broker.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_clock.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_entry.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journal.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journalfile.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_ledger.cpp
 )
 target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
@@ -173,6 +186,12 @@ find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 
 enable_testing()
 add_executable (gtests
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_broker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_command.cpp

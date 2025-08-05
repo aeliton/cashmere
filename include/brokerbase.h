@@ -24,13 +24,14 @@
 namespace Cashmere
 {
 
-struct ConnectionInfo
+struct CASHMERE_EXPORT ConnectionInfo
 {
   int16_t distance;
   Clock version;
   bool operator==(const ConnectionInfo& other) const;
   bool operator<(const ConnectionInfo& other) const;
-  friend std::ostream& operator<<(std::ostream& os, const ConnectionInfo& info);
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const ConnectionInfo& info);
 };
 
 using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
@@ -42,7 +43,7 @@ using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 class BrokerStub;
 using BrokerStubPtr = std::shared_ptr<BrokerStub>;
 
-class BrokerStub
+class CASHMERE_EXPORT BrokerStub
 {
 public:
   enum class Type
@@ -71,16 +72,17 @@ private:
   BrokerBasePtr _grpcStub;
 };
 
-struct ConnectionData
+struct CASHMERE_EXPORT ConnectionData
 {
   Port port = 0;
   Clock version = {};
   IdConnectionInfoMap sources = {};
   bool operator==(const ConnectionData& other) const;
-  friend std::ostream& operator<<(std::ostream& os, const ConnectionData& Data);
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const ConnectionData& Data);
 };
 
-class Connection
+class CASHMERE_EXPORT Connection
 {
 public:
   enum class Origin
@@ -112,7 +114,8 @@ public:
   Clock relay(const Data& entry) const;
 
   bool operator==(const Connection& other) const;
-  friend std::ostream& operator<<(std::ostream& os, const Connection& data);
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const Connection& data);
   void update(const Connection& data);
 
   BrokerStub& stub();
@@ -125,7 +128,7 @@ protected:
   mutable ConnectionData _cache;
 };
 
-class BrokerBase
+class CASHMERE_EXPORT BrokerBase
 {
 public:
   virtual ~BrokerBase();
@@ -143,8 +146,10 @@ public:
   virtual BrokerStub stub() = 0;
 };
 
-std::ostream& operator<<(std::ostream& os, const IdConnectionInfoMap& data);
-std::ostream& operator<<(std::ostream& os, const IdClockMap& data);
+CASHMERE_EXPORT std::ostream&
+operator<<(std::ostream& os, const IdConnectionInfoMap& data);
+CASHMERE_EXPORT std::ostream&
+operator<<(std::ostream& os, const IdClockMap& data);
 
 }
 #endif

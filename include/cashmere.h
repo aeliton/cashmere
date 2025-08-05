@@ -16,6 +16,7 @@
 #ifndef CASHMERE_CASHMERE_H
 #define CASHMERE_CASHMERE_H
 
+#include <cashmere/cashmere_export.h>
 #include <cstdint>
 #include <set>
 

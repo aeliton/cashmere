@@ -26,7 +26,7 @@ class BrokerGrpc;
 using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
 using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
 
-class BrokerGrpc : public Broker
+class CASHMERE_EXPORT BrokerGrpc : public Broker
 {
 public:
   BrokerGrpc(const std::string& hostname, uint16_t port);

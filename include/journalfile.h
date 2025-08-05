@@ -24,7 +24,7 @@ namespace Cashmere
 class JournalFile;
 using JournalFilePtr = std::shared_ptr<JournalFile>;
 
-class JournalFile : public JournalBase
+class CASHMERE_EXPORT JournalFile : public JournalBase
 {
 public:
   explicit JournalFile(const std::string& location);

@@ -26,7 +26,7 @@ namespace Cashmere
 
 class Random;
 
-class JournalBase : public Broker
+class CASHMERE_EXPORT JournalBase : public Broker
 {
 public:
   JournalBase();

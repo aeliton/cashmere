@@ -30,7 +30,7 @@ using ClockDataMap = std::map<Clock, Data>;
 using ClockEntryMap = std::map<Clock, Entry>;
 using EntryList = std::list<Entry>;
 
-struct Data
+struct CASHMERE_EXPORT Data
 {
   Id id;
   Amount value;
@@ -38,16 +38,18 @@ struct Data
   bool operator==(const Data& other) const;
   bool valid() const;
   static bool Read(std::istream& in, Data& data);
-  friend std::ostream& operator<<(std::ostream& os, const Data& data);
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const Data& data);
 };
 
-struct Entry
+struct CASHMERE_EXPORT Entry
 {
   Clock clock;
   Data entry;
   bool operator==(const Entry& other) const;
   static bool Read(std::istream& in, Entry& entry);
-  friend std::ostream& operator<<(std::ostream& os, const Entry& data);
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const Entry& data);
 };
 
 }
