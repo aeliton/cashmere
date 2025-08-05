@@ -41,7 +41,10 @@ target_link_libraries(cashmere_proto
         gRPC::grpc
         gRPC::grpc++
 )
-target_include_directories(cashmere_proto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(cashmere_proto PUBLIC 
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 protobuf_generate(TARGET cashmere_proto LANGUAGE cpp)
@@ -52,6 +55,8 @@ protobuf_generate(
   PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"
   PLUGIN_OPTIONS "generate_mock_code=true"
 )
+
+include(GenerateExportHeader)
 
 add_library(cashmere
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
@@ -70,14 +75,62 @@ add_library(cashmere
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
 )
+
 target_link_libraries(cashmere PUBLIC cashmere_proto)
 
-target_include_directories(cashmere PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
+target_include_directories(cashmere
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/export>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
-target_include_directories(cashmere PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+set_target_properties(cashmere PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN TRUE
+)
+
+generate_export_header(cashmere EXPORT_FILE_NAME export/cashmere/cashmere_export.h)
 
 add_library(cashmere::cashmere ALIAS cashmere)
+
+install(
+  TARGETS cashmere_proto cashmere
+  EXPORT CashmereTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/export/cashmere/cashmere_export.h"
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cashmere
+)
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+  "${PROJECT_NAME}ConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion)
+
+configure_package_config_file(
+  "${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}
+)
+
+install(
+  EXPORT CashmereTargets
+  FILE CashmereTargets.cmake
+  NAMESPACE cashmere::
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/cashmere
+)
 
 add_executable(cash)
 target_sources(cash PRIVATE
