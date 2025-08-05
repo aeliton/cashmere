@@ -20,12 +20,23 @@
 #include "cashmere/journalfile.h"
 #include "cashmere/ledger.h"
 #include "options.h"
-#include "utils/fileutils.h"
 
+#include <filesystem>
 #include <grpcpp/server.h>
 #include <iostream>
+#include <random>
 #include <thread>
 #include <unistd.h>
+
+namespace
+{
+struct TempDir
+{
+  TempDir();
+  ~TempDir();
+  std::string directory;
+};
+}
 
 using namespace Cashmere;
 
@@ -155,4 +166,30 @@ void runService(const Options& options)
   }
 
   broker->stop();
+}
+
+namespace fs = std::filesystem;
+
+namespace
+{
+
+TempDir::TempDir()
+{
+  std::mt19937_64 engine;
+  std::uniform_int_distribution<uint64_t> distribution;
+
+  do {
+    directory =
+      fs::temp_directory_path() / std::to_string(distribution(engine));
+  } while (fs::exists(directory));
+  fs::create_directories(directory);
+}
+
+TempDir::~TempDir()
+{
+  assert(fs::exists(tempDir));
+  [[maybe_unused]] const bool deleted = fs::remove_all(directory);
+  assert(deleted);
+}
+
 }

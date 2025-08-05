@@ -109,8 +109,30 @@ generate_export_header(cashmere EXPORT_FILE_NAME export/cashmere/cashmere_export
 
 add_library(cashmere::cashmere ALIAS cashmere)
 
+add_library(options_objects OBJECT
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
+)
+target_link_libraries(options_objects PRIVATE cashmere_objects)
+
+add_executable(cash)
+target_sources(cash PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+)
+target_include_directories(cash
+  PUBLIC
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
+
+target_link_libraries(cash PRIVATE
+  $<BUILD_INTERFACE:options_objects>
+  cashmere::cashmere
+)
+
 install(
-  TARGETS cashmere
+  TARGETS cashmere cash
   EXPORT CashmereTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -145,24 +167,6 @@ install(
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/cashmere
 )
 
-add_library(options_objects OBJECT
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
-)
-target_link_libraries(options_objects PRIVATE cashmere_objects)
-
-add_executable(cash)
-target_sources(cash PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-)
-target_include_directories(cash
-  PUBLIC
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-)
-
-target_link_libraries(cash PRIVATE options_objects cashmere_objects)
 
 add_library(test_helper INTERFACE)
 target_include_directories(test_helper INTERFACE
