@@ -110,6 +110,7 @@ target_link_libraries(catch_tests PRIVATE
   test_helper
   signal
 )
+target_include_directories(catch_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 include(CTest)
 include(Catch)
