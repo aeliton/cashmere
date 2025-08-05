@@ -56,13 +56,9 @@ protobuf_generate(
   PLUGIN_OPTIONS "generate_mock_code=true"
 )
 
-set_target_properties(cashmere_proto PROPERTIES
-  POSITION_INDEPENDENT_CODE ON
-)
-
 include(GenerateExportHeader)
 
-add_library(cashmere SHARED
+add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpc.cpp
@@ -79,7 +75,7 @@ add_library(cashmere SHARED
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
 )
 
-target_include_directories(cashmere
+target_include_directories(cashmere_objects
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/export>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -88,7 +84,21 @@ target_include_directories(cashmere
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
-target_link_libraries(cashmere PUBLIC $<BUILD_INTERFACE:cashmere_proto>)
+target_link_libraries(cashmere_objects
+  PUBLIC
+    $<BUILD_INTERFACE:cashmere_proto>
+)
+
+set_target_properties(cashmere_objects cashmere_proto PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+)
+
+add_library(cashmere SHARED)
+
+target_link_libraries(cashmere
+  PUBLIC
+    $<BUILD_INTERFACE:cashmere_objects>
+)
 
 set_target_properties(cashmere PROPERTIES
   CXX_VISIBILITY_PRESET hidden
@@ -135,13 +145,15 @@ install(
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/cashmere
 )
 
+add_library(options_objects OBJECT
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
+)
+target_link_libraries(options_objects PRIVATE cashmere_objects)
+
 add_executable(cash)
 target_sources(cash PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
 )
 target_include_directories(cash
   PUBLIC
@@ -150,21 +162,19 @@ target_include_directories(cash
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
-target_link_libraries(cash PRIVATE cashmere::cashmere)
+target_link_libraries(cash PRIVATE options_objects cashmere_objects)
 
 add_library(test_helper INTERFACE)
 target_include_directories(test_helper INTERFACE
   $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/tests/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_link_libraries(test_helper INTERFACE cashmere::cashmere)
+target_link_libraries(test_helper INTERFACE cashmere_objects)
 
 find_package(Catch2 3 REQUIRED)
 
 add_executable(catch_tests)
 target_sources(catch_tests PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_broker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_clock.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_entry.cpp
@@ -174,7 +184,7 @@ target_sources(catch_tests PRIVATE
 )
 target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
-  cashmere::cashmere
+  cashmere_objects
   test_helper
   signal
 )
@@ -188,12 +198,6 @@ find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 
 enable_testing()
 add_executable (gtests
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_broker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_command.cpp
@@ -207,7 +211,8 @@ target_include_directories(gtests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries (gtests
   GTest::gmock
   GTest::gtest_main
-  cashmere::cashmere
+  cashmere_objects
+  options_objects
   test_helper
   cashmere_proto
 )
