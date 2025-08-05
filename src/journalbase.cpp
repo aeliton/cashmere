@@ -14,22 +14,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "journalbase.h"
+#include "random.h"
 #include <cassert>
 
 namespace Cashmere
 {
 
-Random JournalBase::_random{};
+std::unique_ptr<Random> JournalBase::_random = std::make_unique<Random>();
 
 JournalBase::JournalBase()
-  : JournalBase(_random.next())
+  : JournalBase(_random->next())
 {
 }
 
 JournalBase::JournalBase(Id id)
   : Broker()
   , _id(id)
-  , _bookId(_random.next())
+  , _bookId(_random->next())
 {
 }
 

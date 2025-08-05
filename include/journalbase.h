@@ -20,10 +20,11 @@
 #include <memory>
 
 #include "broker.h"
-#include "random.h"
 
 namespace Cashmere
 {
+
+class Random;
 
 class JournalBase : public Broker
 {
@@ -50,7 +51,7 @@ public:
 
 private:
   const Id _id;
-  static Random _random;
+  static std::unique_ptr<Random> _random;
   const Id _bookId;
   Clock _version;
 };
