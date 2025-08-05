@@ -40,7 +40,7 @@ target_link_libraries(cashmere_proto
         gRPC::grpc++
 )
 target_include_directories(cashmere_proto PUBLIC 
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
@@ -75,16 +75,16 @@ add_library(cashmere_objects OBJECT
 
 target_include_directories(cashmere_objects
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/export>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/export>
+    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
 target_link_libraries(cashmere_objects
   PUBLIC
-    $<BUILD_INTERFACE:cashmere_proto>
+    $<BUILD_LOCAL_INTERFACE:cashmere_proto>
 )
 
 set_target_properties(cashmere_objects cashmere_proto PROPERTIES
@@ -95,7 +95,7 @@ add_library(cashmere SHARED)
 
 target_link_libraries(cashmere
   PUBLIC
-    $<BUILD_INTERFACE:cashmere_objects>
+    $<BUILD_LOCAL_INTERFACE:cashmere_objects>
 )
 
 set_target_properties(cashmere PROPERTIES
@@ -121,11 +121,11 @@ target_include_directories(cash
   PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
 target_link_libraries(cash PRIVATE
-  $<BUILD_INTERFACE:options_objects>
+  $<BUILD_LOCAL_INTERFACE:options_objects>
   cashmere::cashmere
 )
 
@@ -177,7 +177,7 @@ list( APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR} )
 
 add_library(test_helper INTERFACE)
 target_include_directories(test_helper INTERFACE
-  $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/tests/include>
+  $<BUILD_LOCAL_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/tests/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_link_libraries(test_helper INTERFACE cashmere_objects)
@@ -224,7 +224,6 @@ target_link_libraries (gtests
   cashmere_objects
   options_objects
   test_helper
-  cashmere_proto
 )
 
 include(GoogleTest)
