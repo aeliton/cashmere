@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "journalbase.h"
-#include "random.h"
+#include "utils/random.h"
 #include <cassert>
 
 namespace Cashmere

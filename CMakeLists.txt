@@ -69,9 +69,9 @@ add_library(cashmere SHARED
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journalbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journalfile.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/ledger.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
 )
 
 target_link_libraries(cashmere PUBLIC cashmere_proto)
@@ -136,9 +136,9 @@ target_sources(cash PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
 )
 target_include_directories(cash
   PUBLIC
@@ -160,9 +160,9 @@ find_package(Catch2 3 REQUIRED)
 
 add_executable(catch_tests)
 target_sources(catch_tests PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_broker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_clock.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_entry.cpp
@@ -189,9 +189,9 @@ add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/random.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_broker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_command.cpp
