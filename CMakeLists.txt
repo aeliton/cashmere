@@ -167,6 +167,7 @@ install(
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/cashmere
 )
 
+list( APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR} )
 
 add_library(test_helper INTERFACE)
 target_include_directories(test_helper INTERFACE
