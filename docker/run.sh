@@ -13,22 +13,22 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-FROM ubuntu
+#!/usr/bin/env bash
 
-RUN apt update -y
-RUN apt install -y cmake catch2 ninja-build clang protobuf-compiler-grpc libgrpc++-dev libgtest-dev libgmock-dev libpthread-stubs0-dev
+cash -i aa -d /cashmere/db/aa -p 5000 -s add 10 &> /dev/null & disown
 
-WORKDIR /cashmere
+while ! nc -z localhost 5000; do   
+  sleep 0.1
+done
+until [ -e /cashmere/db/aa ]; do sleep 0.1; done
 
-COPY ./cashmere.tar.gz .
+cash -i bb -d /cashmere/db/bb -p 5001 -s &> /dev/null & disown
 
-RUN tar xzvf cashmere.tar.gz
-RUN cmake --preset release
-RUN cmake --build --preset release
-RUN cmake --install build/release --prefix /usr
+while ! nc -z localhost 5001; do   
+  sleep 0.1
+done
 
-RUN (nohup cash -i aa -d /cashmere/db/aa -p 5000 -s add 10 &> /dev/null &)
-RUN (nohup cash -i bb -d /cashmere/db/bb -p 5001 -s &> /dev/null &)
-RUN cash -p 5001 connect 0.0.0.0:5000
-RUN cash -p 5000 quit
-RUN cash -p 5001 quit
+cash -p 5001 connect 0.0.0.0:5000
+
+cash -p 5000 quit
+cash -p 5001 quit
