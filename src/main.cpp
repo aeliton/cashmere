@@ -119,7 +119,7 @@ void runService(const Options& options)
   brokerThread.detach();
 
   if (options.command.type == Command::Type::Append) {
-    broker->relay(options.command.data, 0);
+    journal->append(options.command.data.value);
   }
 
   Command command;
