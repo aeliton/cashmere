@@ -40,7 +40,7 @@ Options::Options(int argc, char* argv[])
       case 'p':
         try {
           port = std::stoi(optarg);
-        } catch (std::exception) {
+        } catch (const std::exception&) {
           _error.status = Status::InvalidOptionArgument;
         }
         break;

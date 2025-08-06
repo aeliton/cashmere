@@ -29,6 +29,8 @@ else()
   add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
+add_subdirectory(signal)
+
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 
@@ -197,6 +199,7 @@ target_link_libraries(catch_tests PRIVATE
   Catch2::Catch2WithMain
   cashmere_objects
   test_helper
+  signal
 )
 target_include_directories(catch_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
