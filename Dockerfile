@@ -18,7 +18,7 @@ FROM ubuntu
 RUN apt update -y
 RUN apt install -y cmake catch2 ninja-build clang protobuf-compiler-grpc libgrpc++-dev libgtest-dev libgmock-dev libpthread-stubs0-dev
 
-WORKDIR /cashemere
+WORKDIR /cashmere
 
 COPY ./cashmere.tar.gz .
 
@@ -27,4 +27,8 @@ RUN cmake --preset release
 RUN cmake --build --preset release
 RUN cmake --install build/release --prefix /usr
 
-ENTRYPOINT ["cash", "-i", "aa", "-p", "5000", "-s"]
+RUN (nohup cash -i aa -d /cashmere/db/aa -p 5000 -s add 10 &> /dev/null &)
+RUN (nohup cash -i bb -d /cashmere/db/bb -p 5001 -s &> /dev/null &)
+RUN cash -p 5001 connect 0.0.0.0:5000
+RUN cash -p 5000 quit
+RUN cash -p 5001 quit
