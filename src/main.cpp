@@ -104,7 +104,9 @@ void runService(const Options& options)
 {
   auto tempDir = TempDir();
   auto broker = std::make_shared<BrokerGrpc>(options.hostname, options.port);
-  auto journal = std::make_shared<JournalFile>(options.id, tempDir.directory);
+  auto journal = std::make_shared<JournalFile>(
+    options.id, options.dbPath.empty() ? tempDir.directory : options.dbPath
+  );
 
   journal->connect(BrokerStub{broker});
 

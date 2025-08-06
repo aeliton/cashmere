@@ -26,7 +26,7 @@ Options::Options(int argc, char* argv[])
   int opt;
   optind = 1;
   while (_error.status == Status::Ok &&
-         (opt = getopt(argc, argv, "i:h:p:s")) != -1) {
+         (opt = getopt(argc, argv, "d:i:h:p:s")) != -1) {
     switch (opt) {
       case 'i':
       {
@@ -37,6 +37,9 @@ Options::Options(int argc, char* argv[])
         }
         break;
       }
+      case 'd':
+        dbPath = optarg;
+        break;
       case 'p':
         try {
           port = std::stoi(optarg);

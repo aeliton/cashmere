@@ -106,3 +106,12 @@ TEST(OptionsParse, ParseAddCommandsWithoutClock)
   ASSERT_EQ(options.command.data, data);
   EXPECT_TRUE(options.ok());
 }
+
+TEST(OptionsParse, ParseDatabaseFilesystemPath)
+{
+  constexpr char const* path = "/home/nobody";
+  Args args({"anyname", "-d", path, "add", "10"});
+  Options options(args.argc, args.argv);
+  ASSERT_EQ(options.dbPath, path);
+  EXPECT_TRUE(options.ok());
+}

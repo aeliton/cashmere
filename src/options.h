@@ -48,6 +48,7 @@ struct Options
   Cashmere::Port port = 54321;
   std::string hostname = "0.0.0.0";
   bool service = false;
+  std::string dbPath = "";
   Command command = {};
 
 private:
