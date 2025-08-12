@@ -13,12 +13,12 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-FROM ubuntu
+FROM ubuntu AS build
 
 RUN apt update -y
 RUN apt install -y \
  cmake catch2 ninja-build clang protobuf-compiler-grpc libgrpc++-dev \
- libgtest-dev libgmock-dev libpthread-stubs0-dev netcat-openbsd
+ libgtest-dev libgmock-dev libpthread-stubs0-dev
 
 WORKDIR /cashmere
 
@@ -27,6 +27,14 @@ COPY ./cashmere.tar.gz .
 RUN tar xzvf cashmere.tar.gz
 RUN cmake --preset release
 RUN cmake --build --preset release
-RUN cmake --install build/release --prefix /usr
+RUN cmake --install build/release --prefix /cashmere/install
 
-RUN bash docker/run.sh
+FROM ubuntu AS runtime
+
+RUN apt update -y
+RUN apt install -y netcat-openbsd libgrpc++1.51t64
+
+COPY --from=build /cashmere/install/. /usr/
+COPY --from=build /cashmere/docker/run.sh /tmp/
+
+RUN bash /tmp/run.sh
