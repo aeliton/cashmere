@@ -32,3 +32,10 @@ cash -p 5001 connect 0.0.0.0:5000
 
 cash -p 5000 quit
 cash -p 5001 quit
+
+if ! diff "/cashmere/db/aa" "/cashmere/db/bb" &> /dev/null; then
+  echo "Failed"
+  exit 1
+fi
+
+echo "Success"
