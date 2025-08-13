@@ -27,14 +27,19 @@ COPY ./cashmere.tar.gz .
 RUN tar xzvf cashmere.tar.gz
 RUN cmake --preset release
 RUN cmake --build --preset release
-RUN cmake --install build/release --prefix /cashmere/install
+RUN cmake --install build/release --prefix /usr/local
 
 FROM ubuntu AS runtime
 
 RUN apt update -y
-RUN apt install -y netcat-openbsd libgrpc++1.51t64
+RUN apt install -y libgrpc++1.51t64
 
-COPY --from=build /cashmere/install/. /usr/
-COPY --from=build /cashmere/docker/run.sh /tmp/
+COPY --from=build /usr/local/. /usr/local/
+
+FROM runtime AS test-runtime
+
+RUN apt install -y netcat-openbsd
+
+COPY ./run.sh /tmp/
 
 RUN bash /tmp/run.sh

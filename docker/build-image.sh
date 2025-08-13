@@ -18,6 +18,6 @@
 pushd ..
 git archive --format=tar.gz -o docker/cashmere.tar.gz main
 popd
-docker build . -t aeliton/cashmere --target runtime
+docker build . -t aeliton/cashmere --target test-runtime
 
 rm cashmere.tar.gz

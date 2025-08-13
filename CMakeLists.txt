@@ -116,6 +116,13 @@ add_library(options_objects OBJECT
 target_link_libraries(options_objects PRIVATE cashmere_objects)
 
 add_executable(cash)
+
+if (UNIX AND NOT CYGWIN)
+  set_target_properties(cash PROPERTIES
+    INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
+  )
+endif()
+
 target_sources(cash PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
