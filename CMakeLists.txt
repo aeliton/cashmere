@@ -31,8 +31,7 @@ endif()
 
 add_subdirectory(signal)
 
-find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
 
 add_library(cashmere_proto STATIC proto/cashmere.proto)
 target_link_libraries(cashmere_proto
