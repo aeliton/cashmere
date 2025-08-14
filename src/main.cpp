@@ -189,7 +189,7 @@ TempDir::TempDir()
 
 TempDir::~TempDir()
 {
-  assert(fs::exists(tempDir));
+  assert(fs::exists(directory));
   [[maybe_unused]] const bool deleted = fs::remove_all(directory);
   assert(deleted);
 }
