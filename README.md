@@ -1,4 +1,4 @@
-![main](https://github.com/aeliton/cashmere/actions/workflows/c-cpp.yml/badge.svg?branch=main)
+![build][1] ![docker-image][2]
 
 # Cashmere (in active development and nowhere near production)
 
@@ -102,3 +102,7 @@ cmake --workflow --preset release
 ## Open problems
 
 * DDoS prevention on devices and message queue
+
+
+[1]: https://github.com/aeliton/cashmere/actions/workflows/c-cpp.yml/badge.svg?branch=main
+[2]: https://github.com/aeliton/cashmere/actions/workflows/docker-image.yml/badge.svg?branch=main
