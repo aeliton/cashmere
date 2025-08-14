@@ -1,4 +1,29 @@
-# Cashmere
+# Cashmere (in active development and nowhere near production)
+
+Cashmere is a distributed conflict-free replicated registry database. It's
+designed to allow multiple devices from the same pool to exchange data in
+between themselves in a conflict free manner so that all connected nodes would
+share and converge on the interpretation of the data.
+
+The current state of the code has gRPC communication (synchronous only at this
+point), efficient append only data base and automatic conflict resolution
+through an underlying CRDT implementation using vector clocks (map clocks
+really).
+
+You can refer to the Dockerfile to see a simple test where two connected nodes
+share data and to the auto-tests to see some more examples of use.
+
+Reading the (outdated) docs might still give a good idea of the intentions of
+use.
+
+# Contributing
+
+The directions of the project are currently being set, so please reach out to
+discuss ideas before sending a patch.
+
+A Contributors License Agreement is being set up.
+
+# Outdated docs
 
 Cashmere is privacy respecting a financial accounting software intended to work
 across multiple devices and with local-only data storage.
