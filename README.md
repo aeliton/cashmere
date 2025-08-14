@@ -1,3 +1,5 @@
+![main](https://github.com/aeliton/cashmere/actions/workflows/c-cpp.yml/badge.svg?branch=main)
+
 # Cashmere (in active development and nowhere near production)
 
 Cashmere is a distributed conflict-free replicated registry database. It's
