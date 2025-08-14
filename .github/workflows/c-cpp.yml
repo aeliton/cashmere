@@ -1,0 +1,20 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: configure
+      run: sudo apt-get install cmake catch2 ninja-build clang protobuf-compiler-grpc libgrpc++-dev libgtest-dev libgmock-dev libpthread-stubs0-dev
+    - name: build release
+      run: cmake --workflow --preset release
+    - name: build debug
+      run: cmake --workflow --preset debug
+
