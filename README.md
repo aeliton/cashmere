@@ -21,7 +21,11 @@ use.
 The directions of the project are currently being set, so please reach out to
 discuss ideas before sending a patch.
 
-A Contributors License Agreement is being set up.
+All contributors must digitally sign the [Contributors License Agreement](CLA).
+
+All commits must signed-off and digitally signed (git commit -sS) to indicate
+that the submitter accepts the [DCO 1.1](https://developercertificate.org/).
+
 
 # Outdated docs
 
