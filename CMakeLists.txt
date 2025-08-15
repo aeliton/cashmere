@@ -29,8 +29,6 @@ else()
   add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
-add_subdirectory(signal)
-
 find_package(gRPC CONFIG REQUIRED)
 
 add_library(cashmere_proto STATIC proto/cashmere.proto)
@@ -183,46 +181,21 @@ install(
 
 list( APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR} )
 
-add_library(test_helper INTERFACE)
-target_include_directories(test_helper INTERFACE
-  $<BUILD_LOCAL_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/tests/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-target_link_libraries(test_helper INTERFACE cashmere_objects)
-
-find_package(Catch2 3 REQUIRED)
-
-add_executable(catch_tests)
-target_sources(catch_tests PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_broker.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_clock.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_entry.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journal.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_journalfile.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch2/test_ledger.cpp
-)
-target_link_libraries(catch_tests PRIVATE
-  Catch2::Catch2WithMain
-  cashmere_objects
-  test_helper
-  signal
-)
-target_include_directories(catch_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-
 include(CTest)
-include(Catch)
-catch_discover_tests(catch_tests)
 
 find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 
 enable_testing()
 add_executable (gtests
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_broker.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_brokergrpcstub.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_command.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journal.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_journalfile.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/gtest/test_options.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokergrpcstub.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_command.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_entry.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journalfile.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_options.cpp
 )
 
 target_include_directories(gtests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -232,7 +205,6 @@ target_link_libraries (gtests
   GTest::gtest_main
   cashmere_objects
   options_objects
-  test_helper
 )
 
 include(GoogleTest)

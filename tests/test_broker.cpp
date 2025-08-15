@@ -16,17 +16,51 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "brokermock.h"
 #include "cashmere/broker.h"
-#include "test/gtest/brokermock.h"
 
 using namespace Cashmere;
 
 using ::testing::Return;
 
+TEST(Broker, ConnectIgnoresNullptr)
+{
+  auto broker = std::make_shared<Broker>();
+  const auto conn = broker->connect(Connection{});
+  ASSERT_EQ(conn.port(), -1);
+}
+
+TEST(Broker, DisconnectedBrokerHasEmptyClock)
+{
+  auto broker = std::make_shared<Broker>();
+  ASSERT_EQ(broker->clock(), Clock{});
+}
+
+TEST(Broker, DisconnectedBrokerHasEmptyVersions)
+{
+  auto broker = std::make_shared<Broker>();
+  ASSERT_EQ(broker->versions(), IdClockMap{});
+}
+
 TEST(Broker, StartsWithNoConnections)
 {
   BrokerPtr broker = std::make_shared<Broker>();
   EXPECT_EQ(broker->connectedPorts(), std::set<Port>{});
+}
+
+TEST(Broker, SuccessfulConnectionReturnsValidConnection)
+{
+  BrokerPtr hub = std::make_shared<Broker>();
+  auto aa = std::make_shared<BrokerMock>();
+
+  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
+    .Times(1)
+    .WillOnce(
+      Return(Connection{BrokerStub{aa}, 1, Clock{}, IdConnectionInfoMap{}})
+    );
+
+  const auto conn = hub->connect(BrokerStub{aa});
+  ASSERT_TRUE(conn.valid());
 }
 
 TEST(Broker, BrokerFirstConnectionUsesPortOne)
@@ -122,7 +156,7 @@ TEST(Broker, UpdatesItsClockDuringConnect)
   EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
     .Times(1)
     .WillOnce(
-      Return(Connection{BrokerStub{aa}, 1, aaClock, {{0xAA, {0, aaClock}}}})
+      Return(Connection{BrokerStub{aa}, 1, aaClock, {{0xAA, {1, aaClock}}}})
     );
   EXPECT_CALL(*aa, query(Clock({}), /* aaPort */ 1))
     .Times(1)
@@ -130,7 +164,36 @@ TEST(Broker, UpdatesItsClockDuringConnect)
 
   hub->connect(BrokerStub{aa});
 
+  const IdClockMap expectedVersion{{0xAA, aaClock}};
+  EXPECT_EQ(hub->versions(), expectedVersion);
+  const IdConnectionInfoMap expectedSources{{0xAA, {1, Clock{{0xAA, 1}}}}};
+  EXPECT_EQ(hub->provides(), expectedSources);
+  ASSERT_EQ(hub->clock(), aaClock);
+}
+
+TEST(Broker, VersionsArePreservedAfterDisconnection)
+{
+  BrokerPtr hub = std::make_shared<Broker>();
+  const auto aa = std::make_shared<BrokerMock>();
+  const Clock aaClock = Clock{{0xAA, 1}};
+  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
+    .Times(1)
+    .WillOnce(
+      Return(Connection{BrokerStub{aa}, 1, aaClock, {{0xAA, {1, aaClock}}}})
+    );
+  EXPECT_CALL(*aa, query(Clock({}), 1))
+    .Times(1)
+    .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
+
+  hub->connect(BrokerStub{aa});
+  const Port port = hub->disconnect(1);
+  EXPECT_EQ(port, 1);
+
+  EXPECT_EQ(hub->provides(), IdConnectionInfoMap{});
   EXPECT_EQ(hub->clock(), aaClock);
+
+  const IdClockMap expectedVersion{{0xAA, aaClock}};
+  ASSERT_EQ(hub->versions(), expectedVersion);
 }
 
 TEST(Broker, UpdateConnectionProvidedSourcesOnAttach)
@@ -222,7 +285,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
         ConnectionInfo{.distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}}}}
     )
   );
-  EXPECT_EQ(
+  ASSERT_EQ(
     hub->versions(),
     IdClockMap(
       {{0xAA, Clock{{0xAA, 1}, {0xBB, 1}}}, {0xBB, Clock{{0xAA, 1}, {0xBB, 1}}}}
