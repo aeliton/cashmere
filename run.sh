@@ -15,14 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #!/usr/bin/env bash
 
-cash -i aa -d /cashmere/db/aa -p 5000 -s add 10 &> /dev/null & disown
+screen -dmS saa cash -i aa -d /cashmere/db/aa -p 5000 -s add 10
 
 while ! nc -z localhost 5000; do   
   sleep 0.1
 done
 until [ -e /cashmere/db/aa ]; do sleep 0.1; done
 
-cash -i bb -d /cashmere/db/bb -p 5001 -s &> /dev/null & disown
+screen -dmS sbb cash -i bb -d /cashmere/db/bb -p 5001 -s
 
 while ! nc -z localhost 5001; do   
   sleep 0.1

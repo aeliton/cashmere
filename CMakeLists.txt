@@ -120,6 +120,9 @@ if (UNIX AND NOT CYGWIN)
   )
 endif()
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(libedit REQUIRED libedit)
+
 target_sources(cash PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
@@ -133,6 +136,7 @@ target_include_directories(cash
 target_link_libraries(cash PRIVATE
   $<BUILD_LOCAL_INTERFACE:options_objects>
   cashmere::cashmere
+  edit
 )
 
 install(

@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "brokergrpcstub.h"
 #include "cashmere/brokerbase.h"
 #include "cashmere/brokergrpc.h"
 #include "cashmere/brokergrpcclient.h"
@@ -27,6 +26,10 @@
 #include <random>
 #include <thread>
 #include <unistd.h>
+#include <cstdlib>
+
+#include <editline/readline.h>
+#include <editline/history.h>
 
 namespace
 {
@@ -124,10 +127,19 @@ void runService(const Options& options)
 
   Command command;
   while (command.type != Command::Type::Quit) {
-    std::cout << journal->clock() << "[" << Ledger::Balance(journal->entries())
+    std::stringstream ss;
+    ss << journal->clock() << "[" << Ledger::Balance(journal->entries())
               << "]"
               << "> ";
-    command = Command::Read(std::cin);
+    char* line = readline(ss.str().c_str());
+    if (!line) {
+      break;
+    }
+    add_history(line);
+    std::stringstream in(line);
+
+    command = Command::Read(in);
+    free(line);
 
     switch (command.type) {
       case Command::Type::Invalid:

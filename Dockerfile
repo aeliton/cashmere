@@ -18,7 +18,7 @@ FROM ubuntu AS build
 RUN apt update -y
 RUN apt install -y \
  cmake ninja-build clang protobuf-compiler-grpc libgrpc++-dev \
- libgtest-dev libgmock-dev libpthread-stubs0-dev
+ libgtest-dev libgmock-dev libpthread-stubs0-dev libedit-dev
 
 WORKDIR /cashmere
 
@@ -32,13 +32,13 @@ RUN cmake --install build/release --prefix /usr/local
 FROM ubuntu AS runtime
 
 RUN apt update -y
-RUN apt install -y libgrpc++1.51t64
+RUN apt install -y libgrpc++1.51t64 libedit2
 
 COPY --from=build /usr/local/. /usr/local/
 
 FROM runtime AS test-runtime
 
-RUN apt install -y netcat-openbsd
+RUN apt install -y netcat-openbsd screen
 
 COPY ./run.sh /tmp/
 

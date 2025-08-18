@@ -15,9 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #!/usr/bin/env bash
 
-pushd ..
-git archive --format=tar.gz -o docker/cashmere.tar.gz main
-popd
+git archive --format=tar.gz -o cashmere.tar.gz HEAD
 docker build . -t aeliton/cashmere --target test-runtime
 
 rm cashmere.tar.gz
