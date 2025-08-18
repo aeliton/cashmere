@@ -18,7 +18,7 @@ FROM ubuntu AS build
 RUN apt update -y
 RUN apt install -y \
  cmake ninja-build clang protobuf-compiler-grpc libgrpc++-dev \
- libgtest-dev libgmock-dev libpthread-stubs0-dev libedit-dev
+ libgtest-dev libgmock-dev libedit-dev
 
 WORKDIR /cashmere
 
