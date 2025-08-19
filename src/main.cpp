@@ -137,10 +137,10 @@ void RunService(const Options& options)
 
   Command command;
   while (command.type != Command::Type::Quit) {
-    std::stringstream ss;
-    ss << journal->clock() << "[" << Ledger::Balance(journal->entries()) << "]"
-       << "> ";
-    char* line = readline(ss.str().c_str());
+    const auto prompt = std::format(
+      "{} {} >", journal->clock().str(), Ledger::Balance(journal->entries())
+    );
+    char* line = readline(prompt.c_str());
     if (line) {
       add_history(line);
       std::stringstream in(line);
