@@ -48,8 +48,8 @@ using namespace Cashmere;
 
 namespace lg = spdlog;
 
-void runService(const Options& options);
-void runCommand(const Options& options);
+void RunService(const Options& options);
+void RunCommand(const Options& options);
 
 int main(int argc, char* argv[])
 {
@@ -64,15 +64,15 @@ int main(int argc, char* argv[])
   }
 
   if (options.service) {
-    runService(options);
+    RunService(options);
   } else {
-    runCommand(options);
+    RunCommand(options);
   }
 
   return 0;
 }
 
-void runCommand(const Options& options)
+void RunCommand(const Options& options)
 {
   auto stub = BrokerGrpcClient(options.hostname, options.port);
   switch (options.command.type) {
@@ -107,7 +107,7 @@ void runCommand(const Options& options)
   }
 }
 
-void runService(const Options& options)
+void RunService(const Options& options)
 {
   auto tempDir = TempDir();
   auto broker = std::make_shared<BrokerGrpc>(options.hostname, options.port);
