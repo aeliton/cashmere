@@ -140,14 +140,14 @@ void RunService(const Options& options)
     ss << journal->clock() << "[" << Ledger::Balance(journal->entries()) << "]"
        << "> ";
     char* line = readline(ss.str().c_str());
-    if (!line) {
-      break;
+    if (line) {
+      add_history(line);
+      std::stringstream in(line);
+      command = Command::Read(in);
+      free(line);
+    } else {
+      command.type = Command::Type::Quit;
     }
-    add_history(line);
-    std::stringstream in(line);
-
-    command = Command::Read(in);
-    free(line);
 
     switch (command.type) {
       case Command::Type::Invalid:
