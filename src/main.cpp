@@ -51,6 +51,8 @@ namespace lg = spdlog;
 void RunService(const Options& options);
 void RunCommand(const Options& options);
 
+void PrintCommands();
+
 int main(int argc, char* argv[])
 {
   lg::set_default_logger(lg::stderr_color_mt("log"));
@@ -60,6 +62,7 @@ int main(int argc, char* argv[])
     std::cout << "usage: " << argv[0]
               << " [-s] [-h hostname] [-p port] [-i id] [<command>...]"
               << std::endl;
+    PrintCommands();
     exit(EXIT_FAILURE);
   }
 
@@ -101,6 +104,7 @@ void RunCommand(const Options& options)
     case Command::Type::Versions:
       break;
     case Command::Type::ListCommands:
+      PrintCommands();
       break;
     case Command::Type::Quit:
       break;
@@ -175,7 +179,7 @@ void RunService(const Options& options)
         std::cout << journal->versions() << std::endl;
         break;
       case Command::Type::ListCommands:
-        std::cout << "not implemented" << std::endl;
+        PrintCommands();
         break;
       case Command::Type::Quit:
         std::cout << "bye!" << std::endl;
@@ -184,6 +188,29 @@ void RunService(const Options& options)
   }
 
   broker->stop();
+}
+
+void PrintCommands()
+{
+  static const std::map<std::string, std::string> kCommandsHelp = {
+    {"connect <host>:<port>", "Connects to another instance: "
+                              "'connect 0.0.0.0:5000'."},
+    {"disconnect <number>",
+     "Disconnects from a host by its connection number: 'disconnect 1'"},
+    {"add <value> [<version>]",
+     "Appends a new entry to the local database: 'add 100 {{aaff, 1}}'."},
+    {"relay <id> <value> [<version>]",
+     "Relay an addition to another instance: 'relay aaff 10'"},
+    {"sources", "Print this instance data sources."},
+    {"list", "List commands."},
+    {"quit", "Quit the instance."}
+  };
+  std::stringstream ss;
+  for (const auto& [cmd, help] : kCommandsHelp) {
+    ss << std::string(2, ' ') << std::setw(35) << std::left << cmd
+       << std::setw(45) << help << std::endl;
+  }
+  std::cout << std::endl << ss.str() << std::endl;
 }
 
 namespace fs = std::filesystem;
