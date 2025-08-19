@@ -13,26 +13,31 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-FROM ubuntu AS build
+FROM ubuntu AS base
 
-RUN apt update -y
-RUN apt install -y \
- cmake ninja-build clang protobuf-compiler-grpc libgrpc++-dev \
- libgtest-dev libgmock-dev libedit-dev libspdlog-dev
+RUN apt-get -qy update && \
+    apt-get -qy install cmake ninja-build clang clang-tools protobuf-compiler-grpc \
+      libgrpc++-dev libgtest-dev libgmock-dev libedit-dev libspdlog-dev libstdc++-14-dev
+
+RUN printf '#include<print>\nint main(){std::println("");}' \
+           | clang++ -std=c++23 -x c++ - -o /dev/null
+
+FROM base AS build
 
 WORKDIR /cashmere
-
 COPY ./cashmere.tar.gz .
-
 RUN tar xzvf cashmere.tar.gz
-RUN cmake --preset release
-RUN cmake --build --preset release
-RUN cmake --install build/release --prefix /usr/local
+
+ENV CXX=clang++
+ENV CC=clang
+RUN cmake --preset release && \
+    cmake --build --preset release && \
+    cmake --install build/release --prefix /usr/local
 
 FROM ubuntu AS runtime
 
-RUN apt update -y
-RUN apt install -y libgrpc++1.51t64 libedit2 libspdlog1.12
+RUN apt-get update -qy && \
+    apt-get install -qy libgrpc++1.51t64 libedit2 libspdlog1.12
 
 COPY --from=build /usr/local/. /usr/local/
 

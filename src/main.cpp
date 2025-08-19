@@ -151,7 +151,7 @@ void RunService(const Options& options)
 
     switch (command.type) {
       case Command::Type::Invalid:
-        std::cout << "unknown command: " << command.name() << std::endl;
+        std::print("unknown command: {}", command.name());
         break;
       case Command::Type::Connect:
       {

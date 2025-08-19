@@ -12,9 +12,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: configure
-      run: sudo apt-get install cmake ninja-build clang protobuf-compiler-grpc libgrpc++-dev libgtest-dev libgmock-dev libedit-dev libspdlog-dev
+      run: sudo apt-get install cmake ninja-build clang protobuf-compiler-grpc libgrpc++-dev libgtest-dev libgmock-dev libedit-dev libspdlog-dev libstdc++-14-dev
     - name: build release
-      run: cmake --workflow --preset release
+      run: CXX=clang++ CC=clang cmake --workflow --preset release
     - name: build debug
-      run: cmake --workflow --preset debug
+      run: CXX=clang++ CC=clang cmake --workflow --preset debug
 
