@@ -24,6 +24,7 @@
 #include <filesystem>
 #include <grpcpp/server.h>
 #include <iostream>
+#include <print>
 #include <random>
 #include <thread>
 #include <unistd.h>
@@ -59,9 +60,9 @@ int main(int argc, char* argv[])
 
   Options options(argc, argv);
   if (!options.ok()) {
-    std::cout << "usage: " << argv[0]
-              << " [-s] [-h hostname] [-p port] [-i id] [<command>...]"
-              << std::endl;
+    std::println(
+      "usage: {} [-s] [-h hostname] [-p port] [-i id] [<command>...]", argv[0]
+    );
     PrintCommands();
     exit(EXIT_FAILURE);
   }
@@ -157,8 +158,7 @@ void RunService(const Options& options)
       {
         const auto conn = broker->connect(BrokerStub(command.url));
         if (!conn.valid()) {
-          std::cout << command.name() << ": failed [" << options.port << "]"
-                    << std::endl;
+          std::println("{}: failed {}", command.name(), options.port);
         }
         break;
       }
@@ -182,7 +182,7 @@ void RunService(const Options& options)
         PrintCommands();
         break;
       case Command::Type::Quit:
-        std::cout << "bye!" << std::endl;
+        std::println("bye!");
         break;
     }
   }
@@ -205,12 +205,11 @@ void PrintCommands()
     {"list", "List commands."},
     {"quit", "Quit the instance."}
   };
-  std::stringstream ss;
+  std::println();
   for (const auto& [cmd, help] : kCommandsHelp) {
-    ss << std::string(2, ' ') << std::setw(35) << std::left << cmd
-       << std::setw(45) << help << std::endl;
+    std::println("  {: <35}{:45}", cmd, help);
   }
-  std::cout << std::endl << ss.str() << std::endl;
+  std::println();
 }
 
 namespace fs = std::filesystem;
