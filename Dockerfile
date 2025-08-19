@@ -18,7 +18,7 @@ FROM ubuntu AS build
 RUN apt update -y
 RUN apt install -y \
  cmake ninja-build clang protobuf-compiler-grpc libgrpc++-dev \
- libgtest-dev libgmock-dev libedit-dev
+ libgtest-dev libgmock-dev libedit-dev libspdlog-dev
 
 WORKDIR /cashmere
 
@@ -32,7 +32,7 @@ RUN cmake --install build/release --prefix /usr/local
 FROM ubuntu AS runtime
 
 RUN apt update -y
-RUN apt install -y libgrpc++1.51t64 libedit2
+RUN apt install -y libgrpc++1.51t64 libedit2 libspdlog1.12
 
 COPY --from=build /usr/local/. /usr/local/
 

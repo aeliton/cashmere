@@ -22,7 +22,10 @@
 #include <grpcpp/server_builder.h>
 #include <proto/cashmere.grpc.pb.h>
 #include <proto/cashmere.pb.h>
+#include <spdlog/spdlog.h>
 #include <thread>
+
+namespace lg = spdlog;
 
 namespace Cashmere
 {
@@ -104,10 +107,10 @@ BrokerGrpc::Impl::Impl()
     const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
     const Clock version = Utils::ClockFrom(request->version());
 
-    std::cout << "Connection request from: [" << request->broker().url()
-              << "] with port: " << request->port() << ", version: " << version
-              << std::endl
-              << ", sources: " << sources << std::endl;
+    lg::info(
+      "BrokerGrpc: Connection request from: {}, port: {}, version: {}",
+      request->broker().url(), request->port(), version.str()
+    );
 
     Connection conn{stub, request->port(), version, sources};
 
@@ -145,8 +148,9 @@ BrokerGrpc::Impl::Impl()
   Port sender = request->sender();
   Entry entry = Utils::EntryFrom(request->entry());
 
-  std::cout << "Insert request from sender: [" << sender << "] entry: " << entry
-            << std::endl;
+  lg::info(
+    "BrokerGrpc: Insert request from sender: {}, entry: {}", sender, entry.str()
+  );
 
   if (broker()->insert(entry, sender).valid()) {
     Utils::SetClock(response->mutable_version(), broker()->clock());
@@ -167,7 +171,7 @@ BrokerGrpc::Impl::Impl()
   conn.version() = Utils::ClockFrom(request->version());
   conn.provides() = Utils::SourcesFrom(request->sources());
   broker()->refresh(conn, request->sender());
-  std::cout << "Refresh called!" << std::endl;
+  lg::info("BrokerGrpc: Refresh called!");
   return ::grpc::Status::OK;
 }
 
@@ -176,8 +180,10 @@ BrokerGrpc::Impl::Impl()
   const Grpc::RelayInsertRequest* request, Grpc::InsertResponse* response
 )
 {
-  std::cout << "Relay message received: " << Utils::DataFrom(request->entry())
-            << " and sender: " << request->sender() << std::endl;
+  lg::info(
+    "BrokerGrpc: Relay message received: {}, sender: {}",
+    Utils::DataFrom(request->entry()).str(), request->sender()
+  );
   Clock clock =
     broker()->relay(Utils::DataFrom(request->entry()), request->sender());
   Utils::SetClock(response->mutable_version(), clock);
@@ -230,7 +236,7 @@ std::thread BrokerGrpc::start()
 {
   _impl->setBroker(shared_from_this());
 
-  std::cout << "BrokerGrpc running on port: " << _port << std::endl;
+  lg::info("BrokerGrpc: running on port: ", _port);
   std::stringstream ss;
   ss << "0.0.0.0:" << _port;
   return _impl->start(ss.str());

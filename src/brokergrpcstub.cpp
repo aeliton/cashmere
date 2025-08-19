@@ -21,6 +21,9 @@
 #include <grpcpp/create_channel.h>
 #include <proto/cashmere.grpc.pb.h>
 #include <proto/cashmere.pb.h>
+#include <spdlog/spdlog.h>
+
+namespace lg = spdlog;
 
 namespace Cashmere
 {
@@ -106,7 +109,7 @@ EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
 
 Connection BrokerGrpcStub::connect(Connection conn)
 {
-  std::cout << "Broker grpc stub connect called with: " << conn << std::endl;
+  lg::info("Broker grpc stub connect called with: {}", conn.str());
   ::grpc::ClientContext context;
 
   Grpc::ConnectionRequest request;
@@ -124,8 +127,10 @@ Connection BrokerGrpcStub::connect(Connection conn)
     Clock clock = Utils::ClockFrom(response.version());
     return Connection{BrokerStub{_url}, response.port(), clock, {}};
   } else {
-    std::cerr << "BrokerGrpcStub: error connecting to " << conn.stub().url()
-              << "[" << status.error_code() << "]" << std::endl;
+    lg::error(
+      "BrokerGrpcStub: error {} connecting to {}",
+      static_cast<int>(status.error_code()), conn.stub().url()
+    );
   }
   return Connection();
 }
@@ -159,8 +164,10 @@ Clock BrokerGrpcStub::relay(const Data& entry, Port sender)
   if (status.ok()) {
     return Utils::ClockFrom(response.version());
   } else {
-    std::cerr << "failed relaying message.. status " << status.error_code()
-              << " " << status.error_details() << std::endl;
+    lg::error(
+      "BrokerGrpcStub: failed relaying message.. status {}",
+      static_cast<int>(status.error_code())
+    );
   }
   return {{0, 0}};
 }

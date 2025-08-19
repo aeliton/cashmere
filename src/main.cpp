@@ -20,16 +20,19 @@
 #include "cashmere/ledger.h"
 #include "options.h"
 
+#include <cstdlib>
 #include <filesystem>
 #include <grpcpp/server.h>
 #include <iostream>
 #include <random>
 #include <thread>
 #include <unistd.h>
-#include <cstdlib>
 
-#include <editline/readline.h>
 #include <editline/history.h>
+#include <editline/readline.h>
+
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 namespace
 {
@@ -43,17 +46,20 @@ struct TempDir
 
 using namespace Cashmere;
 
+namespace lg = spdlog;
+
 void runService(const Options& options);
 void runCommand(const Options& options);
 
 int main(int argc, char* argv[])
 {
+  lg::set_default_logger(lg::stderr_color_mt("log"));
+
   Options options(argc, argv);
   if (!options.ok()) {
-    std::cerr
-      << "usage: %s  [-s] [-h hostname] [-p port] [-i id] [<command>...]"
-      << std::endl
-      << "status: " << static_cast<int>(options.error().status) << std::endl;
+    std::cout << "usage: " << argv[0]
+              << " [-s] [-h hostname] [-p port] [-i id] [<command>...]"
+              << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -73,22 +79,20 @@ void runCommand(const Options& options)
     case Command::Type::Invalid:
       break;
     case Command::Type::Connect:
-      std::cout << "connect to " << options.command.url << std::endl;
+      lg::info("connect to {}", options.command.url);
       stub.connect(Connection(BrokerStub(options.command.url)));
       break;
     case Command::Type::Disconnect:
       break;
     case Command::Type::Append:
       if (!stub.relay(options.command.data, 0).valid()) {
-        std::cerr << "Error: failed inserting:" << options.command.data
-                  << options.hostname << std::endl;
+        lg::error("add command failed!");
         exit(EXIT_FAILURE);
       }
       break;
     case Command::Type::Relay:
       if (!stub.relay(options.command.data, 0).valid()) {
-        std::cerr << "Error: failed inserting:" << options.command.data
-                  << options.hostname << std::endl;
+        lg::error("relay command failed!");
         exit(EXIT_FAILURE);
       }
       break;
@@ -113,9 +117,10 @@ void runService(const Options& options)
 
   journal->connect(BrokerStub{broker});
 
-  std::cout << "Journal " << std::hex << options.id << std::dec
-            << " port: " << options.port << " path: " << tempDir.directory
-            << std::endl;
+  lg::info(
+    "Journal {:x}, port: {}, path: {}", options.id, options.port,
+    tempDir.directory
+  );
 
   std::thread brokerThread = broker->start();
 
@@ -128,9 +133,8 @@ void runService(const Options& options)
   Command command;
   while (command.type != Command::Type::Quit) {
     std::stringstream ss;
-    ss << journal->clock() << "[" << Ledger::Balance(journal->entries())
-              << "]"
-              << "> ";
+    ss << journal->clock() << "[" << Ledger::Balance(journal->entries()) << "]"
+       << "> ";
     char* line = readline(ss.str().c_str());
     if (!line) {
       break;
@@ -143,13 +147,13 @@ void runService(const Options& options)
 
     switch (command.type) {
       case Command::Type::Invalid:
-        std::cerr << "unknown command: " << command.name() << std::endl;
+        std::cout << "unknown command: " << command.name() << std::endl;
         break;
       case Command::Type::Connect:
       {
         const auto conn = broker->connect(BrokerStub(command.url));
         if (!conn.valid()) {
-          std::cerr << command.name() << ": failed [" << options.port << "]"
+          std::cout << command.name() << ": failed [" << options.port << "]"
                     << std::endl;
         }
         break;
@@ -171,7 +175,7 @@ void runService(const Options& options)
         std::cout << journal->versions() << std::endl;
         break;
       case Command::Type::ListCommands:
-        std::cerr << "not implemented" << std::endl;
+        std::cout << "not implemented" << std::endl;
         break;
       case Command::Type::Quit:
         std::cout << "bye!" << std::endl;
