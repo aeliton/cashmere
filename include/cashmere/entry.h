@@ -38,6 +38,7 @@ struct CASHMERE_EXPORT Data
   bool operator==(const Data& other) const;
   bool valid() const;
   static bool Read(std::istream& in, Data& data);
+  std::string str() const;
   CASHMERE_EXPORT friend std::ostream&
   operator<<(std::ostream& os, const Data& data);
 };
@@ -48,6 +49,7 @@ struct CASHMERE_EXPORT Entry
   Data entry;
   bool operator==(const Entry& other) const;
   static bool Read(std::istream& in, Entry& entry);
+  std::string str() const;
   CASHMERE_EXPORT friend std::ostream&
   operator<<(std::ostream& os, const Entry& data);
 };

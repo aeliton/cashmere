@@ -36,6 +36,7 @@ public:
   bool smallerThan(const Clock& other) const;
   bool concurrent(const Clock& other) const;
   bool valid() const;
+  std::string str() const;
 
   static bool Read(std::istream& in, Clock& clock);
   CASHMERE_EXPORT friend std::ostream&

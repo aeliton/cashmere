@@ -16,6 +16,7 @@
 #include "cashmere/entry.h"
 #include "utils/fileutils.h"
 #include <istream>
+#include <sstream>
 
 namespace Cashmere
 {
@@ -90,6 +91,20 @@ bool Entry::Read(std::istream& in, Entry& entry)
     return false;
   }
   return true;
+}
+
+std::string Entry::str() const
+{
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
+}
+
+std::string Data::str() const
+{
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
 }
 
 }

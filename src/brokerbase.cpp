@@ -262,4 +262,11 @@ bool Connection::valid() const
   return _cache.port >= 0;
 }
 
+std::string Connection::str() const
+{
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
+}
+
 }

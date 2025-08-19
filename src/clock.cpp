@@ -17,6 +17,7 @@
 #include "utils/fileutils.h"
 
 #include <istream>
+#include <sstream>
 
 namespace Cashmere
 {
@@ -119,6 +120,13 @@ bool Clock::Read(std::istream& in, Clock& clock)
   }
 
   return true;
+}
+
+std::string Clock::str() const
+{
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
 }
 
 }

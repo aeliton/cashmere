@@ -122,6 +122,7 @@ public:
   ConnectionData cache() const;
 
   bool valid() const;
+  std::string str() const;
 
 protected:
   BrokerStub _broker;
