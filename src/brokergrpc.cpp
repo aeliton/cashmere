@@ -236,7 +236,7 @@ std::thread BrokerGrpc::start()
 {
   _impl->setBroker(shared_from_this());
 
-  lg::info("BrokerGrpc: running on port: ", _port);
+  lg::info("BrokerGrpc: running on port: {}", _port);
   std::stringstream ss;
   ss << "0.0.0.0:" << _port;
   return _impl->start(ss.str());
