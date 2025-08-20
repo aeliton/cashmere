@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Cashmere - a distributed conflict-free replicated database.
 # Copyright (C) 2025 Aeliton G. Silva
 #
@@ -13,7 +15,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#!/usr/bin/env bash
 
 mkdir /cashmere
 screen -dmS saa cash -i aa -d /cashmere/db/aa -p 5000 -s add 10 2> /cashmere/aa.log
@@ -28,7 +29,6 @@ screen -dmS sbb cash -i bb -d /cashmere/db/bb -p 5001 -s connect 0.0.0.0:5000 2>
 while ! nc -z localhost 5001; do   
   sleep 0.1
 done
-
 
 if ! diff "/cashmere/db/aa" "/cashmere/db/bb" &> /dev/null; then
   echo "Failed"

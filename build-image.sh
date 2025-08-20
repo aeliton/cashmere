@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Cashmere - a distributed conflict-free replicated database.
 # Copyright (C) 2025 Aeliton G. Silva
 #
@@ -13,7 +15,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#!/usr/bin/env bash
 
 git archive --format=tar.gz -o cashmere.tar.gz HEAD
 docker build . -t aeliton/cashmere --target test-runtime
