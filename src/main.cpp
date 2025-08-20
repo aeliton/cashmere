@@ -131,28 +131,13 @@ void RunService(const Options& options)
 
   brokerThread.detach();
 
-  if (options.command.type == Command::Type::Append) {
-    journal->append(options.command.data.value);
-  }
-
-  Command command;
-  while (command.type != Command::Type::Quit) {
-    const auto prompt = std::format(
-      "{} {} >", journal->clock().str(), Ledger::Balance(journal->entries())
-    );
-    char* line = readline(prompt.c_str());
-    if (line) {
-      add_history(line);
-      std::stringstream in(line);
-      command = Command::Read(in);
-      free(line);
-    } else {
-      command.type = Command::Type::Quit;
-    }
-
+  Command command = options.command;
+  do {
     switch (command.type) {
       case Command::Type::Invalid:
-        std::print("unknown command: {}", command.name());
+        if (command.name().size() > 0) {
+          std::println("unknown command: {}", command.name());
+        }
         break;
       case Command::Type::Connect:
       {
@@ -182,10 +167,24 @@ void RunService(const Options& options)
         PrintCommands();
         break;
       case Command::Type::Quit:
-        std::println("bye!");
         break;
     }
-  }
+    const auto prompt = std::format(
+      "{}:{} > ", journal->clock().str(), Ledger::Balance(journal->entries())
+    );
+    char* line = readline(prompt.c_str());
+    if (!line) {
+      command.type = Command::Type::Quit;
+    } else {
+      std::stringstream in(line);
+      command = Command::Read(in);
+      if (command.name().size() > 0) {
+        add_history(line);
+      }
+    }
+    free(line);
+  } while (command.type != Command::Type::Quit);
+  std::println("bye!");
 
   broker->stop();
 }
