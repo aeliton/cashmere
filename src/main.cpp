@@ -29,7 +29,6 @@
 #include <thread>
 #include <unistd.h>
 
-#include <editline/history.h>
 #include <editline/readline.h>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -204,11 +203,11 @@ void PrintCommands()
     {"list", "List commands."},
     {"quit", "Quit the instance."}
   };
-  std::println();
+  std::cout << std::endl;
   for (const auto& [cmd, help] : kCommandsHelp) {
-    std::println("  {: <35}{:45}", cmd, help);
+    std::cout << std::format("  {: <35}{:45}", cmd, help) << std::endl;
   }
-  std::println();
+  std::cout << std::endl;
 }
 
 namespace fs = std::filesystem;
