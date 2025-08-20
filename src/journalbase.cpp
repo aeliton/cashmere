@@ -93,9 +93,9 @@ EntryList JournalBase::query(const Clock& from, Port) const
   return list;
 }
 
-SourcesMap JournalBase::provides(Port sender) const
+SourcesMap JournalBase::sources(Port sender) const
 {
-  auto out = Broker::provides(sender);
+  auto out = Broker::sources(sender);
   out[0] = {{_id, {0, clock()}}};
   return out;
 }

@@ -157,7 +157,7 @@ void RunService(const Options& options)
         broker->relay(command.data, 0);
         break;
       case Command::Type::Sources:
-        std::cout << journal->provides() << std::endl;
+        std::cout << journal->sources() << std::endl;
         break;
       case Command::Type::Versions:
         std::cout << journal->versions() << std::endl;

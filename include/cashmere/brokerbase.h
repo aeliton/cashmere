@@ -144,7 +144,7 @@ public:
   virtual EntryList query(const Clock& from = {}, Port sender = 0) const = 0;
   virtual Clock clock() const = 0;
   virtual IdClockMap versions() const = 0;
-  virtual SourcesMap provides(Port sender = 0) const = 0;
+  virtual SourcesMap sources(Port sender = 0) const = 0;
   virtual Clock relay(const Data& entry, Port sender) = 0;
   virtual BrokerStub stub() = 0;
 };

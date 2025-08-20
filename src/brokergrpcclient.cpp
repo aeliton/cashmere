@@ -35,9 +35,9 @@ IdClockMap BrokerGrpcClient::versions() const
   return _stub->versions();
 }
 
-SourcesMap BrokerGrpcClient::provides(Port sender) const
+SourcesMap BrokerGrpcClient::sources(Port sender) const
 {
-  return _stub->provides(sender);
+  return _stub->sources(sender);
 }
 
 Clock BrokerGrpcClient::insert(const Entry& data, Port sender)

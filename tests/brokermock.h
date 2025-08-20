@@ -32,7 +32,7 @@ public:
   MOCK_METHOD(
     EntryList, query, (const Clock& from, Port sender), (const, override)
   );
-  MOCK_METHOD(SourcesMap, provides, (Port to), (const, override));
+  MOCK_METHOD(SourcesMap, sources, (Port to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
   MOCK_METHOD(Clock, clock, (), (const, override));
   MOCK_METHOD(Connection, connect, (Connection conn), (override));

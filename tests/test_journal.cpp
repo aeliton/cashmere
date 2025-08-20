@@ -146,7 +146,7 @@ TEST(Journal, ReportsProvidesItsOwnData)
        {0xAA, ConnectionInfo{.distance = 0, .version = Clock{}}}
      }}
   };
-  ASSERT_EQ(journal.provides(), expected);
+  ASSERT_EQ(journal.sources(), expected);
 }
 
 TEST(Journal, RefusesEntriesOutOfOrder)
@@ -175,7 +175,7 @@ TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
      IdConnectionInfoMap{{0xBB, {.distance = 1, .version = Clock{{0xAA, 1}}}}}}
   };
 
-  EXPECT_EQ(aa->provides(), sources);
+  EXPECT_EQ(aa->sources(), sources);
 
   const auto versions = IdClockMap{{0xAA, {{0xAA, 1}}}, {0xBB, {{0xAA, 1}}}};
   EXPECT_EQ(aa->versions(), versions);

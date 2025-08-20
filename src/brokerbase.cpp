@@ -152,7 +152,7 @@ EntryList Connection::entries(const Clock& clock) const
 IdConnectionInfoMap& Connection::provides(Origin origin) const
 {
   if (origin == Origin::Remote) {
-    for (auto& [port, sources] : broker()->provides(_cache.port)) {
+    for (auto& [port, sources] : broker()->sources(_cache.port)) {
       for (auto& [id, data] : sources) {
         ++data.distance;
         _cache.version = _cache.version.merge(data.version);

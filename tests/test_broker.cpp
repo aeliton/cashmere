@@ -167,7 +167,7 @@ TEST(Broker, UpdatesItsClockDuringConnect)
   const IdClockMap expectedVersion{{0xAA, aaClock}};
   EXPECT_EQ(hub->versions(), expectedVersion);
   const SourcesMap expectedSources{{1, {{0xAA, {1, Clock{{0xAA, 1}}}}}}};
-  EXPECT_EQ(hub->provides(), expectedSources);
+  EXPECT_EQ(hub->sources(), expectedSources);
   ASSERT_EQ(hub->clock(), aaClock);
 }
 
@@ -189,7 +189,7 @@ TEST(Broker, VersionsArePreservedAfterDisconnection)
   const Port port = hub->disconnect(1);
   EXPECT_EQ(port, 1);
 
-  EXPECT_EQ(hub->provides(), SourcesMap{});
+  EXPECT_EQ(hub->sources(), SourcesMap{});
   EXPECT_EQ(hub->clock(), aaClock);
 
   const IdClockMap expectedVersion{{0xAA, aaClock}};
@@ -277,7 +277,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
   hub->connect(BrokerStub{bb});
 
   EXPECT_EQ(
-    hub->provides(),
+    hub->sources(),
     SourcesMap(
       {{1, IdConnectionInfoMap(
              {{0xAA,

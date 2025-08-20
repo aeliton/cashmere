@@ -46,7 +46,7 @@ Connection Broker::connect(Connection conn)
 
     auto& conn = _connections.at(out.port());
     conn.update(conn.broker()->connect(Connection{
-      stub(), out.port(), clock(), UpdateProvides(provides(out.port()))
+      stub(), out.port(), clock(), UpdateProvides(sources(out.port()))
     }));
 
     auto thisEntries = query(conn.version(), out.port());
@@ -71,7 +71,7 @@ Connection Broker::connect(Connection conn)
     _connections.push_back(conn);
     refreshConnections(out.port());
     out.version() = version;
-    out.provides() = UpdateProvides(provides(out.port()));
+    out.provides() = UpdateProvides(sources(out.port()));
   }
   return out;
 }
@@ -107,7 +107,7 @@ Clock Broker::insert(const Entry& data, Port port)
   return clock();
 }
 
-SourcesMap Broker::provides(Port sender) const
+SourcesMap Broker::sources(Port sender) const
 {
   SourcesMap out;
   for (size_t i = 0; i < _connections.size(); i++) {
@@ -220,7 +220,7 @@ void Broker::refreshConnections(Port ignore)
     }
     auto& conn = _connections.at(i);
     conn.refresh(
-      {stub(), static_cast<Port>(i), clock(), UpdateProvides(provides(i))}
+      {stub(), static_cast<Port>(i), clock(), UpdateProvides(sources(i))}
     );
   }
 }
@@ -229,7 +229,7 @@ Clock Broker::relay(const Data& entry, Port sender)
 {
   long distance = std::numeric_limits<long>::max();
   Port shortestDistancePort = -1;
-  for (const auto& [port, infoMap] : provides()) {
+  for (const auto& [port, infoMap] : sources()) {
     if (sender > 0 && port == sender) {
       continue;
     }
