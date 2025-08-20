@@ -23,16 +23,12 @@ while ! nc -z localhost 5000; do
 done
 until [ -e /cashmere/db/aa ]; do sleep 0.1; done
 
-screen -dmS sbb cash -i bb -d /cashmere/db/bb -p 5001 -s 2> /cashmere/bb.log
+screen -dmS sbb cash -i bb -d /cashmere/db/bb -p 5001 -s connect 0.0.0.0:5000 2> /cashmere/bb.log
 
 while ! nc -z localhost 5001; do   
   sleep 0.1
 done
 
-cash -p 5001 connect 0.0.0.0:5000
-
-cash -p 5000 quit
-cash -p 5001 quit
 
 if ! diff "/cashmere/db/aa" "/cashmere/db/bb" &> /dev/null; then
   echo "Failed"
