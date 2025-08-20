@@ -175,3 +175,10 @@ TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
   const auto versions = IdClockMap{{0xAA, {{0xAA, 1}}}, {0xBB, {{0xAA, 1}}}};
   EXPECT_EQ(aa->versions(), versions);
 }
+
+TEST(Journal, RelayWithZeroedIdIsAppliedLocally)
+{
+  const auto journal = std::make_shared<Journal>(0xAA);
+  const auto expectedClock = Clock{{0xAA, 1}};
+  ASSERT_EQ(journal->relay(Data{0, 999, {}}, 0), expectedClock);
+}

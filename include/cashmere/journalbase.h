@@ -40,6 +40,13 @@ public:
 
   Clock insert(const Entry& data, Port source = 0) override;
   EntryList query(const Clock& from = {}, Port source = 0) const override;
+  virtual Clock relay(const Data& data, Port sender) override
+  {
+    if (data.id == 0) {
+      return Broker::relay({_id, data.value, data.alters}, sender);
+    }
+    return Broker::relay(data, sender);
+  }
 
   Id id() const;
   Id bookId() const;
