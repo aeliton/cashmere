@@ -93,10 +93,10 @@ EntryList JournalBase::query(const Clock& from, Port) const
   return list;
 }
 
-IdConnectionInfoMap JournalBase::provides(Port sender) const
+SourcesMap JournalBase::provides(Port sender) const
 {
   auto out = Broker::provides(sender);
-  out[id()] = {0, clock()};
+  out[0] = {{_id, {0, clock()}}};
   return out;
 }
 

@@ -36,6 +36,8 @@ struct CASHMERE_EXPORT ConnectionInfo
 
 using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 
+using SourcesMap = std::map<Port, IdConnectionInfoMap>;
+
 class BrokerBase;
 using BrokerBasePtr = std::shared_ptr<BrokerBase>;
 using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
@@ -142,7 +144,7 @@ public:
   virtual EntryList query(const Clock& from = {}, Port sender = 0) const = 0;
   virtual Clock clock() const = 0;
   virtual IdClockMap versions() const = 0;
-  virtual IdConnectionInfoMap provides(Port sender = 0) const = 0;
+  virtual SourcesMap provides(Port sender = 0) const = 0;
   virtual Clock relay(const Data& entry, Port sender) = 0;
   virtual BrokerStub stub() = 0;
 };
@@ -151,6 +153,8 @@ CASHMERE_EXPORT std::ostream&
 operator<<(std::ostream& os, const IdConnectionInfoMap& data);
 CASHMERE_EXPORT std::ostream&
 operator<<(std::ostream& os, const IdClockMap& data);
+CASHMERE_EXPORT std::ostream&
+operator<<(std::ostream& os, const SourcesMap& data);
 
 }
 #endif

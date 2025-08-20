@@ -67,7 +67,7 @@ IdClockMap BrokerGrpcStub::versions() const
   return {};
 }
 
-IdConnectionInfoMap BrokerGrpcStub::provides([[maybe_unused]] Port sender) const
+SourcesMap BrokerGrpcStub::provides([[maybe_unused]] Port sender) const
 {
   return {};
 }

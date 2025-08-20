@@ -152,10 +152,12 @@ EntryList Connection::entries(const Clock& clock) const
 IdConnectionInfoMap& Connection::provides(Origin origin) const
 {
   if (origin == Origin::Remote) {
-    _cache.sources = broker()->provides(_cache.port);
-    for (auto& [id, data] : _cache.sources) {
-      ++data.distance;
-      _cache.version = _cache.version.merge(data.version);
+    for (auto& [port, sources] : broker()->provides(_cache.port)) {
+      for (auto& [id, data] : sources) {
+        ++data.distance;
+        _cache.version = _cache.version.merge(data.version);
+      }
+      _cache.sources.merge(sources);
     }
   }
   return _cache.sources;
@@ -217,6 +219,19 @@ std::ostream& operator<<(std::ostream& os, const IdConnectionInfoMap& data)
     for (++it; it != data.cend(); ++it) {
       os << ", {" << std::hex << it->first << std::dec << ", " << it->second
          << "}";
+    }
+  }
+  return os << "}";
+}
+
+std::ostream& operator<<(std::ostream& os, const SourcesMap& data)
+{
+  os << "SourcesMap{";
+  auto it = data.cbegin();
+  if (it != data.cend()) {
+    os << "{" << it->first << ", " << it->second << "}";
+    for (++it; it != data.cend(); ++it) {
+      os << ", {" << it->first << ", " << it->second << "}";
     }
   }
   return os << "}";

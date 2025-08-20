@@ -35,7 +35,7 @@ IdClockMap BrokerGrpcClient::versions() const
   return _stub->versions();
 }
 
-IdConnectionInfoMap BrokerGrpcClient::provides(Port sender) const
+SourcesMap BrokerGrpcClient::provides(Port sender) const
 {
   return _stub->provides(sender);
 }

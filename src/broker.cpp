@@ -22,7 +22,7 @@
 namespace Cashmere
 {
 
-IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides);
+IdConnectionInfoMap UpdateProvides(SourcesMap provides);
 
 Broker::Broker()
 {
@@ -107,22 +107,22 @@ Clock Broker::insert(const Entry& data, Port port)
   return clock();
 }
 
-IdConnectionInfoMap Broker::provides(Port sender) const
+SourcesMap Broker::provides(Port sender) const
 {
-  IdConnectionInfoMap out;
+  SourcesMap out;
   for (size_t i = 0; i < _connections.size(); i++) {
-    if (i == static_cast<size_t>(sender)) {
+    if (i > 0 && i == static_cast<size_t>(sender)) {
       continue;
     }
-    auto& conn = _connections[i];
-    if (conn.active()) {
-      for (auto& [id, data] : conn.provides()) {
-        auto it = std::as_const(out).find(id);
-        if (it == out.cend() || data.distance < it->second.distance) {
-          out[id] = data;
-        }
-      }
+    const auto& conn = _connections[i];
+    if (!conn.active()) {
+      continue;
     }
+    const auto& sources = conn.provides();
+    if (sources.empty()) {
+      continue;
+    }
+    out[i] = _connections[i].provides();
   }
   return out;
 }
@@ -191,12 +191,16 @@ bool ConnectionInfo::operator<(const ConnectionInfo& other) const
   return std::tie(distance, version) < std::tie(other.distance, other.version);
 }
 
-IdConnectionInfoMap UpdateProvides(IdConnectionInfoMap provides)
+IdConnectionInfoMap UpdateProvides(SourcesMap provides)
 {
-  for (auto& [id, data] : provides) {
-    ++data.distance;
+  IdConnectionInfoMap out;
+  for (auto& [port, infoMap] : provides) {
+    for (auto& [id, data] : infoMap) {
+      ++data.distance;
+    }
+    out.merge(infoMap);
   }
-  return provides;
+  return out;
 }
 
 std::set<Port> Broker::connectedPorts() const
@@ -224,12 +228,19 @@ void Broker::refreshConnections(Port ignore)
 Clock Broker::relay(const Data& entry, Port sender)
 {
   long distance = std::numeric_limits<long>::max();
-  for (const auto& [id, info] : provides()) {
-    if (id == entry.id) {
-      if (info.distance == 0) {
-        return insert({clock().tick(id), entry});
-      } else if (info.distance < distance) {
-        distance = info.distance;
+  Port shortestDistancePort = -1;
+  for (const auto& [port, infoMap] : provides()) {
+    if (sender > 0 && port == sender) {
+      continue;
+    }
+    for (const auto& [id, info] : infoMap) {
+      if (id == entry.id) {
+        if (info.distance == 0) {
+          return insert({clock().tick(id), entry});
+        } else if (info.distance < distance) {
+          distance = info.distance;
+          shortestDistancePort = port;
+        }
       }
     }
   }
@@ -238,19 +249,7 @@ Clock Broker::relay(const Data& entry, Port sender)
     return {{0, 0}};
   }
 
-  for (size_t i = 1; i < _connections.size(); i++) {
-    if (i == static_cast<size_t>(sender)) {
-      continue;
-    }
-    auto& conn = _connections.at(i);
-    auto sources = conn.provides();
-    const auto it = std::as_const(sources).find(entry.id);
-    if (sources.find(entry.id) != sources.cend() &&
-        it->second.distance == distance) {
-      return conn.relay(entry);
-    }
-  }
-  return {{0, 0}};
+  return _connections.at(shortestDistancePort).relay(entry);
 }
 
 BrokerStub Broker::stub()

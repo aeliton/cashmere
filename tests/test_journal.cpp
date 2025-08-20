@@ -140,8 +140,11 @@ TEST(Journal, QueryEntries)
 TEST(Journal, ReportsProvidesItsOwnData)
 {
   Journal journal(0xAA);
-  const auto expected = IdConnectionInfoMap{
-    {0xAA, ConnectionInfo{.distance = 0, .version = Clock{}}}
+  const auto expected = SourcesMap{
+    {0,
+     IdConnectionInfoMap{
+       {0xAA, ConnectionInfo{.distance = 0, .version = Clock{}}}
+     }}
   };
   ASSERT_EQ(journal.provides(), expected);
 }
@@ -165,9 +168,11 @@ TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
     IdConnectionInfoMap{{0xBB, {.distance = 1, .version = {}}}}
   });
 
-  const auto sources = IdConnectionInfoMap{
-    {0xAA, {.distance = 0, .version = Clock{{0xAA, 1}}}},
-    {0xBB, {.distance = 1, .version = Clock{{0xAA, 1}}}}
+  const auto sources = SourcesMap{
+    {0,
+     IdConnectionInfoMap{{0xAA, {.distance = 0, .version = Clock{{0xAA, 1}}}}}},
+    {1,
+     IdConnectionInfoMap{{0xBB, {.distance = 1, .version = Clock{{0xAA, 1}}}}}}
   };
 
   EXPECT_EQ(aa->provides(), sources);

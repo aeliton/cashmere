@@ -34,7 +34,7 @@ public:
   explicit BrokerGrpcStub(std::unique_ptr<Grpc::Broker::StubInterface>&& stub);
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;
-  virtual IdConnectionInfoMap provides(Port sender = 0) const override;
+  virtual SourcesMap provides(Port sender = 0) const override;
   virtual Clock insert(const Entry& data, Port sender = 0) override;
   virtual EntryList
   query(const Clock& from = {}, Port sender = 0) const override;
