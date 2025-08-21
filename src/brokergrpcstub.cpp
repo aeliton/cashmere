@@ -118,7 +118,7 @@ Connection BrokerGrpcStub::connect(Connection conn)
 
   request.mutable_broker()->set_url(conn.stub().url());
 
-  Utils::SetSources(request.mutable_sources(), conn.provides());
+  Utils::SetIdConnectionInfoMap(request.mutable_sources(), conn.provides());
 
   Grpc::ConnectionResponse response;
 
@@ -142,7 +142,7 @@ bool BrokerGrpcStub::refresh(const Connection& conn, Source sender)
   request.set_source(conn.source());
 
   Utils::SetClock(request.mutable_version(), conn.version());
-  Utils::SetSources(request.mutable_sources(), conn.provides());
+  Utils::SetIdConnectionInfoMap(request.mutable_sources(), conn.provides());
 
   ::google::protobuf::Empty response;
   ::grpc::ClientContext context;

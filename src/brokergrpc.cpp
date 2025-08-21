@@ -104,7 +104,8 @@ BrokerGrpc::Impl::Impl()
     const auto conn = broker()->connect(stub);
     response->set_source(conn.source());
   } else {
-    const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
+    const IdConnectionInfoMap sources =
+      Utils::IdConnectionInfoMapFrom(request->sources());
     const Clock version = Utils::ClockFrom(request->version());
 
     lg::info(
@@ -118,7 +119,7 @@ BrokerGrpc::Impl::Impl()
 
     response->set_source(out.source());
     Utils::SetClock(response->mutable_version(), out.version());
-    Utils::SetSources(response->mutable_sources(), out.provides());
+    Utils::SetIdConnectionInfoMap(response->mutable_sources(), out.provides());
   }
 
   return ::grpc::Status::OK;
@@ -169,7 +170,7 @@ BrokerGrpc::Impl::Impl()
   Connection conn;
   conn.source() = request->source();
   conn.version() = Utils::ClockFrom(request->version());
-  conn.provides() = Utils::SourcesFrom(request->sources());
+  conn.provides() = Utils::IdConnectionInfoMapFrom(request->sources());
   broker()->refresh(conn, request->sender());
   lg::info("BrokerGrpc: Refresh called!");
   return ::grpc::Status::OK;

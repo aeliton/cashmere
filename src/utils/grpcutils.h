@@ -33,8 +33,8 @@ namespace Cashmere::Utils
 Clock ClockFrom(const ::google::protobuf::Map<uint64_t, uint64_t>& version);
 Data DataFrom(const Grpc::Data& data);
 Entry EntryFrom(const Grpc::Entry& entry);
-IdConnectionInfoMap
-SourcesFrom(const google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>& sources
+IdConnectionInfoMap IdConnectionInfoMapFrom(
+  const google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>& sources
 );
 BrokerStub BrokerStubFrom(const Grpc::BrokerData& data);
 
@@ -45,7 +45,7 @@ void SetData(Grpc::Data* entry, const Data& data);
 void SetEntry(Grpc::Entry* proto, const Entry& entry);
 void SetConnectionInfo(Grpc::ConnectionInfo& info, const ConnectionInfo& data);
 void SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data);
-void SetSources(
+void SetIdConnectionInfoMap(
   google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>* sources,
   const IdConnectionInfoMap& data
 );

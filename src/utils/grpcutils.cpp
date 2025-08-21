@@ -51,8 +51,8 @@ Entry EntryFrom(const Grpc::Entry& entry)
   return out;
 }
 
-IdConnectionInfoMap
-SourcesFrom(const google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>& sources
+IdConnectionInfoMap IdConnectionInfoMapFrom(
+  const google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>& sources
 )
 {
   IdConnectionInfoMap out;
@@ -96,7 +96,7 @@ void SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data)
   SetConnectionInfo(*info, data);
 }
 
-void SetSources(
+void SetIdConnectionInfoMap(
   google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>* sources,
   const IdConnectionInfoMap& data
 )
