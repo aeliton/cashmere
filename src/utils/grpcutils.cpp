@@ -63,6 +63,19 @@ IdConnectionInfoMap IdConnectionInfoMapFrom(
   return out;
 }
 
+SourcesMap SourcesFrom(
+  const google::protobuf::Map<uint32_t, Grpc::IdConnectionInfoMap>& sources
+)
+{
+  SourcesMap out;
+
+  for (const auto& [source, infoMap] : sources) {
+    out[source] = IdConnectionInfoMapFrom(infoMap.info());
+  }
+
+  return out;
+}
+
 void SetClock(
   ::google::protobuf::Map<uint64_t, uint64_t>* version, const Clock& data
 )
@@ -97,12 +110,30 @@ void SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data)
 }
 
 void SetIdConnectionInfoMap(
-  google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>* sources,
+  google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>& sources,
   const IdConnectionInfoMap& data
 )
 {
   for (const auto& [id, info] : data) {
-    SetConnectionInfo((*sources)[id], info);
+    SetConnectionInfo(sources[id], info);
+  }
+}
+
+void SetIdConnectionInfoMap(
+  google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>* sources,
+  const IdConnectionInfoMap& data
+)
+{
+  SetIdConnectionInfoMap(*sources, data);
+}
+
+void SetSources(
+  google::protobuf::Map<uint32_t, Grpc::IdConnectionInfoMap>* proto,
+  const SourcesMap sources
+)
+{
+  for (const auto& [source, infoMap] : sources) {
+    SetIdConnectionInfoMap((*proto)[source].mutable_info(), infoMap);
   }
 }
 

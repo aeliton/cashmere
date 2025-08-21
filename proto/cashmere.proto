@@ -26,6 +26,8 @@ message ConnectionInfo {
   map<fixed64, uint64> version = 2;
 }
 
+message IdConnectionInfoMap { map<fixed64, ConnectionInfo> info = 1; }
+
 message Data {
   fixed64 id = 1;
   int64 value = 2;
@@ -79,11 +81,15 @@ message RelayInsertRequest {
   Data entry = 2;
 }
 
+message SourcesRequest { uint32 sender = 1; }
+
 message ClockResponse { map<fixed64, uint64> clock = 1; }
 
 message InsertResponse { map<fixed64, uint64> version = 1; }
 
 message QueryResponse { repeated Entry entries = 1; }
+
+message SourcesResponse { map<uint32, IdConnectionInfoMap> sources = 1; }
 
 service Broker {
   rpc Connect(ConnectionRequest) returns(ConnectionResponse) {}
@@ -92,4 +98,5 @@ service Broker {
   rpc Refresh(RefreshRequest) returns(google.protobuf.Empty) {}
   rpc Relay(RelayInsertRequest) returns(InsertResponse) {}
   rpc GetClock(google.protobuf.Empty) returns(ClockResponse) {}
+  rpc Sources(SourcesRequest) returns(SourcesResponse) {}
 }

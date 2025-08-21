@@ -77,6 +77,11 @@ private:
     ::grpc::ServerContext* context, const ::google::protobuf::Empty* request,
     ::Cashmere::Grpc::ClockResponse* response
   ) override;
+  ::grpc::Status Sources(
+    ::grpc::ServerContext* context,
+    const ::Cashmere::Grpc::SourcesRequest* request,
+    ::Cashmere::Grpc::SourcesResponse* response
+  ) override;
 
   std::weak_ptr<Broker> _broker;
   std::unique_ptr<grpc::Server> _server;
@@ -188,6 +193,17 @@ BrokerGrpc::Impl::Impl()
   Clock clock =
     broker()->relay(Utils::DataFrom(request->entry()), request->sender());
   Utils::SetClock(response->mutable_version(), clock);
+  return ::grpc::Status::OK;
+}
+
+::grpc::Status BrokerGrpc::Impl::Sources(
+  [[maybe_unused]] ::grpc::ServerContext* context,
+  const ::Cashmere::Grpc::SourcesRequest* request,
+  Grpc::SourcesResponse* response
+)
+{
+  auto sources = broker()->sources(request->sender());
+  Utils::SetSources(response->mutable_sources(), sources);
   return ::grpc::Status::OK;
 }
 

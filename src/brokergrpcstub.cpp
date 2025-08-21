@@ -69,6 +69,13 @@ IdClockMap BrokerGrpcStub::versions() const
 
 SourcesMap BrokerGrpcStub::sources([[maybe_unused]] Source sender) const
 {
+  ::grpc::ClientContext context;
+  Grpc::SourcesRequest request;
+  Grpc::SourcesResponse response;
+  request.set_sender(sender);
+  if (_stub->Sources(&context, request, &response).ok()) {
+    return Utils::SourcesFrom(response.sources());
+  }
   return {};
 }
 

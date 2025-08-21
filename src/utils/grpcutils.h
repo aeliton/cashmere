@@ -21,10 +21,11 @@
 
 namespace Cashmere::Grpc
 {
+class BrokerData;
+class ConnectionInfo;
 class Data;
 class Entry;
-class ConnectionInfo;
-class BrokerData;
+class IdConnectionInfoMap;
 }
 
 namespace Cashmere::Utils
@@ -35,6 +36,9 @@ Data DataFrom(const Grpc::Data& data);
 Entry EntryFrom(const Grpc::Entry& entry);
 IdConnectionInfoMap IdConnectionInfoMapFrom(
   const google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>& sources
+);
+SourcesMap SourcesFrom(
+  const google::protobuf::Map<uint32_t, Grpc::IdConnectionInfoMap>& sources
 );
 BrokerStub BrokerStubFrom(const Grpc::BrokerData& data);
 
@@ -48,6 +52,10 @@ void SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data);
 void SetIdConnectionInfoMap(
   google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>* sources,
   const IdConnectionInfoMap& data
+);
+void SetSources(
+  google::protobuf::Map<uint32_t, Grpc::IdConnectionInfoMap>* proto,
+  const SourcesMap sources
 );
 
 }

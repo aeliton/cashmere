@@ -100,6 +100,7 @@ void RunCommand(const Options& options)
       }
       break;
     case Command::Type::Sources:
+      std::cout << stub.sources(0) << std::endl;
       break;
     case Command::Type::Versions:
       break;
