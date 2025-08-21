@@ -34,7 +34,7 @@ Clock ClockFrom(const ::google::protobuf::Map<uint64_t, uint64_t>& version);
 Data DataFrom(const Grpc::Data& data);
 Entry EntryFrom(const Grpc::Entry& entry);
 IdConnectionInfoMap
-SourcesFrom(const google::protobuf::Map<int32_t, Grpc::ConnectionInfo>& sources
+SourcesFrom(const google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>& sources
 );
 BrokerStub BrokerStubFrom(const Grpc::BrokerData& data);
 
@@ -46,7 +46,7 @@ void SetEntry(Grpc::Entry* proto, const Entry& entry);
 void SetConnectionInfo(Grpc::ConnectionInfo& info, const ConnectionInfo& data);
 void SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data);
 void SetSources(
-  google::protobuf::Map<int32_t, Grpc::ConnectionInfo>* sources,
+  google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>* sources,
   const IdConnectionInfoMap& data
 );
 
