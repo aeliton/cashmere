@@ -46,7 +46,7 @@ BrokerGrpcStub::BrokerGrpcStub(const std::string& url)
 {
 }
 
-BrokerGrpcStub::BrokerGrpcStub(const std::string& hostname, uint32_t port)
+BrokerGrpcStub::BrokerGrpcStub(const std::string& hostname, uint16_t port)
   : BrokerGrpcStub(hostname + ":" + std::to_string(port))
 {
 }
