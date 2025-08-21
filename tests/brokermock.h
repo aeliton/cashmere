@@ -27,18 +27,22 @@ namespace Cashmere
 class BrokerMock : public BrokerBase
 {
 public:
-  MOCK_METHOD(Clock, insert, (const Entry& data, Port sender), (override));
-  MOCK_METHOD(Clock, insert, (const EntryList& data, Port sender), (override));
+  MOCK_METHOD(Clock, insert, (const Entry& data, Source sender), (override));
   MOCK_METHOD(
-    EntryList, query, (const Clock& from, Port sender), (const, override)
+    Clock, insert, (const EntryList& data, Source sender), (override)
   );
-  MOCK_METHOD(SourcesMap, sources, (Port to), (const, override));
+  MOCK_METHOD(
+    EntryList, query, (const Clock& from, Source sender), (const, override)
+  );
+  MOCK_METHOD(SourcesMap, sources, (Source to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
   MOCK_METHOD(Clock, clock, (), (const, override));
   MOCK_METHOD(Connection, connect, (Connection conn), (override));
-  MOCK_METHOD(bool, refresh, (const Connection& data, Port port), (override));
+  MOCK_METHOD(
+    bool, refresh, (const Connection& data, Source source), (override)
+  );
   MOCK_METHOD(BrokerStub, stub, (), (override));
-  MOCK_METHOD(Clock, relay, (const Data& data, Port port), (override));
+  MOCK_METHOD(Clock, relay, (const Data& data, Source source), (override));
 };
 
 }

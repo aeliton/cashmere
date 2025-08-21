@@ -36,7 +36,7 @@ struct CASHMERE_EXPORT ConnectionInfo
 
 using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 
-using SourcesMap = std::map<Port, IdConnectionInfoMap>;
+using SourcesMap = std::map<Source, IdConnectionInfoMap>;
 
 class BrokerBase;
 using BrokerBasePtr = std::shared_ptr<BrokerBase>;
@@ -76,7 +76,7 @@ private:
 
 struct CASHMERE_EXPORT ConnectionData
 {
-  Port port = 0;
+  Source source = 0;
   Clock version = {};
   IdConnectionInfoMap sources = {};
   bool operator==(const ConnectionData& other) const;
@@ -96,7 +96,7 @@ public:
   Connection(BrokerStub stub);
   Connection(BrokerStub stub, ConnectionData data);
   Connection(
-    BrokerStub stub, Port port, Clock version, IdConnectionInfoMap provides
+    BrokerStub stub, Source source, Clock version, IdConnectionInfoMap provides
   );
 
   virtual ~Connection();
@@ -110,7 +110,7 @@ public:
   bool active() const;
   bool refresh(const Connection& conn) const;
 
-  Port& port() const;
+  Source& source() const;
   Clock& version(Origin origin = Origin::Cache) const;
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
   Clock relay(const Data& entry) const;
@@ -137,15 +137,15 @@ public:
   virtual ~BrokerBase();
 
   virtual Connection connect(Connection conn) = 0;
-  virtual bool refresh(const Connection& conn, Port sender) = 0;
-  virtual Clock insert(const Entry& data, Port sender = 0) = 0;
-  virtual Clock insert(const EntryList& entries, Port sender = 0);
+  virtual bool refresh(const Connection& conn, Source sender) = 0;
+  virtual Clock insert(const Entry& data, Source sender = 0) = 0;
+  virtual Clock insert(const EntryList& entries, Source sender = 0);
 
-  virtual EntryList query(const Clock& from = {}, Port sender = 0) const = 0;
+  virtual EntryList query(const Clock& from = {}, Source sender = 0) const = 0;
   virtual Clock clock() const = 0;
   virtual IdClockMap versions() const = 0;
-  virtual SourcesMap sources(Port sender = 0) const = 0;
-  virtual Clock relay(const Data& entry, Port sender) = 0;
+  virtual SourcesMap sources(Source sender = 0) const = 0;
+  virtual Clock relay(const Data& entry, Source sender) = 0;
   virtual BrokerStub stub() = 0;
 };
 

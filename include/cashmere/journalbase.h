@@ -36,11 +36,11 @@ public:
   virtual bool save(const Entry& entry) = 0;
   virtual Data entry(Clock time) const = 0;
   virtual EntryList entries() const = 0;
-  SourcesMap sources(Port sender = 0) const override;
+  SourcesMap sources(Source sender = 0) const override;
 
-  Clock insert(const Entry& data, Port source = 0) override;
-  EntryList query(const Clock& from = {}, Port source = 0) const override;
-  virtual Clock relay(const Data& data, Port sender) override
+  Clock insert(const Entry& data, Source source = 0) override;
+  EntryList query(const Clock& from = {}, Source source = 0) const override;
+  virtual Clock relay(const Data& data, Source sender) override
   {
     if (data.id == 0) {
       return Broker::relay({_id, data.value, data.alters}, sender);

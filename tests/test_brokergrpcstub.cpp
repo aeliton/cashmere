@@ -25,7 +25,7 @@
 using namespace ::Cashmere;
 using namespace ::testing;
 
-constexpr int32_t kPort = 10;
+constexpr int32_t kSource = 10;
 
 using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 
@@ -36,7 +36,7 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::ConnectionResponse resp;
-  resp.set_port(kPort);
+  resp.set_source(kSource);
   (*resp.mutable_version())[0xBB] = 1;
 
   EXPECT_CALL(*stub, Connect(_, _, _))
@@ -52,7 +52,8 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
   EXPECT_CALL(
     *stub,
     Query(
-      _, ResultOf([](Grpc::QueryRequest in) { return in.sender(); }, Eq(kPort)),
+      _,
+      ResultOf([](Grpc::QueryRequest in) { return in.sender(); }, Eq(kSource)),
       _
     )
   )
@@ -75,7 +76,7 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::ConnectionResponse resp;
-  resp.set_port(kPort);
+  resp.set_source(kSource);
 
   EXPECT_CALL(*stub, Connect(_, _, _))
     .Times(1)
@@ -88,7 +89,8 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
     *stub,
     Insert(
       _,
-      ResultOf([](Grpc::InsertRequest in) { return in.sender(); }, Eq(kPort)), _
+      ResultOf([](Grpc::InsertRequest in) { return in.sender(); }, Eq(kSource)),
+      _
     )
   )
     .Times(1)
@@ -129,7 +131,7 @@ TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::ConnectionResponse resp;
-  resp.set_port(10);
+  resp.set_source(10);
 
   EXPECT_CALL(*stub, Connect(_, _, _))
     .Times(1)
@@ -157,19 +159,20 @@ TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::ConnectionResponse resp;
-  resp.set_port(kPort);
+  resp.set_source(kSource);
 
   EXPECT_CALL(*stub, Connect(_, _, _))
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(resp), Return(grpc::Status::OK)));
 
   EXPECT_CALL(
-    *stub,
-    Refresh(
-      _,
-      ResultOf([](Grpc::RefreshRequest in) { return in.sender(); }, Eq(kPort)),
-      _
-    )
+    *stub, Refresh(
+             _,
+             ResultOf(
+               [](Grpc::RefreshRequest in) { return in.sender(); }, Eq(kSource)
+             ),
+             _
+           )
   )
     .Times(1)
     .WillOnce(Return(grpc::Status::OK));

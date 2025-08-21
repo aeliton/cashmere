@@ -46,7 +46,7 @@ message BrokerData {
 
 message ConnectionRequest {
   BrokerData broker = 1;
-  uint32 port = 2;
+  uint32 source = 2;
   map<fixed64, uint64> version = 3;
   map<fixed64, ConnectionInfo> sources = 4;
 }
@@ -62,14 +62,14 @@ message QueryRequest {
 }
 
 message ConnectionResponse {
-  uint32 port = 1;
+  uint32 source = 1;
   map<fixed64, uint64> version = 2;
   map<fixed64, ConnectionInfo> sources = 3;
 }
 
 message RefreshRequest {
   uint32 sender = 1;
-  uint32 port = 2;
+  uint32 source = 2;
   map<fixed64, uint64> version = 3;
   map<fixed64, ConnectionInfo> sources = 4;
 }

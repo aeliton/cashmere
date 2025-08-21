@@ -73,7 +73,7 @@ TEST(OptionsParse, ParsePort)
 {
   Args args({"anyname", "-p", "1024", "-s"});
   Options options(args.argc, args.argv);
-  ASSERT_EQ(options.port, 1024);
+  ASSERT_EQ(options.source, 1024);
   EXPECT_TRUE(options.ok());
 }
 

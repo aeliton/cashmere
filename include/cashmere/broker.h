@@ -37,24 +37,24 @@ public:
 
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;
-  virtual SourcesMap sources(Port sender = 0) const override;
-  virtual Clock insert(const Entry& data, Port sender = 0) override;
+  virtual SourcesMap sources(Source sender = 0) const override;
+  virtual Clock insert(const Entry& data, Source sender = 0) override;
   virtual EntryList
-  query(const Clock& from = {}, Port sender = 0) const override;
+  query(const Clock& from = {}, Source sender = 0) const override;
 
-  Port disconnect(Port port);
-  virtual bool refresh(const Connection& conn, Port port) override;
-  virtual std::set<Port> connectedPorts() const;
+  Source disconnect(Source source);
+  virtual bool refresh(const Connection& conn, Source source) override;
+  virtual std::set<Source> connectedPorts() const;
 
   virtual BrokerBasePtr ptr();
   virtual BrokerStub stub() override;
 
   Connection connect(Connection conn) override;
 
-  Clock relay(const Data& entry, Port sender) override;
+  Clock relay(const Data& entry, Source sender) override;
 
 private:
-  void refreshConnections(Port ignore = 0);
+  void refreshConnections(Source ignore = 0);
   void setClock(const Clock& clock);
 
   std::vector<Connection> _connections;

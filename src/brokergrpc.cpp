@@ -100,23 +100,23 @@ BrokerGrpc::Impl::Impl()
 )
 {
   auto stub = Utils::BrokerStubFrom(request->broker());
-  if (request->port() == 0) {
+  if (request->source() == 0) {
     const auto conn = broker()->connect(stub);
-    response->set_port(conn.port());
+    response->set_source(conn.source());
   } else {
     const IdConnectionInfoMap sources = Utils::SourcesFrom(request->sources());
     const Clock version = Utils::ClockFrom(request->version());
 
     lg::info(
-      "BrokerGrpc: Connection request from: {}, port: {}, version: {}",
-      request->broker().url(), request->port(), version.str()
+      "BrokerGrpc: Connection request from: {}, source: {}, version: {}",
+      request->broker().url(), request->source(), version.str()
     );
 
-    Connection conn{stub, request->port(), version, sources};
+    Connection conn{stub, request->source(), version, sources};
 
     Connection out = broker()->connect(conn);
 
-    response->set_port(out.port());
+    response->set_source(out.source());
     Utils::SetClock(response->mutable_version(), out.version());
     Utils::SetSources(response->mutable_sources(), out.provides());
   }
@@ -145,7 +145,7 @@ BrokerGrpc::Impl::Impl()
   const Grpc::InsertRequest* request, Grpc::InsertResponse* response
 )
 {
-  Port sender = request->sender();
+  Source sender = request->sender();
   Entry entry = Utils::EntryFrom(request->entry());
 
   lg::info(
@@ -167,7 +167,7 @@ BrokerGrpc::Impl::Impl()
 )
 {
   Connection conn;
-  conn.port() = request->port();
+  conn.source() = request->source();
   conn.version() = Utils::ClockFrom(request->version());
   conn.provides() = Utils::SourcesFrom(request->sources());
   broker()->refresh(conn, request->sender());

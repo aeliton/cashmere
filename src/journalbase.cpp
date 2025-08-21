@@ -56,13 +56,13 @@ bool JournalBase::append(const Data& entry)
   return insert({clock().tick(entry.id), entry}).valid();
 }
 
-Clock JournalBase::insert(const Entry& data, Port port)
+Clock JournalBase::insert(const Entry& data, Source source)
 {
   if (!data.clock.isNext(clock(), data.entry.id)) {
     return Clock{{0, 0}};
   }
   if (save(data)) {
-    return Broker::insert(data, port);
+    return Broker::insert(data, source);
   }
   return Clock{{0, 0}};
 }
@@ -82,7 +82,7 @@ bool JournalBase::contains(const Clock& time) const
   return entry(time).valid();
 }
 
-EntryList JournalBase::query(const Clock& from, Port) const
+EntryList JournalBase::query(const Clock& from, Source) const
 {
   EntryList list;
   for (const auto& [clock, entry] : entries()) {
@@ -93,7 +93,7 @@ EntryList JournalBase::query(const Clock& from, Port) const
   return list;
 }
 
-SourcesMap JournalBase::sources(Port sender) const
+SourcesMap JournalBase::sources(Source sender) const
 {
   auto out = Broker::sources(sender);
   out[0] = {{_id, {0, clock()}}};

@@ -25,7 +25,7 @@ namespace Cashmere
 using Amount = int64_t;
 using Id = uint64_t;
 using Time = uint64_t;
-using Port = uint32_t;
+using Source = uint32_t;
 
 using IdSet = std::set<Id>;
 }

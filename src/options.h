@@ -45,7 +45,7 @@ struct Options
   bool ok() const;
 
   Cashmere::Id id = 0;
-  Cashmere::Port port = 54321;
+  Cashmere::Source source = 54321;
   std::string hostname = "0.0.0.0";
   bool service = false;
   std::string dbPath = "";

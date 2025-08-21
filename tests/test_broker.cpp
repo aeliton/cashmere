@@ -27,7 +27,7 @@ TEST(Broker, ConnectIgnoresNullptr)
 {
   auto broker = std::make_shared<Broker>();
   const auto conn = broker->connect(Connection{});
-  ASSERT_EQ(conn.port(), -1);
+  ASSERT_EQ(conn.source(), -1);
 }
 
 TEST(Broker, DisconnectedBrokerHasEmptyClock)
@@ -45,7 +45,7 @@ TEST(Broker, DisconnectedBrokerHasEmptyVersions)
 TEST(Broker, StartsWithNoConnections)
 {
   BrokerPtr broker = std::make_shared<Broker>();
-  EXPECT_EQ(broker->connectedPorts(), std::set<Port>{});
+  EXPECT_EQ(broker->connectedPorts(), std::set<Source>{});
 }
 
 TEST(Broker, SuccessfulConnectionReturnsValidConnection)
@@ -75,7 +75,7 @@ TEST(Broker, BrokerFirstConnectionUsesPortOne)
     }));
 
   hub->connect(BrokerStub{aa});
-  EXPECT_EQ(hub->connectedPorts(), std::set<Port>{1});
+  EXPECT_EQ(hub->connectedPorts(), std::set<Source>{1});
 }
 
 TEST(Broker, BrokerForwardsInserts)
@@ -110,9 +110,9 @@ TEST(Broker, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
 
   const auto conn = hub->connect(BrokerStub{aa});
 
-  EXPECT_EQ(conn.port(), 1);
+  EXPECT_EQ(conn.source(), 1);
 
-  hub->insert(entry, conn.port());
+  hub->insert(entry, conn.source());
 }
 
 TEST(Broker, BrokeHubConnectionsAreFullDuplex)
@@ -131,11 +131,11 @@ TEST(Broker, BrokeHubConnectionsAreFullDuplex)
   const auto hub1Conn = hub0->connect(BrokerStub{hub1});
   const auto aaConn = hub0->connect(BrokerStub{aa});
 
-  EXPECT_EQ(hub1Conn.port(), 1);
-  EXPECT_EQ(aaConn.port(), 2);
+  EXPECT_EQ(hub1Conn.source(), 1);
+  EXPECT_EQ(aaConn.source(), 2);
 
-  EXPECT_EQ(hub0->connectedPorts(), std::set<Port>({1, 2}));
-  EXPECT_EQ(hub1->connectedPorts(), std::set<Port>{1});
+  EXPECT_EQ(hub0->connectedPorts(), std::set<Source>({1, 2}));
+  EXPECT_EQ(hub1->connectedPorts(), std::set<Source>{1});
 
   hub1->insert(entry, 0);
 }
@@ -186,8 +186,8 @@ TEST(Broker, VersionsArePreservedAfterDisconnection)
     .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
 
   hub->connect(BrokerStub{aa});
-  const Port port = hub->disconnect(1);
-  EXPECT_EQ(port, 1);
+  const Source source = hub->disconnect(1);
+  EXPECT_EQ(source, 1);
 
   EXPECT_EQ(hub->sources(), SourcesMap{});
   EXPECT_EQ(hub->clock(), aaClock);

@@ -35,17 +35,17 @@ IdClockMap BrokerGrpcClient::versions() const
   return _stub->versions();
 }
 
-SourcesMap BrokerGrpcClient::sources(Port sender) const
+SourcesMap BrokerGrpcClient::sources(Source sender) const
 {
   return _stub->sources(sender);
 }
 
-Clock BrokerGrpcClient::insert(const Entry& data, Port sender)
+Clock BrokerGrpcClient::insert(const Entry& data, Source sender)
 {
   return _stub->insert(data, sender);
 }
 
-EntryList BrokerGrpcClient::query(const Clock& from, Port sender) const
+EntryList BrokerGrpcClient::query(const Clock& from, Source sender) const
 {
   return _stub->query(from, sender);
 }
@@ -55,12 +55,12 @@ Connection BrokerGrpcClient::connect(Connection conn)
   return _stub->connect(conn);
 }
 
-bool BrokerGrpcClient::refresh(const Connection& conn, Port sender)
+bool BrokerGrpcClient::refresh(const Connection& conn, Source sender)
 {
   return _stub->refresh(conn, sender);
 }
 
-Clock BrokerGrpcClient::relay(const Data& entry, Port sender)
+Clock BrokerGrpcClient::relay(const Data& entry, Source sender)
 {
   return _stub->relay(entry, sender);
 }

@@ -40,7 +40,7 @@ struct Command
 
   Type type = Type::Invalid;
   std::string url;
-  Cashmere::Port port;
+  Cashmere::Source source;
   Cashmere::Data data = {};
 
 private:

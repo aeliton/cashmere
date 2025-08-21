@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 
 void RunCommand(const Options& options)
 {
-  auto stub = BrokerGrpcClient(options.hostname, options.port);
+  auto stub = BrokerGrpcClient(options.hostname, options.source);
   switch (options.command.type) {
     case Command::Type::Invalid:
       break;
@@ -114,7 +114,7 @@ void RunCommand(const Options& options)
 void RunService(const Options& options)
 {
   auto tempDir = TempDir();
-  auto broker = std::make_shared<BrokerGrpc>(options.hostname, options.port);
+  auto broker = std::make_shared<BrokerGrpc>(options.hostname, options.source);
   auto journal = std::make_shared<JournalFile>(
     options.id, options.dbPath.empty() ? tempDir.directory : options.dbPath
   );
@@ -122,7 +122,7 @@ void RunService(const Options& options)
   journal->connect(BrokerStub{broker});
 
   lg::info(
-    "Journal {:x}, port: {}, path: {}", options.id, options.port,
+    "Journal {:x}, port: {}, path: {}", options.id, options.source,
     tempDir.directory
   );
 
@@ -142,12 +142,12 @@ void RunService(const Options& options)
       {
         const auto conn = broker->connect(BrokerStub(command.url));
         if (!conn.valid()) {
-          std::println("{}: failed {}", command.name(), options.port);
+          std::println("{}: failed {}", command.name(), options.source);
         }
         break;
       }
       case Command::Type::Disconnect:
-        broker->disconnect(command.port);
+        broker->disconnect(command.source);
         break;
       case Command::Type::Append:
         command.data.id = journal->id();

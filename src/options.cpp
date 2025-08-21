@@ -42,7 +42,7 @@ Options::Options(int argc, char* argv[])
         break;
       case 'p':
         try {
-          port = std::stoi(optarg);
+          source = std::stoi(optarg);
         } catch (const std::exception&) {
           _error.status = Status::InvalidOptionArgument;
         }
@@ -90,7 +90,7 @@ Options::Error Options::error() const
 
 bool operator==(const Options& a, const Options& b)
 {
-  return a.id == b.id && a.port == b.port && a.hostname == b.hostname &&
+  return a.id == b.id && a.source == b.source && a.hostname == b.hostname &&
          a.service == b.service && a.command == b.command;
 }
 

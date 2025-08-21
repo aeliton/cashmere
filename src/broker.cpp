@@ -35,33 +35,33 @@ Connection Broker::connect(Connection conn)
 {
   Connection out(stub());
 
-  if (conn.port() == 0) {
+  if (conn.source() == 0) {
     if (!conn.broker()) {
-      out.port() = -1;
+      out.source() = -1;
       return out;
     }
 
-    out.port() = _connections.size();
+    out.source() = _connections.size();
     _connections.push_back(conn.stub());
 
-    auto& conn = _connections.at(out.port());
+    auto& conn = _connections.at(out.source());
     conn.update(conn.broker()->connect(Connection{
-      stub(), out.port(), clock(), UpdateProvides(sources(out.port()))
+      stub(), out.source(), clock(), UpdateProvides(sources(out.source()))
     }));
 
-    auto thisEntries = query(conn.version(), out.port());
+    auto thisEntries = query(conn.version(), out.source());
     auto brokerEntries = conn.entries(clock());
 
     if (brokerEntries.size() > 0) {
-      BrokerBase::insert(brokerEntries, out.port());
+      BrokerBase::insert(brokerEntries, out.source());
     }
     if (thisEntries.size() > 0) {
       conn.insert(thisEntries);
     }
 
-    refreshConnections(out.port());
+    refreshConnections(out.source());
   } else {
-    out.port() = _connections.size();
+    out.source() = _connections.size();
 
     auto version = clock();
     for (auto& [id, info] : conn.provides()) {
@@ -69,14 +69,14 @@ Connection Broker::connect(Connection conn)
     }
 
     _connections.push_back(conn);
-    refreshConnections(out.port());
+    refreshConnections(out.source());
     out.version() = version;
-    out.provides() = UpdateProvides(sources(out.port()));
+    out.provides() = UpdateProvides(sources(out.source()));
   }
   return out;
 }
 
-bool Broker::refresh(const Connection& data, Port sender)
+bool Broker::refresh(const Connection& data, Source sender)
 {
   if (sender <= 0 || static_cast<size_t>(sender) >= _connections.size()) {
     return false;
@@ -87,18 +87,18 @@ bool Broker::refresh(const Connection& data, Port sender)
   return true;
 }
 
-Clock Broker::insert(const Entry& data, Port port)
+Clock Broker::insert(const Entry& data, Source source)
 {
-  if (port < 0 || static_cast<size_t>(port) >= _connections.size()) {
+  if (source < 0 || static_cast<size_t>(source) >= _connections.size()) {
     return Clock{{0, 0}};
   }
 
   setClock(clock().merge(data.clock));
-  auto& conn = _connections.at(port);
+  auto& conn = _connections.at(source);
   conn.provides()[data.entry.id].version = clock();
 
   for (size_t i = 0; i < _connections.size(); ++i) {
-    if (i == static_cast<size_t>(port)) {
+    if (i == static_cast<size_t>(source)) {
       continue;
     }
     auto& ctx = _connections[i];
@@ -107,7 +107,7 @@ Clock Broker::insert(const Entry& data, Port port)
   return clock();
 }
 
-SourcesMap Broker::sources(Port sender) const
+SourcesMap Broker::sources(Source sender) const
 {
   SourcesMap out;
   for (size_t i = 0; i < _connections.size(); i++) {
@@ -127,7 +127,7 @@ SourcesMap Broker::sources(Port sender) const
   return out;
 }
 
-EntryList Broker::query(const Clock& from, Port sender) const
+EntryList Broker::query(const Clock& from, Source sender) const
 {
   for (size_t i = 1; i < _connections.size(); i++) {
     auto conn = _connections[i];
@@ -152,16 +152,16 @@ IdClockMap Broker::versions() const
   return out;
 }
 
-Port Broker::disconnect(Port port)
+Source Broker::disconnect(Source source)
 {
-  if (port < 0 || _connections.size() <= static_cast<size_t>(port)) {
+  if (source < 0 || _connections.size() <= static_cast<size_t>(source)) {
     return -1;
   }
-  auto& conn = _connections.at(port);
+  auto& conn = _connections.at(source);
   if (conn.active()) {
     conn.disconnect();
-    refreshConnections(port);
-    return port;
+    refreshConnections(source);
+    return source;
   }
   return -1;
 }
@@ -194,7 +194,7 @@ bool ConnectionInfo::operator<(const ConnectionInfo& other) const
 IdConnectionInfoMap UpdateProvides(SourcesMap provides)
 {
   IdConnectionInfoMap out;
-  for (auto& [port, infoMap] : provides) {
+  for (auto& [source, infoMap] : provides) {
     for (auto& [id, data] : infoMap) {
       ++data.distance;
     }
@@ -203,16 +203,16 @@ IdConnectionInfoMap UpdateProvides(SourcesMap provides)
   return out;
 }
 
-std::set<Port> Broker::connectedPorts() const
+std::set<Source> Broker::connectedPorts() const
 {
-  std::set<Port> connected;
+  std::set<Source> connected;
   for (size_t i = 1; i < _connections.size(); i++) {
     connected.insert(i);
   }
   return connected;
 }
 
-void Broker::refreshConnections(Port ignore)
+void Broker::refreshConnections(Source ignore)
 {
   for (size_t i = 1; i < _connections.size(); i++) {
     if (i == static_cast<size_t>(ignore)) {
@@ -220,17 +220,17 @@ void Broker::refreshConnections(Port ignore)
     }
     auto& conn = _connections.at(i);
     conn.refresh(
-      {stub(), static_cast<Port>(i), clock(), UpdateProvides(sources(i))}
+      {stub(), static_cast<Source>(i), clock(), UpdateProvides(sources(i))}
     );
   }
 }
 
-Clock Broker::relay(const Data& entry, Port sender)
+Clock Broker::relay(const Data& entry, Source sender)
 {
   long distance = std::numeric_limits<long>::max();
-  Port shortestDistancePort = -1;
-  for (const auto& [port, infoMap] : sources()) {
-    if (sender > 0 && port == sender) {
+  Source shortestDistancePort = -1;
+  for (const auto& [source, infoMap] : sources()) {
+    if (sender > 0 && source == sender) {
       continue;
     }
     for (const auto& [id, info] : infoMap) {
@@ -239,7 +239,7 @@ Clock Broker::relay(const Data& entry, Port sender)
           return insert({clock().tick(id), entry});
         } else if (info.distance < distance) {
           distance = info.distance;
-          shortestDistancePort = port;
+          shortestDistancePort = source;
         }
       }
     }

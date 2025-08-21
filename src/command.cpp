@@ -70,7 +70,7 @@ Command Command::Read(std::istream& in)
       break;
     case Type::Disconnect:
       in >> argument;
-      command.port = std::stoi(argument);
+      command.source = std::stoi(argument);
       break;
     default:
       break;

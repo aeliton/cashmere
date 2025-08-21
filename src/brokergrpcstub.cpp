@@ -67,12 +67,12 @@ IdClockMap BrokerGrpcStub::versions() const
   return {};
 }
 
-SourcesMap BrokerGrpcStub::sources([[maybe_unused]] Port sender) const
+SourcesMap BrokerGrpcStub::sources([[maybe_unused]] Source sender) const
 {
   return {};
 }
 
-Clock BrokerGrpcStub::insert(const Entry& data, Port sender)
+Clock BrokerGrpcStub::insert(const Entry& data, Source sender)
 {
   Grpc::InsertRequest request;
   request.set_sender(sender);
@@ -87,7 +87,7 @@ Clock BrokerGrpcStub::insert(const Entry& data, Port sender)
   return {};
 }
 
-EntryList BrokerGrpcStub::query(const Clock& from, Port sender) const
+EntryList BrokerGrpcStub::query(const Clock& from, Source sender) const
 {
   ::grpc::ClientContext context;
   Grpc::QueryRequest request;
@@ -113,7 +113,7 @@ Connection BrokerGrpcStub::connect(Connection conn)
   ::grpc::ClientContext context;
 
   Grpc::ConnectionRequest request;
-  request.set_port(conn.port());
+  request.set_source(conn.source());
   Utils::SetClock(request.mutable_version(), conn.version());
 
   request.mutable_broker()->set_url(conn.stub().url());
@@ -125,7 +125,7 @@ Connection BrokerGrpcStub::connect(Connection conn)
   auto status = _stub->Connect(&context, request, &response);
   if (status.ok()) {
     Clock clock = Utils::ClockFrom(response.version());
-    return Connection{BrokerStub{_url}, response.port(), clock, {}};
+    return Connection{BrokerStub{_url}, response.source(), clock, {}};
   } else {
     lg::error(
       "BrokerGrpcStub: error {} connecting to {}",
@@ -135,11 +135,11 @@ Connection BrokerGrpcStub::connect(Connection conn)
   return Connection();
 }
 
-bool BrokerGrpcStub::refresh(const Connection& conn, Port sender)
+bool BrokerGrpcStub::refresh(const Connection& conn, Source sender)
 {
   Grpc::RefreshRequest request;
   request.set_sender(sender);
-  request.set_port(conn.port());
+  request.set_source(conn.source());
 
   Utils::SetClock(request.mutable_version(), conn.version());
   Utils::SetSources(request.mutable_sources(), conn.provides());
@@ -153,7 +153,7 @@ bool BrokerGrpcStub::refresh(const Connection& conn, Port sender)
   return {};
 }
 
-Clock BrokerGrpcStub::relay(const Data& entry, Port sender)
+Clock BrokerGrpcStub::relay(const Data& entry, Source sender)
 {
   ::grpc::ClientContext context;
   Grpc::RelayInsertRequest request;

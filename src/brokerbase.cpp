@@ -74,10 +74,10 @@ std::string BrokerStub::url() const
 Connection::Connection() = default;
 
 Connection::Connection(
-  BrokerStub stub, Port port, Clock version, IdConnectionInfoMap provides
+  BrokerStub stub, Source source, Clock version, IdConnectionInfoMap provides
 )
   : _broker(stub)
-  , _cache({port, version, provides})
+  , _cache({source, version, provides})
 {
 }
 
@@ -89,9 +89,9 @@ Connection::Connection(BrokerStub stub)
 
 Connection::~Connection() = default;
 
-Port& Connection::port() const
+Source& Connection::source() const
 {
-  return _cache.port;
+  return _cache.source;
 }
 
 BrokerBasePtr Connection::broker() const
@@ -105,7 +105,7 @@ Clock Connection::insert(const Entry& data) const
   if (!source) {
     return {};
   }
-  auto clock = source->insert(data, _cache.port);
+  auto clock = source->insert(data, _cache.source);
   if (!clock.valid()) {
     return {};
   }
@@ -117,7 +117,7 @@ Clock Connection::insert(const Entry& data) const
 
 Clock Connection::insert(const EntryList& data) const
 {
-  auto clock = broker()->insert(data, _cache.port);
+  auto clock = broker()->insert(data, _cache.source);
   if (clock.valid()) {
     for (auto& [id, info] : _cache.sources) {
       info.version = info.version.merge(clock);
@@ -146,13 +146,13 @@ Clock& Connection::version(Origin origin) const
 
 EntryList Connection::entries(const Clock& clock) const
 {
-  return broker()->query(clock, _cache.port);
+  return broker()->query(clock, _cache.source);
 }
 
 IdConnectionInfoMap& Connection::provides(Origin origin) const
 {
   if (origin == Origin::Remote) {
-    for (auto& [port, sources] : broker()->sources(_cache.port)) {
+    for (auto& [port, sources] : broker()->sources(_cache.source)) {
       for (auto& [id, data] : sources) {
         ++data.distance;
         _cache.version = _cache.version.merge(data.version);
@@ -166,7 +166,7 @@ IdConnectionInfoMap& Connection::provides(Origin origin) const
 void Connection::disconnect()
 {
   if (auto b = broker()) {
-    b->refresh(Connection(), _cache.port);
+    b->refresh(Connection(), _cache.source);
     _broker.reset();
   }
 }
@@ -174,7 +174,7 @@ void Connection::disconnect()
 bool Connection::refresh(const Connection& data) const
 {
   if (auto source = broker()) {
-    return source->refresh(data, _cache.port);
+    return source->refresh(data, _cache.source);
   }
   return false;
 }
@@ -191,12 +191,12 @@ void Connection::update(const Connection& data)
 
 Clock Connection::relay(const Data& entry) const
 {
-  return broker()->relay(entry, _cache.port);
+  return broker()->relay(entry, _cache.source);
 }
 
 BrokerBase::~BrokerBase() = default;
 
-Clock BrokerBase::insert(const EntryList& entries, Port sender)
+Clock BrokerBase::insert(const EntryList& entries, Source sender)
 {
   for (const auto& entry : entries) {
     insert(entry, sender);
@@ -253,7 +253,7 @@ std::ostream& operator<<(std::ostream& os, const IdClockMap& data)
 
 std::ostream& operator<<(std::ostream& os, const ConnectionData& info)
 {
-  return os << "ConnectionData{ .port = " << info.port
+  return os << "ConnectionData{ .source = " << info.source
             << ".version= " << info.version << ", .provides = " << info.sources
             << "}";
 }
@@ -274,7 +274,7 @@ ConnectionData Connection::cache() const
 
 bool Connection::valid() const
 {
-  return _cache.port >= 0;
+  return _cache.source >= 0;
 }
 
 std::string Connection::str() const
