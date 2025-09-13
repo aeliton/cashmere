@@ -274,7 +274,7 @@ ConnectionData Connection::cache() const
 
 bool Connection::valid() const
 {
-  return _cache.source >= 0;
+  return _cache.source >= 0 && _stub.type() != BrokerStub::Type::Invalid;
 }
 
 std::string Connection::str() const
