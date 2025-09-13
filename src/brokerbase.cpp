@@ -76,13 +76,13 @@ Connection::Connection() = default;
 Connection::Connection(
   BrokerStub stub, Source source, Clock version, IdConnectionInfoMap provides
 )
-  : _broker(stub)
+  : _stub(stub)
   , _cache({source, version, provides})
 {
 }
 
 Connection::Connection(BrokerStub stub)
-  : _broker(stub)
+  : _stub(stub)
   , _cache()
 {
 }
@@ -96,7 +96,7 @@ Source& Connection::source() const
 
 BrokerBasePtr Connection::broker() const
 {
-  return _broker.broker();
+  return _stub.broker();
 }
 
 Clock Connection::insert(const Entry& data) const
@@ -167,7 +167,7 @@ void Connection::disconnect()
 {
   if (auto b = broker()) {
     b->refresh(Connection(), _cache.source);
-    _broker.reset();
+    _stub.reset();
   }
 }
 
@@ -265,7 +265,7 @@ std::ostream& operator<<(std::ostream& os, const Connection& info)
 
 BrokerStub& Connection::stub()
 {
-  return _broker;
+  return _stub;
 }
 ConnectionData Connection::cache() const
 {

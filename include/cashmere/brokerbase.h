@@ -127,7 +127,7 @@ public:
   std::string str() const;
 
 protected:
-  BrokerStub _broker;
+  BrokerStub _stub;
   mutable ConnectionData _cache;
 };
 
