@@ -50,12 +50,12 @@ EntryList BrokerGrpcClient::query(const Clock& from, Source sender) const
   return _stub->query(from, sender);
 }
 
-Connection BrokerGrpcClient::connect(Connection conn)
+BrokerStub BrokerGrpcClient::connect(BrokerStub conn)
 {
   return _stub->connect(conn);
 }
 
-bool BrokerGrpcClient::refresh(const Connection& conn, Source sender)
+bool BrokerGrpcClient::refresh(const BrokerStub& conn, Source sender)
 {
   return _stub->refresh(conn, sender);
 }
@@ -65,8 +65,8 @@ Clock BrokerGrpcClient::relay(const Data& entry, Source sender)
   return _stub->relay(entry, sender);
 }
 
-BrokerStub BrokerGrpcClient::stub()
+BrokerStub BrokerGrpcClient::stub(const ConnectionData& data)
 {
-  return _stub->stub();
+  return _stub->stub(data);
 }
 }

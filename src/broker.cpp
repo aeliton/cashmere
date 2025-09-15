@@ -26,14 +26,14 @@ IdConnectionInfoMap UpdateProvides(SourcesMap provides);
 
 Broker::Broker()
 {
-  _connections.push_back(Connection{});
+  _connections.push_back(BrokerStub{});
 }
 
 Broker::~Broker() = default;
 
-Connection Broker::connect(Connection conn)
+BrokerStub Broker::connect(BrokerStub conn)
 {
-  Connection out(stub());
+  BrokerStub out(stub());
 
   if (conn.source() == 0) {
     if (!conn.broker()) {
@@ -42,12 +42,13 @@ Connection Broker::connect(Connection conn)
     }
 
     out.source() = _connections.size();
-    _connections.push_back(conn.stub());
+    _connections.push_back(conn);
 
     auto& conn = _connections.at(out.source());
-    conn.update(conn.broker()->connect(Connection{
-      stub(), out.source(), clock(), UpdateProvides(sources(out.source()))
-    }));
+
+    conn.connect(
+      stub({out.source(), clock(), UpdateProvides(sources(out.source()))})
+    );
 
     auto thisEntries = query(conn.version(), out.source());
     auto brokerEntries = conn.entries(clock());
@@ -76,12 +77,12 @@ Connection Broker::connect(Connection conn)
   return out;
 }
 
-bool Broker::refresh(const Connection& data, Source sender)
+bool Broker::refresh(const BrokerStub& data, Source sender)
 {
   if (sender <= 0 || static_cast<size_t>(sender) >= _connections.size()) {
     return false;
   }
-  _connections[sender].update(data);
+  _connections[sender].setData(data.data());
 
   refreshConnections(sender);
   return true;
@@ -220,7 +221,7 @@ void Broker::refreshConnections(Source ignore)
     }
     auto& conn = _connections.at(i);
     conn.refresh(
-      {stub(), static_cast<Source>(i), clock(), UpdateProvides(sources(i))}
+      stub({static_cast<Source>(i), clock(), UpdateProvides(sources(i))})
     );
   }
 }
@@ -252,8 +253,8 @@ Clock Broker::relay(const Data& entry, Source sender)
   return _connections.at(shortestDistancePort).relay(entry);
 }
 
-BrokerStub Broker::stub()
+BrokerStub Broker::stub(const ConnectionData& data)
 {
-  return BrokerStub(ptr());
+  return BrokerStub(ptr(), data);
 }
 }

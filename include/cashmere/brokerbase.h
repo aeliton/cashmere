@@ -45,35 +45,6 @@ using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 class BrokerStub;
 using BrokerStubPtr = std::shared_ptr<BrokerStub>;
 
-class CASHMERE_EXPORT BrokerStub
-{
-public:
-  enum class Type
-  {
-    Invalid,
-    Memory,
-    Grpc
-  };
-
-  virtual ~BrokerStub();
-
-  explicit BrokerStub();
-  explicit BrokerStub(BrokerBasePtr broker, Type type = Type::Memory);
-  explicit BrokerStub(const std::string& url);
-
-  std::string url() const;
-  Type type() const;
-
-  void reset();
-  virtual BrokerBasePtr broker() const;
-
-private:
-  std::string _url;
-  Type _type;
-  BrokerBaseWeakPtr _memoryStub;
-  BrokerBasePtr _grpcStub;
-};
-
 struct CASHMERE_EXPORT ConnectionData
 {
   Source source = 0;
@@ -84,7 +55,7 @@ struct CASHMERE_EXPORT ConnectionData
   operator<<(std::ostream& os, const ConnectionData& Data);
 };
 
-class CASHMERE_EXPORT Connection
+class CASHMERE_EXPORT BrokerStub
 {
 public:
   enum class Origin
@@ -92,43 +63,59 @@ public:
     Cache,
     Remote
   };
-  explicit Connection();
-  Connection(BrokerStub stub);
-  Connection(BrokerStub stub, ConnectionData data);
-  Connection(
-    BrokerStub stub, Source source, Clock version, IdConnectionInfoMap provides
+  enum class Type
+  {
+    Invalid,
+    Memory,
+    Grpc
+  };
+
+  virtual ~BrokerStub();
+
+  explicit BrokerStub();
+  explicit BrokerStub(
+    BrokerBasePtr broker, const ConnectionData& data = {},
+    Type type = Type::Memory
   );
+  explicit BrokerStub(const std::string& url, const ConnectionData& data = {});
 
-  virtual ~Connection();
-
-  BrokerBasePtr broker() const;
+  BrokerStub& connect(BrokerStub conn);
+  bool refresh(const BrokerStub& conn) const;
   void disconnect();
 
   Clock insert(const Entry& data) const;
   Clock insert(const EntryList& data) const;
   EntryList entries(const Clock& clock = {}) const;
   bool active() const;
-  bool refresh(const Connection& conn) const;
+
+  Clock relay(const Data& entry) const;
+
+  bool valid() const;
+
+  std::string url() const;
+  Type type() const;
+
+  void reset();
+  virtual BrokerBasePtr broker() const;
 
   Source& source() const;
   Clock& version(Origin origin = Origin::Cache) const;
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
-  Clock relay(const Data& entry) const;
 
-  bool operator==(const Connection& other) const;
-  CASHMERE_EXPORT friend std::ostream&
-  operator<<(std::ostream& os, const Connection& data);
-  void update(const Connection& data);
-
-  BrokerStub& stub();
-  ConnectionData cache() const;
-
-  bool valid() const;
+  void setData(const ConnectionData& data);
+  ConnectionData data() const;
   std::string str() const;
 
-protected:
-  BrokerStub _stub;
+  bool operator==(const BrokerStub& other) const;
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const BrokerStub& data);
+
+private:
+  std::string _url;
+  Type _type;
   mutable ConnectionData _cache;
+  BrokerBaseWeakPtr _memoryStub;
+  BrokerBasePtr _grpcStub;
 };
 
 class CASHMERE_EXPORT BrokerBase
@@ -136,8 +123,8 @@ class CASHMERE_EXPORT BrokerBase
 public:
   virtual ~BrokerBase();
 
-  virtual Connection connect(Connection conn) = 0;
-  virtual bool refresh(const Connection& conn, Source sender) = 0;
+  virtual BrokerStub connect(BrokerStub conn) = 0;
+  virtual bool refresh(const BrokerStub& conn, Source sender) = 0;
   virtual Clock insert(const Entry& data, Source sender = 0) = 0;
   virtual Clock insert(const EntryList& entries, Source sender = 0);
 
@@ -146,7 +133,7 @@ public:
   virtual IdClockMap versions() const = 0;
   virtual SourcesMap sources(Source sender = 0) const = 0;
   virtual Clock relay(const Data& entry, Source sender) = 0;
-  virtual BrokerStub stub() = 0;
+  virtual BrokerStub stub(const ConnectionData& data = {}) = 0;
 };
 
 CASHMERE_EXPORT std::ostream&

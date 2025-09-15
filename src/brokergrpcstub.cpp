@@ -114,7 +114,7 @@ EntryList BrokerGrpcStub::query(const Clock& from, Source sender) const
   return {};
 }
 
-Connection BrokerGrpcStub::connect(Connection conn)
+BrokerStub BrokerGrpcStub::connect(BrokerStub conn)
 {
   lg::info("Broker grpc stub connect called with: {}", conn.str());
   ::grpc::ClientContext context;
@@ -123,7 +123,7 @@ Connection BrokerGrpcStub::connect(Connection conn)
   request.set_source(conn.source());
   Utils::SetClock(request.mutable_version(), conn.version());
 
-  request.mutable_broker()->set_url(conn.stub().url());
+  request.mutable_broker()->set_url(conn.url());
 
   Utils::SetIdConnectionInfoMap(request.mutable_sources(), conn.provides());
 
@@ -132,17 +132,17 @@ Connection BrokerGrpcStub::connect(Connection conn)
   auto status = _stub->Connect(&context, request, &response);
   if (status.ok()) {
     Clock clock = Utils::ClockFrom(response.version());
-    return Connection{BrokerStub{_url}, response.source(), clock, {}};
+    return BrokerStub(_url, {response.source(), clock, {}});
   } else {
     lg::error(
       "BrokerGrpcStub: error {} connecting to {}",
-      static_cast<int>(status.error_code()), conn.stub().url()
+      static_cast<int>(status.error_code()), conn.url()
     );
   }
-  return Connection();
+  return BrokerStub{};
 }
 
-bool BrokerGrpcStub::refresh(const Connection& conn, Source sender)
+bool BrokerGrpcStub::refresh(const BrokerStub& conn, Source sender)
 {
   Grpc::RefreshRequest request;
   request.set_sender(sender);
@@ -179,9 +179,9 @@ Clock BrokerGrpcStub::relay(const Data& entry, Source sender)
   return {{0, 0}};
 }
 
-BrokerStub BrokerGrpcStub::stub()
+BrokerStub BrokerGrpcStub::stub(const ConnectionData& data)
 {
-  return BrokerStub(_url);
+  return BrokerStub(_url, data);
 }
 
 }

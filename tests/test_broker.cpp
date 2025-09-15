@@ -26,7 +26,7 @@ using ::testing::Return;
 TEST(Broker, ConnectIgnoresNullptr)
 {
   auto broker = std::make_shared<Broker>();
-  const auto conn = broker->connect(Connection{});
+  const auto conn = broker->connect(BrokerStub{});
   ASSERT_EQ(conn.source(), -1);
 }
 
@@ -53,10 +53,10 @@ TEST(Broker, SuccessfulConnectionReturnsValidConnection)
   BrokerPtr hub = std::make_shared<Broker>();
   auto aa = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub, ConnectionData{1, {}, {}})))
     .Times(1)
     .WillOnce(
-      Return(Connection{BrokerStub{aa}, 1, Clock{}, IdConnectionInfoMap{}})
+      Return(BrokerStub(aa, ConnectionData{1, Clock{}, IdConnectionInfoMap{}}))
     );
 
   const auto conn = hub->connect(BrokerStub{aa});
@@ -68,11 +68,11 @@ TEST(Broker, BrokerFirstConnectionUsesPortOne)
   BrokerPtr hub = std::make_shared<Broker>();
   auto aa = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub, ConnectionData{1, {}, {}})))
     .Times(1)
-    .WillOnce(Return(Connection{
-      BrokerStub{aa}, 1, Clock{}, IdConnectionInfoMap{{0xAA, {0, {}}}}
-    }));
+    .WillOnce(Return(BrokerStub(
+      aa, ConnectionData{1, Clock{}, IdConnectionInfoMap{{0xAA, {0, {}}}}}
+    )));
 
   hub->connect(BrokerStub{aa});
   EXPECT_EQ(hub->connectedPorts(), std::set<Source>{1});
@@ -86,9 +86,10 @@ TEST(Broker, BrokerForwardsInserts)
 
   const auto aa = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*aa, connect(Connection{BrokerStub(hub), 1, {}, {}}))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub, ConnectionData{1, {}, {}})))
     .Times(1)
-    .WillOnce(Return(Connection{BrokerStub{aa}, 1, {}, {{0xAA, {0, Clock{}}}}})
+    .WillOnce(
+      Return(BrokerStub(aa, ConnectionData{1, {}, {{0xAA, {0, Clock{}}}}}))
     );
   EXPECT_CALL(*aa, insert(entry, 1)).Times(1);
 
@@ -103,9 +104,9 @@ TEST(Broker, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
   auto aa = std::make_shared<BrokerMock>();
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
-  EXPECT_CALL(*aa, connect(Connection{BrokerStub(hub), 1, {}, {}}))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub, ConnectionData{1, {}, {}})))
     .Times(1)
-    .WillOnce(Return(Connection{BrokerStub{aa}, 1, {}, {{0xAA, {0, {}}}}}));
+    .WillOnce(Return(BrokerStub(aa, {1, {}, {{0xAA, {0, {}}}}})));
   EXPECT_CALL(*aa, insert(entry, 1)).Times(0);
 
   const auto conn = hub->connect(BrokerStub{aa});
@@ -124,9 +125,9 @@ TEST(Broker, BrokeHubConnectionsAreFullDuplex)
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
   EXPECT_CALL(*aa, insert(entry, /* hub1Port */ 1)).Times(1);
-  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub0), 2, {}, {}})))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub0, {2, {}, {}})))
     .Times(1)
-    .WillOnce(Return(Connection{BrokerStub{aa}, 1, {}, {{0xAA, {0, {}}}}}));
+    .WillOnce(Return(BrokerStub(aa, {1, {}, {{0xAA, {0, {}}}}})));
 
   const auto hub1Conn = hub0->connect(BrokerStub{hub1});
   const auto aaConn = hub0->connect(BrokerStub{aa});
@@ -153,11 +154,9 @@ TEST(Broker, UpdatesItsClockDuringConnect)
   BrokerPtr hub = std::make_shared<Broker>();
   const auto aa = std::make_shared<BrokerMock>();
   const Clock aaClock = Clock{{0xAA, 1}};
-  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub, {1, {}, {}})))
     .Times(1)
-    .WillOnce(
-      Return(Connection{BrokerStub{aa}, 1, aaClock, {{0xAA, {1, aaClock}}}})
-    );
+    .WillOnce(Return(BrokerStub(aa, {1, aaClock, {{0xAA, {1, aaClock}}}})));
   EXPECT_CALL(*aa, query(Clock({}), /* aaPort */ 1))
     .Times(1)
     .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
@@ -176,11 +175,9 @@ TEST(Broker, VersionsArePreservedAfterDisconnection)
   BrokerPtr hub = std::make_shared<Broker>();
   const auto aa = std::make_shared<BrokerMock>();
   const Clock aaClock = Clock{{0xAA, 1}};
-  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub, {1, {}, {}})))
     .Times(1)
-    .WillOnce(
-      Return(Connection{BrokerStub{aa}, 1, aaClock, {{0xAA, {1, aaClock}}}})
-    );
+    .WillOnce(Return(BrokerStub(aa, {1, aaClock, {{0xAA, {1, aaClock}}}})));
   EXPECT_CALL(*aa, query(Clock({}), 1))
     .Times(1)
     .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
@@ -204,11 +201,9 @@ TEST(Broker, UpdateConnectionProvidedSourcesOnAttach)
   const auto aaClock = Clock{{0xAA, 1}};
   const auto aaEntry = Entry{aaClock, Data{0xAA, 10, {}}};
 
-  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub, {1, {}, {}})))
     .Times(1)
-    .WillOnce(
-      Return(Connection{BrokerStub{aa}, 1, aaClock, {{0xAA, {0, aaClock}}}})
-    );
+    .WillOnce(Return(BrokerStub(aa, {1, aaClock, {{0xAA, {0, aaClock}}}})));
   EXPECT_CALL(*aa, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
@@ -225,23 +220,22 @@ TEST(Broker, ExchangeEntriesOnConnect)
   const auto aaEntry = Entry{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}};
   const auto bbEntry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 20, {}}};
 
-  EXPECT_CALL(*aa, connect((Connection{BrokerStub(hub), 1, {}, {}})))
+  EXPECT_CALL(*aa, connect(BrokerStub(hub, {1, {}, {}})))
     .Times(1)
-    .WillOnce(Return(Connection{
-      BrokerStub{aa}, 1, Clock{{0xAA, 1}},
-      IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
-    }));
+    .WillOnce(Return(BrokerStub(
+      aa, {1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}}
+    )));
   EXPECT_CALL(*aa, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
   EXPECT_CALL(
     *aa, refresh(
-           Connection{
-             BrokerStub{hub}, 1, Clock{{0xAA, 1}, {0xBB, 1}},
-             IdConnectionInfoMap{
-               {0xBB, ConnectionInfo{2, Clock{{0xAA, 1}, {0xBB, 1}}}}
-             }
-           },
+           BrokerStub(
+             hub, {1, Clock{{0xAA, 1}, {0xBB, 1}},
+                   IdConnectionInfoMap{
+                     {0xBB, ConnectionInfo{2, Clock{{0xAA, 1}, {0xBB, 1}}}}
+                   }}
+           ),
            1
          )
   )
@@ -256,16 +250,20 @@ TEST(Broker, ExchangeEntriesOnConnect)
 
   EXPECT_CALL(
     *bb,
-    connect((Connection{
-      BrokerStub(hub), 2, Clock{{0xAA, 1}},
-      IdConnectionInfoMap{{0xAA, {.distance = 2, .version = Clock{{0xAA, 1}}}}}
-    }))
+    connect(BrokerStub(
+      hub,
+      {2, Clock{{0xAA, 1}},
+       IdConnectionInfoMap{{0xAA, {.distance = 2, .version = Clock{{0xAA, 1}}}}}
+      }
+    ))
   )
     .Times(1)
-    .WillOnce(Return(Connection{
-      BrokerStub{bb}, 1, Clock{{0xBB, 1}},
-      IdConnectionInfoMap{{0xBB, {.distance = 1, .version = Clock{{0xBB, 1}}}}}
-    }));
+    .WillOnce(Return(BrokerStub(
+      bb,
+      {1, Clock{{0xBB, 1}},
+       IdConnectionInfoMap{{0xBB, {.distance = 1, .version = Clock{{0xBB, 1}}}}}
+      }
+    )));
   EXPECT_CALL(*bb, insert(EntryList{aaEntry}, 1))
     .Times(1)
     .WillOnce(Return(Clock{{0xAA, 1}, {0xBB, 1}}));
@@ -309,9 +307,9 @@ TEST(Broker, PropagatesProvidedConnections)
 
   const auto aaEntry = Entry{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}};
 
-  EXPECT_CALL(*hub, connect((Connection{BrokerStub(broker), 1, {}, {}})))
+  EXPECT_CALL(*hub, connect(BrokerStub(broker, {1, {}, {}})))
     .Times(1)
-    .WillOnce(Return(Connection{BrokerStub{hub}, 1, {}, {}}));
+    .WillOnce(Return(BrokerStub(hub, {1, {}, {}})));
   EXPECT_CALL(*hub, query(Clock{}, 1)).Times(1).WillOnce(Return(EntryList{}));
   EXPECT_CALL(*hub, insert(aaEntry, 1))
     .Times(1)
@@ -319,22 +317,23 @@ TEST(Broker, PropagatesProvidedConnections)
   EXPECT_CALL(
     *hub,
     refresh(
-      Connection{
-        BrokerStub{broker}, 1, Clock{{0xAA, 1}},
-        IdConnectionInfoMap{{0xAA, {.distance = 2, .version = {{0xAA, 1}}}}}
-      },
+      BrokerStub(
+        broker,
+        {1, Clock{{0xAA, 1}},
+         IdConnectionInfoMap{{0xAA, {.distance = 2, .version = {{0xAA, 1}}}}}}
+      ),
       1
     )
   )
     .Times(1)
     .WillOnce(Return(true));
 
-  EXPECT_CALL(*journal, connect((Connection{BrokerStub(broker), 2, {}, {}})))
+  EXPECT_CALL(*journal, connect(BrokerStub(broker, {2, {}, {}})))
     .Times(1)
-    .WillOnce(Return(Connection{
-      BrokerStub{journal}, 1, Clock{{0xAA, 1}},
-      IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
-    }));
+    .WillOnce(Return(BrokerStub(
+      journal,
+      {1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}}
+    )));
   EXPECT_CALL(*journal, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));

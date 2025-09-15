@@ -22,6 +22,6 @@ using namespace Cashmere;
 
 TEST(Connection, DefaultCreatedConnectionIsInvalid)
 {
-  const Connection conn;
+  const BrokerStub conn;
   ASSERT_THAT(conn.valid(), false);
 }

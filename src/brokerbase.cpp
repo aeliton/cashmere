@@ -28,22 +28,27 @@ BrokerStub::~BrokerStub() = default;
 BrokerStub::BrokerStub()
   : _url()
   , _type(Type::Invalid)
+  , _cache()
   , _memoryStub()
   , _grpcStub()
 {
 }
 
-BrokerStub::BrokerStub(BrokerBasePtr broker, Type type)
+BrokerStub::BrokerStub(
+  BrokerBasePtr broker, const ConnectionData& data, Type type
+)
   : _url()
   , _type(type)
+  , _cache(data)
   , _memoryStub(_type == Type::Memory ? broker : nullptr)
   , _grpcStub(_type == Type::Grpc ? broker : nullptr)
 {
 }
 
-BrokerStub::BrokerStub(const std::string& url)
+BrokerStub::BrokerStub(const std::string& url, const ConnectionData& data)
   : _url(url)
   , _type(Type::Grpc)
+  , _cache(data)
   , _memoryStub()
   , _grpcStub(std::make_shared<BrokerGrpcStub>(url))
 {
@@ -71,35 +76,52 @@ std::string BrokerStub::url() const
   return _url;
 }
 
-Connection::Connection() = default;
-
-Connection::Connection(
-  BrokerStub stub, Source source, Clock version, IdConnectionInfoMap provides
-)
-  : _stub(stub)
-  , _cache({source, version, provides})
+void BrokerStub::setData(const ConnectionData& data)
 {
+  _cache = data;
 }
 
-Connection::Connection(BrokerStub stub)
-  : _stub(stub)
-  , _cache()
+ConnectionData BrokerStub::data() const
 {
+  return _cache;
 }
 
-Connection::~Connection() = default;
-
-Source& Connection::source() const
+Source& BrokerStub::source() const
 {
   return _cache.source;
 }
 
-BrokerBasePtr Connection::broker() const
+Clock& BrokerStub::version(Origin origin) const
 {
-  return _stub.broker();
+  if (origin == Origin::Remote) {
+    _cache.version = broker()->clock();
+  }
+  return _cache.version;
 }
 
-Clock Connection::insert(const Entry& data) const
+IdConnectionInfoMap& BrokerStub::provides(Origin origin) const
+{
+  if (origin == Origin::Remote) {
+    for (auto& [port, sources] : broker()->sources(_cache.source)) {
+      for (auto& [id, data] : sources) {
+        ++data.distance;
+        _cache.version = _cache.version.merge(data.version);
+      }
+      _cache.sources.merge(sources);
+    }
+  }
+  return _cache.sources;
+}
+
+void BrokerStub::disconnect()
+{
+  if (auto b = broker()) {
+    b->refresh(BrokerStub(), _cache.source);
+    reset();
+  }
+}
+
+Clock BrokerStub::insert(const Entry& data) const
 {
   auto source = broker();
   if (!source) {
@@ -115,7 +137,7 @@ Clock Connection::insert(const Entry& data) const
   return _cache.version = clock;
 }
 
-Clock Connection::insert(const EntryList& data) const
+Clock BrokerStub::insert(const EntryList& data) const
 {
   auto clock = broker()->insert(data, _cache.source);
   if (clock.valid()) {
@@ -126,52 +148,41 @@ Clock Connection::insert(const EntryList& data) const
   return clock;
 }
 
-bool ConnectionData::operator==(const ConnectionData& other) const
-{
-  return version == other.version && sources == other.sources;
-}
-
-bool Connection::operator==(const Connection& other) const
-{
-  return _cache == other._cache && broker() == other.broker();
-}
-
-Clock& Connection::version(Origin origin) const
-{
-  if (origin == Origin::Remote) {
-    _cache.version = broker()->clock();
-  }
-  return _cache.version;
-}
-
-EntryList Connection::entries(const Clock& clock) const
+EntryList BrokerStub::entries(const Clock& clock) const
 {
   return broker()->query(clock, _cache.source);
 }
 
-IdConnectionInfoMap& Connection::provides(Origin origin) const
+bool BrokerStub::active() const
 {
-  if (origin == Origin::Remote) {
-    for (auto& [port, sources] : broker()->sources(_cache.source)) {
-      for (auto& [id, data] : sources) {
-        ++data.distance;
-        _cache.version = _cache.version.merge(data.version);
-      }
-      _cache.sources.merge(sources);
-    }
-  }
-  return _cache.sources;
+  return broker() != nullptr;
 }
 
-void Connection::disconnect()
+Clock BrokerStub::relay(const Data& entry) const
 {
-  if (auto b = broker()) {
-    b->refresh(Connection(), _cache.source);
-    _stub.reset();
-  }
+  return broker()->relay(entry, _cache.source);
 }
 
-bool Connection::refresh(const Connection& data) const
+bool BrokerStub::valid() const
+{
+  return _cache.source >= 0 && _type != BrokerStub::Type::Invalid;
+}
+
+std::string BrokerStub::str() const
+{
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
+}
+
+BrokerStub& BrokerStub::connect(BrokerStub data)
+{
+  auto other = broker()->connect(data);
+  setData(other.data());
+  return *this;
+}
+
+bool BrokerStub::refresh(const BrokerStub& data) const
 {
   if (auto source = broker()) {
     return source->refresh(data, _cache.source);
@@ -179,19 +190,16 @@ bool Connection::refresh(const Connection& data) const
   return false;
 }
 
-bool Connection::active() const
+bool BrokerStub::operator==(const BrokerStub& other) const
 {
-  return broker() != nullptr;
+  return _cache == other._cache && _type == other._type && _url == other._url &&
+         _memoryStub.lock() == other._memoryStub.lock() &&
+         _grpcStub == other._grpcStub;
 }
 
-void Connection::update(const Connection& data)
+bool ConnectionData::operator==(const ConnectionData& other) const
 {
-  _cache = data._cache;
-}
-
-Clock Connection::relay(const Data& entry) const
-{
-  return broker()->relay(entry, _cache.source);
+  return version == other.version && sources == other.sources;
 }
 
 BrokerBase::~BrokerBase() = default;
@@ -258,30 +266,10 @@ std::ostream& operator<<(std::ostream& os, const ConnectionData& info)
             << "}";
 }
 
-std::ostream& operator<<(std::ostream& os, const Connection& info)
+std::ostream& operator<<(std::ostream& os, const BrokerStub& info)
 {
-  return os << "Connection{" << info._cache << "}";
-}
-
-BrokerStub& Connection::stub()
-{
-  return _stub;
-}
-ConnectionData Connection::cache() const
-{
-  return _cache;
-}
-
-bool Connection::valid() const
-{
-  return _cache.source >= 0 && _stub.type() != BrokerStub::Type::Invalid;
-}
-
-std::string Connection::str() const
-{
-  std::stringstream ss;
-  ss << *this;
-  return ss.str();
+  return os << "BrokerStub{_cache: " << info._cache << ", url: " << info._url
+            << "}";
 }
 
 }

@@ -118,9 +118,9 @@ BrokerGrpc::Impl::Impl()
       request->broker().url(), request->source(), version.str()
     );
 
-    Connection conn{stub, request->source(), version, sources};
+    stub.setData({request->source(), version, sources});
 
-    Connection out = broker()->connect(conn);
+    BrokerStub out = broker()->connect(stub);
 
     response->set_source(out.source());
     Utils::SetClock(response->mutable_version(), out.version());
@@ -172,7 +172,7 @@ BrokerGrpc::Impl::Impl()
   [[maybe_unused]] ::google::protobuf::Empty* response
 )
 {
-  Connection conn;
+  BrokerStub conn;
   conn.source() = request->source();
   conn.version() = Utils::ClockFrom(request->version());
   conn.provides() = Utils::IdConnectionInfoMapFrom(request->sources());
@@ -244,9 +244,9 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
 {
 }
 
-BrokerStub BrokerGrpc::stub()
+BrokerStub BrokerGrpc::stub(const ConnectionData& data)
 {
-  return BrokerStub(_hostname + ":" + std::to_string(_port));
+  return BrokerStub(_hostname + ":" + std::to_string(_port), data);
 }
 
 std::thread BrokerGrpc::start()

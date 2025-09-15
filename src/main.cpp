@@ -83,7 +83,7 @@ void RunCommand(const Options& options)
       break;
     case Command::Type::Connect:
       lg::info("connect to {}", options.command.url);
-      stub.connect(Connection(BrokerStub(options.command.url)));
+      stub.connect(BrokerStub(options.command.url));
       break;
     case Command::Type::Disconnect:
       break;

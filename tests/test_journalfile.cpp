@@ -113,16 +113,15 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
   const auto broker = std::make_shared<BrokerMock>();
 
   EXPECT_CALL(
-    *broker,
-    connect(Connection{
-      BrokerStub(journal), 1, {}, {{kFixtureId, {.distance = 1, .version = {}}}}
-    })
+    *broker, connect(BrokerStub(
+               journal, {1, {}, {{kFixtureId, {.distance = 1, .version = {}}}}}
+             ))
   )
     .Times(1)
-    .WillOnce(Return(Connection{
-      BrokerStub{}, 1, Clock{{0xBB, 1}},
-      IdConnectionInfoMap{{0xBB, {1, Clock{{0xBB, 1}}}}}
-    }));
+    .WillOnce(Return(BrokerStub(
+      broker,
+      {1, Clock{{0xBB, 1}}, IdConnectionInfoMap{{0xBB, {1, Clock{{0xBB, 1}}}}}}
+    )));
   EXPECT_CALL(*broker, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}}}));

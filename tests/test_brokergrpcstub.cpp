@@ -61,7 +61,9 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
     .WillOnce(DoAll(SetArgPointee<2>(queryResponse), Return(grpc::Status::OK)));
 
   auto brokerStub = BrokerStub{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+    std::make_shared<BrokerGrpcStub>(std::move(stub)),
+    {},
+    BrokerStub::Type::Grpc
   };
 
   broker->connect(brokerStub);
@@ -97,7 +99,9 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
     .WillOnce(DoAll(SetArgPointee<2>(response), Return(grpc::Status::OK)));
 
   auto brokerStub = BrokerStub{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+    std::make_shared<BrokerGrpcStub>(std::move(stub)),
+    {},
+    BrokerStub::Type::Grpc
   };
 
   journal->connect(brokerStub);
@@ -118,7 +122,9 @@ TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
     .WillOnce(DoAll(SetArgPointee<2>(response), Return(grpc::Status::OK)));
 
   auto brokerStub = BrokerStub{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+    std::make_shared<BrokerGrpcStub>(std::move(stub)),
+    {},
+    BrokerStub::Type::Grpc
   };
 
   journal->connect(brokerStub);
@@ -142,7 +148,9 @@ TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
     .WillOnce(Return(grpc::Status::OK));
 
   auto brokerStub = BrokerStub{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+    std::make_shared<BrokerGrpcStub>(std::move(stub)),
+    {},
+    BrokerStub::Type::Grpc
   };
 
   journal->connect(brokerStub);
@@ -178,9 +186,11 @@ TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
     .WillOnce(Return(grpc::Status::OK));
 
   auto brokerStub = BrokerStub{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), BrokerStub::Type::Grpc
+    std::make_shared<BrokerGrpcStub>(std::move(stub)),
+    {},
+    BrokerStub::Type::Grpc
   };
 
   broker->connect(brokerStub);
-  EXPECT_TRUE(broker->refresh(Connection(), 1));
+  EXPECT_TRUE(broker->refresh(BrokerStub{}, 1));
 }
