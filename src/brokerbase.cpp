@@ -153,11 +153,6 @@ EntryList BrokerStub::query(const Clock& clock) const
   return broker()->query(clock, _cache.source);
 }
 
-bool BrokerStub::active() const
-{
-  return broker() != nullptr;
-}
-
 Clock BrokerStub::relay(const Data& entry) const
 {
   return broker()->relay(entry, _cache.source);
@@ -165,7 +160,7 @@ Clock BrokerStub::relay(const Data& entry) const
 
 bool BrokerStub::valid() const
 {
-  return _cache.source >= 0 && _type != BrokerStub::Type::Invalid;
+  return _type != BrokerStub::Type::Invalid && broker() != nullptr;
 }
 
 std::string BrokerStub::str() const

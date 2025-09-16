@@ -91,7 +91,7 @@ public:
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
 
   void disconnect();
-  bool active() const;
+
   bool valid() const;
   std::string url() const;
   Type type() const;

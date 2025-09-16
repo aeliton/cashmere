@@ -36,7 +36,7 @@ BrokerStub Broker::connect(BrokerStub conn)
   BrokerStub out(stub());
 
   if (conn.source() == 0) {
-    if (!conn.broker()) {
+    if (!conn.valid()) {
       out.source() = -1;
       return out;
     }
@@ -116,7 +116,7 @@ SourcesMap Broker::sources(Source sender) const
       continue;
     }
     const auto& conn = _connections[i];
-    if (!conn.active()) {
+    if (!conn.valid()) {
       continue;
     }
     const auto& sources = conn.provides();
@@ -135,7 +135,7 @@ EntryList Broker::query(const Clock& from, Source sender) const
     if (i == static_cast<size_t>(sender) || conn.provides().empty()) {
       continue;
     }
-    if (conn.active()) {
+    if (conn.valid()) {
       return conn.query(from);
     }
   }
@@ -159,7 +159,7 @@ Source Broker::disconnect(Source source)
     return -1;
   }
   auto& conn = _connections.at(source);
-  if (conn.active()) {
+  if (conn.valid()) {
     conn.disconnect();
     refreshConnections(source);
     return source;
