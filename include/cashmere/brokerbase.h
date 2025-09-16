@@ -90,16 +90,16 @@ public:
 
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
 
-  void disconnect();
+  void setData(const ConnectionData& data);
+  ConnectionData data() const;
 
+  void disconnect();
   bool valid() const;
+  Source& source() const;
+
   std::string url() const;
   Type type() const;
   void reset();
-  virtual BrokerBasePtr broker() const;
-  Source& source() const;
-  void setData(const ConnectionData& data);
-  ConnectionData data() const;
   std::string str() const;
 
   bool operator==(const BrokerStub& other) const;
@@ -107,6 +107,7 @@ public:
   operator<<(std::ostream& os, const BrokerStub& data);
 
 private:
+  virtual BrokerBasePtr broker() const;
   std::string _url;
   Type _type;
   mutable ConnectionData _cache;
