@@ -58,7 +58,7 @@ IdConnectionInfoMap IdConnectionInfoMapFrom(
   IdConnectionInfoMap out;
   for (const auto& [id, info] : sources) {
     out[id].distance = info.distance();
-    out[id].version = ClockFrom(info.version());
+    out[id].clock = ClockFrom(info.clock());
   }
   return out;
 }
@@ -101,7 +101,7 @@ void SetEntry(Grpc::Entry* entry, const Entry& data)
 void SetConnectionInfo(Grpc::ConnectionInfo& info, const ConnectionInfo& data)
 {
   info.set_distance(data.distance);
-  SetClock(info.mutable_version(), data.version);
+  SetClock(info.mutable_clock(), data.clock);
 }
 
 void SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data)

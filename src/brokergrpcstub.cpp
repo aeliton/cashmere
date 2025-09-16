@@ -88,7 +88,7 @@ Clock BrokerGrpcStub::insert(const Entry& data, Source sender)
   Grpc::InsertResponse response;
   ::grpc::ClientContext context;
   if (_stub->Insert(&context, request, &response).ok()) {
-    Clock out = Utils::ClockFrom(response.version());
+    Clock out = Utils::ClockFrom(response.clock());
     return out;
   }
   return {};
@@ -121,7 +121,7 @@ BrokerStub BrokerGrpcStub::connect(BrokerStub conn)
 
   Grpc::ConnectionRequest request;
   request.set_source(conn.source());
-  Utils::SetClock(request.mutable_version(), conn.version());
+  Utils::SetClock(request.mutable_clock(), conn.clock());
 
   request.mutable_broker()->set_url(conn.url());
 
@@ -131,7 +131,7 @@ BrokerStub BrokerGrpcStub::connect(BrokerStub conn)
 
   auto status = _stub->Connect(&context, request, &response);
   if (status.ok()) {
-    Clock clock = Utils::ClockFrom(response.version());
+    Clock clock = Utils::ClockFrom(response.clock());
     return BrokerStub(_url, {response.source(), clock, {}});
   } else {
     lg::error(
@@ -148,7 +148,7 @@ bool BrokerGrpcStub::refresh(const BrokerStub& conn, Source sender)
   request.set_sender(sender);
   request.set_source(conn.source());
 
-  Utils::SetClock(request.mutable_version(), conn.version());
+  Utils::SetClock(request.mutable_clock(), conn.clock());
   Utils::SetIdConnectionInfoMap(request.mutable_sources(), conn.provides());
 
   ::google::protobuf::Empty response;
@@ -169,7 +169,7 @@ Clock BrokerGrpcStub::relay(const Data& entry, Source sender)
   Utils::SetData(request.mutable_entry(), entry);
   const auto status = _stub->Relay(&context, request, &response);
   if (status.ok()) {
-    return Utils::ClockFrom(response.version());
+    return Utils::ClockFrom(response.clock());
   } else {
     lg::error(
       "BrokerGrpcStub: failed relaying message.. status {}",

@@ -37,7 +37,7 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 
   Grpc::ConnectionResponse resp;
   resp.set_source(kSource);
-  (*resp.mutable_version())[0xBB] = 1;
+  (*resp.mutable_clock())[0xBB] = 1;
 
   EXPECT_CALL(*stub, Connect(_, _, _))
     .Times(1)
@@ -85,7 +85,7 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
     .WillOnce(DoAll(SetArgPointee<2>(resp), Return(grpc::Status::OK)));
 
   Grpc::InsertResponse response;
-  (*response.mutable_version())[0xAA] = 1;
+  (*response.mutable_clock())[0xAA] = 1;
 
   EXPECT_CALL(
     *stub,
@@ -115,7 +115,7 @@ TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::InsertResponse response;
-  (*response.mutable_version())[0xAA] = 1;
+  (*response.mutable_clock())[0xAA] = 1;
 
   EXPECT_CALL(*stub, Insert(_, _, _))
     .Times(1)

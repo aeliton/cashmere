@@ -91,7 +91,7 @@ Source& BrokerStub::source() const
   return _cache.source;
 }
 
-Clock& BrokerStub::version(Origin origin) const
+Clock& BrokerStub::clock(Origin origin) const
 {
   if (origin == Origin::Remote) {
     _cache.version = broker()->clock();
@@ -105,7 +105,7 @@ IdConnectionInfoMap& BrokerStub::provides(Origin origin) const
     for (auto& [port, sources] : broker()->sources(_cache.source)) {
       for (auto& [id, data] : sources) {
         ++data.distance;
-        _cache.version = _cache.version.merge(data.version);
+        _cache.version = _cache.version.merge(data.clock);
       }
       _cache.sources.merge(sources);
     }
@@ -132,7 +132,7 @@ Clock BrokerStub::insert(const Entry& data) const
     return {};
   }
   for (auto& [id, info] : _cache.sources) {
-    info.version = info.version.merge(data.clock);
+    info.clock = info.clock.merge(data.clock);
   }
   return _cache.version = clock;
 }
@@ -142,13 +142,13 @@ Clock BrokerStub::insert(const EntryList& data) const
   auto clock = broker()->insert(data, _cache.source);
   if (clock.valid()) {
     for (auto& [id, info] : _cache.sources) {
-      info.version = info.version.merge(clock);
+      info.clock = info.clock.merge(clock);
     }
   }
   return clock;
 }
 
-EntryList BrokerStub::entries(const Clock& clock) const
+EntryList BrokerStub::query(const Clock& clock) const
 {
   return broker()->query(clock, _cache.source);
 }
@@ -215,7 +215,7 @@ Clock BrokerBase::insert(const EntryList& entries, Source sender)
 std::ostream& operator<<(std::ostream& os, const ConnectionInfo& info)
 {
   return os << "ConnectionInfo{ .distance = " << info.distance
-            << ", .version = " << info.version << "}";
+            << ", .version = " << info.clock << "}";
 }
 
 std::ostream& operator<<(std::ostream& os, const IdConnectionInfoMap& data)

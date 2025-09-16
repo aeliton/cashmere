@@ -50,8 +50,8 @@ BrokerStub Broker::connect(BrokerStub conn)
       stub({out.source(), clock(), UpdateProvides(sources(out.source()))})
     );
 
-    auto thisEntries = query(conn.version(), out.source());
-    auto brokerEntries = conn.entries(clock());
+    auto thisEntries = query(conn.clock(), out.source());
+    auto brokerEntries = conn.query(clock());
 
     if (brokerEntries.size() > 0) {
       BrokerBase::insert(brokerEntries, out.source());
@@ -66,12 +66,12 @@ BrokerStub Broker::connect(BrokerStub conn)
 
     auto version = clock();
     for (auto& [id, info] : conn.provides()) {
-      info.version = info.version.merge(version);
+      info.clock = info.clock.merge(version);
     }
 
     _connections.push_back(conn);
     refreshConnections(out.source());
-    out.version() = version;
+    out.clock() = version;
     out.provides() = UpdateProvides(sources(out.source()));
   }
   return out;
@@ -96,7 +96,7 @@ Clock Broker::insert(const Entry& data, Source source)
 
   setClock(clock().merge(data.clock));
   auto& conn = _connections.at(source);
-  conn.provides()[data.entry.id].version = clock();
+  conn.provides()[data.entry.id].clock = clock();
 
   for (size_t i = 0; i < _connections.size(); ++i) {
     if (i == static_cast<size_t>(source)) {
@@ -136,7 +136,7 @@ EntryList Broker::query(const Clock& from, Source sender) const
       continue;
     }
     if (conn.active()) {
-      return conn.entries(from);
+      return conn.query(from);
     }
   }
   return {};
@@ -147,7 +147,7 @@ IdClockMap Broker::versions() const
   IdClockMap out;
   for (auto& conn : _connections) {
     for (auto& [id, data] : conn.provides()) {
-      out[id] = out[id].merge(data.version);
+      out[id] = out[id].merge(data.clock);
     }
   }
   return out;
@@ -169,7 +169,7 @@ Source Broker::disconnect(Source source)
 
 Clock Broker::clock() const
 {
-  return _connections.front().version();
+  return _connections.front().clock();
 }
 
 BrokerBasePtr Broker::ptr()
@@ -179,17 +179,17 @@ BrokerBasePtr Broker::ptr()
 
 void Broker::setClock(const Clock& clock)
 {
-  _connections.front().version() = clock;
+  _connections.front().clock() = clock;
 }
 
 bool ConnectionInfo::operator==(const ConnectionInfo& other) const
 {
-  return std::tie(distance, version) == std::tie(other.distance, other.version);
+  return std::tie(distance, clock) == std::tie(other.distance, other.clock);
 }
 
 bool ConnectionInfo::operator<(const ConnectionInfo& other) const
 {
-  return std::tie(distance, version) < std::tie(other.distance, other.version);
+  return std::tie(distance, clock) < std::tie(other.distance, other.clock);
 }
 
 IdConnectionInfoMap UpdateProvides(SourcesMap provides)

@@ -23,7 +23,7 @@ message Clock { map<fixed64, uint64> data = 1; };
 
 message ConnectionInfo {
   int32 distance = 1;
-  map<fixed64, uint64> version = 2;
+  map<fixed64, uint64> clock = 2;
 }
 
 message IdConnectionInfoMap { map<fixed64, ConnectionInfo> info = 1; }
@@ -49,7 +49,7 @@ message BrokerData {
 message ConnectionRequest {
   BrokerData broker = 1;
   uint32 source = 2;
-  map<fixed64, uint64> version = 3;
+  map<fixed64, uint64> clock = 3;
   map<fixed64, ConnectionInfo> sources = 4;
 }
 
@@ -65,14 +65,14 @@ message QueryRequest {
 
 message ConnectionResponse {
   uint32 source = 1;
-  map<fixed64, uint64> version = 2;
+  map<fixed64, uint64> clock = 2;
   map<fixed64, ConnectionInfo> sources = 3;
 }
 
 message RefreshRequest {
   uint32 sender = 1;
   uint32 source = 2;
-  map<fixed64, uint64> version = 3;
+  map<fixed64, uint64> clock = 3;
   map<fixed64, ConnectionInfo> sources = 4;
 }
 
@@ -85,7 +85,7 @@ message SourcesRequest { uint32 sender = 1; }
 
 message ClockResponse { map<fixed64, uint64> clock = 1; }
 
-message InsertResponse { map<fixed64, uint64> version = 1; }
+message InsertResponse { map<fixed64, uint64> clock = 1; }
 
 message QueryResponse { repeated Entry entries = 1; }
 

@@ -114,7 +114,7 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
 
   EXPECT_CALL(
     *broker, connect(BrokerStub(
-               journal, {1, {}, {{kFixtureId, {.distance = 1, .version = {}}}}}
+               journal, {1, {}, {{kFixtureId, {.distance = 1, .clock = {}}}}}
              ))
   )
     .Times(1)

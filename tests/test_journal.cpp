@@ -142,8 +142,7 @@ TEST(Journal, ReportsProvidesItsOwnData)
   Journal journal(0xAA);
   const auto expected = SourcesMap{
     {0,
-     IdConnectionInfoMap{
-       {0xAA, ConnectionInfo{.distance = 0, .version = Clock{}}}
+     IdConnectionInfoMap{{0xAA, ConnectionInfo{.distance = 0, .clock = Clock{}}}
      }}
   };
   ASSERT_EQ(journal.sources(), expected);
@@ -164,15 +163,13 @@ TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
   aa->append(10);
 
   aa->connect(BrokerStub(
-    bb,
-    {1, Clock{}, IdConnectionInfoMap{{0xBB, {.distance = 1, .version = {}}}}}
+    bb, {1, Clock{}, IdConnectionInfoMap{{0xBB, {.distance = 1, .clock = {}}}}}
   ));
 
   const auto sources = SourcesMap{
-    {0,
-     IdConnectionInfoMap{{0xAA, {.distance = 0, .version = Clock{{0xAA, 1}}}}}},
-    {1,
-     IdConnectionInfoMap{{0xBB, {.distance = 1, .version = Clock{{0xAA, 1}}}}}}
+    {0, IdConnectionInfoMap{{0xAA, {.distance = 0, .clock = Clock{{0xAA, 1}}}}}
+    },
+    {1, IdConnectionInfoMap{{0xBB, {.distance = 1, .clock = Clock{{0xAA, 1}}}}}}
   };
 
   EXPECT_EQ(aa->sources(), sources);

@@ -111,7 +111,7 @@ BrokerGrpc::Impl::Impl()
   } else {
     const IdConnectionInfoMap sources =
       Utils::IdConnectionInfoMapFrom(request->sources());
-    const Clock version = Utils::ClockFrom(request->version());
+    const Clock version = Utils::ClockFrom(request->clock());
 
     lg::info(
       "BrokerGrpc: Connection request from: {}, source: {}, version: {}",
@@ -123,7 +123,7 @@ BrokerGrpc::Impl::Impl()
     BrokerStub out = broker()->connect(stub);
 
     response->set_source(out.source());
-    Utils::SetClock(response->mutable_version(), out.version());
+    Utils::SetClock(response->mutable_clock(), out.clock());
     Utils::SetIdConnectionInfoMap(response->mutable_sources(), out.provides());
   }
 
@@ -159,7 +159,7 @@ BrokerGrpc::Impl::Impl()
   );
 
   if (broker()->insert(entry, sender).valid()) {
-    Utils::SetClock(response->mutable_version(), broker()->clock());
+    Utils::SetClock(response->mutable_clock(), broker()->clock());
     return ::grpc::Status::OK;
   }
 
@@ -174,7 +174,7 @@ BrokerGrpc::Impl::Impl()
 {
   BrokerStub conn;
   conn.source() = request->source();
-  conn.version() = Utils::ClockFrom(request->version());
+  conn.clock() = Utils::ClockFrom(request->clock());
   conn.provides() = Utils::IdConnectionInfoMapFrom(request->sources());
   broker()->refresh(conn, request->sender());
   lg::info("BrokerGrpc: Refresh called!");
@@ -192,7 +192,7 @@ BrokerGrpc::Impl::Impl()
   );
   Clock clock =
     broker()->relay(Utils::DataFrom(request->entry()), request->sender());
-  Utils::SetClock(response->mutable_version(), clock);
+  Utils::SetClock(response->mutable_clock(), clock);
   return ::grpc::Status::OK;
 }
 

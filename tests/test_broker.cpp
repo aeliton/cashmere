@@ -253,16 +253,14 @@ TEST(Broker, ExchangeEntriesOnConnect)
     connect(BrokerStub(
       hub,
       {2, Clock{{0xAA, 1}},
-       IdConnectionInfoMap{{0xAA, {.distance = 2, .version = Clock{{0xAA, 1}}}}}
-      }
+       IdConnectionInfoMap{{0xAA, {.distance = 2, .clock = Clock{{0xAA, 1}}}}}}
     ))
   )
     .Times(1)
     .WillOnce(Return(BrokerStub(
       bb,
       {1, Clock{{0xBB, 1}},
-       IdConnectionInfoMap{{0xBB, {.distance = 1, .version = Clock{{0xBB, 1}}}}}
-      }
+       IdConnectionInfoMap{{0xBB, {.distance = 1, .clock = Clock{{0xBB, 1}}}}}}
     )));
   EXPECT_CALL(*bb, insert(EntryList{aaEntry}, 1))
     .Times(1)
@@ -277,18 +275,18 @@ TEST(Broker, ExchangeEntriesOnConnect)
   EXPECT_EQ(
     hub->sources(),
     SourcesMap(
-      {{1, IdConnectionInfoMap(
-             {{0xAA,
-               ConnectionInfo{
-                 .distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}
-               }}}
-           )},
-       {2, IdConnectionInfoMap(
-             {{0xBB,
-               ConnectionInfo{
-                 .distance = 1, .version = Clock{{0xAA, 1}, {0xBB, 1}}
-               }}}
-           )}}
+      {{1,
+        IdConnectionInfoMap(
+          {{0xAA,
+            ConnectionInfo{.distance = 1, .clock = Clock{{0xAA, 1}, {0xBB, 1}}}}
+          }
+        )},
+       {2,
+        IdConnectionInfoMap(
+          {{0xBB,
+            ConnectionInfo{.distance = 1, .clock = Clock{{0xAA, 1}, {0xBB, 1}}}}
+          }
+        )}}
     )
   );
   ASSERT_EQ(
@@ -320,7 +318,7 @@ TEST(Broker, PropagatesProvidedConnections)
       BrokerStub(
         broker,
         {1, Clock{{0xAA, 1}},
-         IdConnectionInfoMap{{0xAA, {.distance = 2, .version = {{0xAA, 1}}}}}}
+         IdConnectionInfoMap{{0xAA, {.distance = 2, .clock = {{0xAA, 1}}}}}}
       ),
       1
     )

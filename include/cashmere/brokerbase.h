@@ -27,7 +27,7 @@ namespace Cashmere
 struct CASHMERE_EXPORT ConnectionInfo
 {
   int16_t distance;
-  Clock version;
+  Clock clock;
   bool operator==(const ConnectionInfo& other) const;
   bool operator<(const ConnectionInfo& other) const;
   CASHMERE_EXPORT friend std::ostream&
@@ -81,27 +81,23 @@ public:
 
   BrokerStub& connect(BrokerStub conn);
   bool refresh(const BrokerStub& conn) const;
-  void disconnect();
-
   Clock insert(const Entry& data) const;
   Clock insert(const EntryList& data) const;
-  EntryList entries(const Clock& clock = {}) const;
-  bool active() const;
 
+  EntryList query(const Clock& clock = {}) const;
+  Clock& clock(Origin origin = Origin::Cache) const;
   Clock relay(const Data& entry) const;
 
-  bool valid() const;
-
-  std::string url() const;
-  Type type() const;
-
-  void reset();
-  virtual BrokerBasePtr broker() const;
-
-  Source& source() const;
-  Clock& version(Origin origin = Origin::Cache) const;
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
 
+  void disconnect();
+  bool active() const;
+  bool valid() const;
+  std::string url() const;
+  Type type() const;
+  void reset();
+  virtual BrokerBasePtr broker() const;
+  Source& source() const;
   void setData(const ConnectionData& data);
   ConnectionData data() const;
   std::string str() const;
