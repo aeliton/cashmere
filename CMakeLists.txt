@@ -195,9 +195,9 @@ enable_testing()
 add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokergrpcstub.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokerstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_command.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_connection.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_entry.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journal.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journalfile.cpp
