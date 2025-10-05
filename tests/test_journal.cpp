@@ -163,7 +163,7 @@ TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
   aa->append(10);
 
   aa->connect(BrokerStub(
-    bb, {1, Clock{}, IdConnectionInfoMap{{0xBB, {.distance = 1, .clock = {}}}}}
+    bb, 1, Clock{}, IdConnectionInfoMap{{0xBB, {.distance = 1, .clock = {}}}}
   ));
 
   const auto sources = SourcesMap{

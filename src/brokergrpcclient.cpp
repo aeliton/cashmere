@@ -65,8 +65,8 @@ Clock BrokerGrpcClient::relay(const Data& entry, Source sender)
   return _stub->relay(entry, sender);
 }
 
-BrokerStub BrokerGrpcClient::stub(const ConnectionData& data)
+BrokerStub BrokerGrpcClient::stub()
 {
-  return _stub->stub(data);
+  return _stub->stub();
 }
 }

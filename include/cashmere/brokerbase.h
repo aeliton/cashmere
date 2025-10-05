@@ -45,26 +45,6 @@ using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 class BrokerStub;
 using BrokerStubPtr = std::shared_ptr<BrokerStub>;
 
-class CASHMERE_EXPORT ConnectionData
-{
-public:
-  ConnectionData();
-  ConnectionData(Source source, Clock version, IdConnectionInfoMap sources);
-
-  Source& source();
-  Clock& version();
-  IdConnectionInfoMap& sources();
-
-  bool operator==(const ConnectionData& other) const;
-  CASHMERE_EXPORT friend std::ostream&
-  operator<<(std::ostream& os, const ConnectionData& Data);
-
-private:
-  Source _source = 0;
-  Clock _version = {};
-  IdConnectionInfoMap _sources = {};
-};
-
 class CASHMERE_EXPORT BrokerStub
 {
 public:
@@ -83,11 +63,12 @@ public:
   virtual ~BrokerStub();
 
   explicit BrokerStub();
+  explicit BrokerStub(BrokerBasePtr broker, Type type = Type::Memory);
   explicit BrokerStub(
-    BrokerBasePtr broker, const ConnectionData& data = {},
-    Type type = Type::Memory
+    BrokerBasePtr broker, Source source, const Clock& version,
+    const IdConnectionInfoMap& sources
   );
-  explicit BrokerStub(const std::string& url, const ConnectionData& data = {});
+  explicit BrokerStub(const std::string& url);
 
   BrokerStub& connect(BrokerStub conn);
   bool refresh(const BrokerStub& conn) const;
@@ -99,9 +80,6 @@ public:
   Clock relay(const Data& entry) const;
 
   IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
-
-  void setData(const ConnectionData& data);
-  ConnectionData data() const;
 
   void disconnect();
   bool valid() const;
@@ -120,7 +98,9 @@ private:
   virtual BrokerBasePtr broker() const;
   std::string _url;
   Type _type;
-  mutable ConnectionData _cache;
+  mutable Source _source;
+  mutable Clock _version;
+  mutable IdConnectionInfoMap _sources;
   BrokerBaseWeakPtr _memoryStub;
   BrokerBasePtr _grpcStub;
 };
@@ -140,7 +120,7 @@ public:
   virtual IdClockMap versions() const = 0;
   virtual SourcesMap sources(Source sender = 0) const = 0;
   virtual Clock relay(const Data& entry, Source sender) = 0;
-  virtual BrokerStub stub(const ConnectionData& data = {}) = 0;
+  virtual BrokerStub stub() = 0;
 };
 
 CASHMERE_EXPORT std::ostream&

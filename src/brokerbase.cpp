@@ -23,58 +23,49 @@
 namespace Cashmere
 {
 
-ConnectionData::ConnectionData() = default;
-
-ConnectionData::ConnectionData(
-  Source source, Clock version, IdConnectionInfoMap sources
-)
-  : _source(source)
-  , _version(version)
-  , _sources(sources)
-{
-}
-
-Source& ConnectionData::source()
-{
-  return _source;
-}
-
-Clock& ConnectionData::version()
-{
-  return _version;
-}
-
-IdConnectionInfoMap& ConnectionData::sources()
-{
-  return _sources;
-}
-
 BrokerStub::~BrokerStub() = default;
 
 BrokerStub::BrokerStub()
   : _url()
   , _type(Type::Invalid)
-  , _cache()
-  , _memoryStub()
+  , _source(0)
+  , _version()
+  , _sources()
   , _grpcStub()
 {
 }
 
-BrokerStub::BrokerStub(
-  BrokerBasePtr broker, const ConnectionData& data, Type type
-)
+BrokerStub::BrokerStub(BrokerBasePtr broker, Type type)
   : _url()
   , _type(type)
-  , _cache(data)
-  , _memoryStub(_type == Type::Memory ? broker : nullptr)
-  , _grpcStub(_type == Type::Grpc ? broker : nullptr)
+  , _source(0)
+  , _version()
+  , _sources()
+  , _memoryStub(type == Type::Memory ? broker : nullptr)
+  , _grpcStub(type == Type::Grpc ? broker : nullptr)
 {
 }
 
-BrokerStub::BrokerStub(const std::string& url, const ConnectionData& data)
+BrokerStub::BrokerStub(
+  BrokerBasePtr broker, Source source, const Clock& version,
+  const IdConnectionInfoMap& sources
+)
+  : _url()
+  , _type(Type::Memory)
+  , _source(source)
+  , _version(version)
+  , _sources(sources)
+  , _memoryStub(broker)
+  , _grpcStub()
+{
+}
+
+BrokerStub::BrokerStub(const std::string& url)
   : _url(url)
   , _type(Type::Grpc)
-  , _cache(data)
+  , _source(0)
+  , _version()
+  , _sources()
   , _memoryStub()
   , _grpcStub(std::make_shared<BrokerGrpcStub>(url))
 {
@@ -102,47 +93,37 @@ std::string BrokerStub::url() const
   return _url;
 }
 
-void BrokerStub::setData(const ConnectionData& data)
-{
-  _cache = data;
-}
-
-ConnectionData BrokerStub::data() const
-{
-  return _cache;
-}
-
 Source& BrokerStub::source() const
 {
-  return _cache.source();
+  return _source;
 }
 
 Clock& BrokerStub::clock(Origin origin) const
 {
   if (origin == Origin::Remote) {
-    _cache.version() = broker()->clock();
+    _version = broker()->clock();
   }
-  return _cache.version();
+  return _version;
 }
 
 IdConnectionInfoMap& BrokerStub::provides(Origin origin) const
 {
   if (origin == Origin::Remote) {
-    for (auto& [port, sources] : broker()->sources(_cache.source())) {
+    for (auto& [port, sources] : broker()->sources(_source)) {
       for (auto& [id, data] : sources) {
         ++data.distance;
-        _cache.version() = _cache.version().merge(data.clock);
+        _version = _version.merge(data.clock);
       }
-      _cache.sources().merge(sources);
+      _sources.merge(sources);
     }
   }
-  return _cache.sources();
+  return _sources;
 }
 
 void BrokerStub::disconnect()
 {
   if (auto b = broker()) {
-    b->refresh(BrokerStub(), _cache.source());
+    b->refresh(BrokerStub(), _source);
     reset();
   }
 }
@@ -153,21 +134,21 @@ Clock BrokerStub::insert(const Entry& data) const
   if (!source) {
     return {};
   }
-  auto clock = source->insert(data, _cache.source());
+  auto clock = source->insert(data, _source);
   if (!clock.valid()) {
     return {};
   }
-  for (auto& [id, info] : _cache.sources()) {
+  for (auto& [id, info] : _sources) {
     info.clock = info.clock.merge(data.clock);
   }
-  return _cache.version() = clock;
+  return _version = clock;
 }
 
 Clock BrokerStub::insert(const EntryList& data) const
 {
-  auto clock = broker()->insert(data, _cache.source());
+  auto clock = broker()->insert(data, _source);
   if (clock.valid()) {
-    for (auto& [id, info] : _cache.sources()) {
+    for (auto& [id, info] : _sources) {
       info.clock = info.clock.merge(clock);
     }
   }
@@ -176,12 +157,12 @@ Clock BrokerStub::insert(const EntryList& data) const
 
 EntryList BrokerStub::query(const Clock& clock) const
 {
-  return broker()->query(clock, _cache.source());
+  return broker()->query(clock, _source);
 }
 
 Clock BrokerStub::relay(const Data& entry) const
 {
-  return broker()->relay(entry, _cache.source());
+  return broker()->relay(entry, _source);
 }
 
 bool BrokerStub::valid() const
@@ -199,28 +180,26 @@ std::string BrokerStub::str() const
 BrokerStub& BrokerStub::connect(BrokerStub data)
 {
   auto other = broker()->connect(data);
-  setData(other.data());
+  _source = other._source;
+  _version = other._version;
+  _sources = other._sources;
   return *this;
 }
 
 bool BrokerStub::refresh(const BrokerStub& data) const
 {
   if (auto source = broker()) {
-    return source->refresh(data, _cache.source());
+    return source->refresh(data, _source);
   }
   return false;
 }
 
 bool BrokerStub::operator==(const BrokerStub& other) const
 {
-  return _cache == other._cache && _type == other._type && _url == other._url &&
+  return _type == other._type && _url == other._url &&
          _memoryStub.lock() == other._memoryStub.lock() &&
-         _grpcStub == other._grpcStub;
-}
-
-bool ConnectionData::operator==(const ConnectionData& other) const
-{
-  return _version == other._version && _sources == other._sources;
+         _grpcStub == other._grpcStub && _version == other._version &&
+         _sources == other._sources && _source == other._source;
 }
 
 BrokerBase::~BrokerBase() = default;
@@ -280,17 +259,11 @@ std::ostream& operator<<(std::ostream& os, const IdClockMap& data)
   return os << "}";
 }
 
-std::ostream& operator<<(std::ostream& os, const ConnectionData& info)
-{
-  return os << "ConnectionData{ .source = " << info._source
-            << ".version= " << info._version
-            << ", .provides = " << info._sources << "}";
-}
-
 std::ostream& operator<<(std::ostream& os, const BrokerStub& info)
 {
-  return os << "BrokerStub{_cache: " << info._cache << ", url: " << info._url
-            << "}";
+  return os << "BrokerStub{ .url: " << info._url
+            << ", .source = " << info._source << ".version= " << info._version
+            << ", .provides = " << info._sources << "}";
 }
 
 }
