@@ -45,14 +45,24 @@ using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 class BrokerStub;
 using BrokerStubPtr = std::shared_ptr<BrokerStub>;
 
-struct CASHMERE_EXPORT ConnectionData
+class CASHMERE_EXPORT ConnectionData
 {
-  Source source = 0;
-  Clock version = {};
-  IdConnectionInfoMap sources = {};
+public:
+  ConnectionData();
+  ConnectionData(Source source, Clock version, IdConnectionInfoMap sources);
+
+  Source& source();
+  Clock& version();
+  IdConnectionInfoMap& sources();
+
   bool operator==(const ConnectionData& other) const;
   CASHMERE_EXPORT friend std::ostream&
   operator<<(std::ostream& os, const ConnectionData& Data);
+
+private:
+  Source _source = 0;
+  Clock _version = {};
+  IdConnectionInfoMap _sources = {};
 };
 
 class CASHMERE_EXPORT BrokerStub

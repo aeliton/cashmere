@@ -23,6 +23,32 @@
 namespace Cashmere
 {
 
+ConnectionData::ConnectionData() = default;
+
+ConnectionData::ConnectionData(
+  Source source, Clock version, IdConnectionInfoMap sources
+)
+  : _source(source)
+  , _version(version)
+  , _sources(sources)
+{
+}
+
+Source& ConnectionData::source()
+{
+  return _source;
+}
+
+Clock& ConnectionData::version()
+{
+  return _version;
+}
+
+IdConnectionInfoMap& ConnectionData::sources()
+{
+  return _sources;
+}
+
 BrokerStub::~BrokerStub() = default;
 
 BrokerStub::BrokerStub()
@@ -88,35 +114,35 @@ ConnectionData BrokerStub::data() const
 
 Source& BrokerStub::source() const
 {
-  return _cache.source;
+  return _cache.source();
 }
 
 Clock& BrokerStub::clock(Origin origin) const
 {
   if (origin == Origin::Remote) {
-    _cache.version = broker()->clock();
+    _cache.version() = broker()->clock();
   }
-  return _cache.version;
+  return _cache.version();
 }
 
 IdConnectionInfoMap& BrokerStub::provides(Origin origin) const
 {
   if (origin == Origin::Remote) {
-    for (auto& [port, sources] : broker()->sources(_cache.source)) {
+    for (auto& [port, sources] : broker()->sources(_cache.source())) {
       for (auto& [id, data] : sources) {
         ++data.distance;
-        _cache.version = _cache.version.merge(data.clock);
+        _cache.version() = _cache.version().merge(data.clock);
       }
-      _cache.sources.merge(sources);
+      _cache.sources().merge(sources);
     }
   }
-  return _cache.sources;
+  return _cache.sources();
 }
 
 void BrokerStub::disconnect()
 {
   if (auto b = broker()) {
-    b->refresh(BrokerStub(), _cache.source);
+    b->refresh(BrokerStub(), _cache.source());
     reset();
   }
 }
@@ -127,21 +153,21 @@ Clock BrokerStub::insert(const Entry& data) const
   if (!source) {
     return {};
   }
-  auto clock = source->insert(data, _cache.source);
+  auto clock = source->insert(data, _cache.source());
   if (!clock.valid()) {
     return {};
   }
-  for (auto& [id, info] : _cache.sources) {
+  for (auto& [id, info] : _cache.sources()) {
     info.clock = info.clock.merge(data.clock);
   }
-  return _cache.version = clock;
+  return _cache.version() = clock;
 }
 
 Clock BrokerStub::insert(const EntryList& data) const
 {
-  auto clock = broker()->insert(data, _cache.source);
+  auto clock = broker()->insert(data, _cache.source());
   if (clock.valid()) {
-    for (auto& [id, info] : _cache.sources) {
+    for (auto& [id, info] : _cache.sources()) {
       info.clock = info.clock.merge(clock);
     }
   }
@@ -150,12 +176,12 @@ Clock BrokerStub::insert(const EntryList& data) const
 
 EntryList BrokerStub::query(const Clock& clock) const
 {
-  return broker()->query(clock, _cache.source);
+  return broker()->query(clock, _cache.source());
 }
 
 Clock BrokerStub::relay(const Data& entry) const
 {
-  return broker()->relay(entry, _cache.source);
+  return broker()->relay(entry, _cache.source());
 }
 
 bool BrokerStub::valid() const
@@ -180,7 +206,7 @@ BrokerStub& BrokerStub::connect(BrokerStub data)
 bool BrokerStub::refresh(const BrokerStub& data) const
 {
   if (auto source = broker()) {
-    return source->refresh(data, _cache.source);
+    return source->refresh(data, _cache.source());
   }
   return false;
 }
@@ -194,7 +220,7 @@ bool BrokerStub::operator==(const BrokerStub& other) const
 
 bool ConnectionData::operator==(const ConnectionData& other) const
 {
-  return version == other.version && sources == other.sources;
+  return _version == other._version && _sources == other._sources;
 }
 
 BrokerBase::~BrokerBase() = default;
@@ -256,9 +282,9 @@ std::ostream& operator<<(std::ostream& os, const IdClockMap& data)
 
 std::ostream& operator<<(std::ostream& os, const ConnectionData& info)
 {
-  return os << "ConnectionData{ .source = " << info.source
-            << ".version= " << info.version << ", .provides = " << info.sources
-            << "}";
+  return os << "ConnectionData{ .source = " << info._source
+            << ".version= " << info._version
+            << ", .provides = " << info._sources << "}";
 }
 
 std::ostream& operator<<(std::ostream& os, const BrokerStub& info)
