@@ -41,7 +41,7 @@ public:
   MOCK_METHOD(
     bool, refresh, (const BrokerStub& data, Source source), (override)
   );
-  MOCK_METHOD(BrokerStub, stub, (const ConnectionData& data), (override));
+  MOCK_METHOD(BrokerStub, stub, (), (override));
   MOCK_METHOD(Clock, relay, (const Data& data, Source source), (override));
 };
 

@@ -114,13 +114,13 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
 
   EXPECT_CALL(
     *broker, connect(BrokerStub(
-               journal, {1, {}, {{kFixtureId, {.distance = 1, .clock = {}}}}}
+               journal, 1, {}, {{kFixtureId, {.distance = 1, .clock = {}}}}
              ))
   )
     .Times(1)
     .WillOnce(Return(BrokerStub(
-      broker,
-      {1, Clock{{0xBB, 1}}, IdConnectionInfoMap{{0xBB, {1, Clock{{0xBB, 1}}}}}}
+      broker, 1, Clock{{0xBB, 1}},
+      IdConnectionInfoMap{{0xBB, {1, Clock{{0xBB, 1}}}}}
     )));
   EXPECT_CALL(*broker, query(Clock{}, 1))
     .Times(1)

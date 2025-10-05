@@ -118,7 +118,9 @@ BrokerGrpc::Impl::Impl()
       request->broker().url(), request->source(), version.str()
     );
 
-    stub.setData({request->source(), version, sources});
+    stub.source() = request->source();
+    stub.clock() = version;
+    stub.provides() = sources;
 
     BrokerStub out = broker()->connect(stub);
 
@@ -244,9 +246,9 @@ BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
 {
 }
 
-BrokerStub BrokerGrpc::stub(const ConnectionData& data)
+BrokerStub BrokerGrpc::stub()
 {
-  return BrokerStub(_hostname + ":" + std::to_string(_port), data);
+  return BrokerStub(_hostname + ":" + std::to_string(_port));
 }
 
 std::thread BrokerGrpc::start()

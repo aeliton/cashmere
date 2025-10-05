@@ -47,7 +47,7 @@ public:
   virtual std::set<Source> connectedPorts() const;
 
   virtual BrokerBasePtr ptr();
-  virtual BrokerStub stub(const ConnectionData& data = {}) override;
+  virtual BrokerStub stub() override;
 
   BrokerStub connect(BrokerStub conn) override;
 

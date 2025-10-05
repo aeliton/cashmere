@@ -40,7 +40,7 @@ public:
 
   virtual BrokerStub connect(BrokerStub conn) override;
   virtual bool refresh(const BrokerStub& conn, Source sender) override;
-  virtual BrokerStub stub(const ConnectionData& data = {}) override;
+  virtual BrokerStub stub() override;
   virtual Clock relay(const Data& entry, Source sender) override;
 
 private:
