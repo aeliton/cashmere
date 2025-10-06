@@ -37,11 +37,11 @@ public:
   MOCK_METHOD(SourcesMap, sources, (Source to), (const, override));
   MOCK_METHOD(IdClockMap, versions, (), (const, override));
   MOCK_METHOD(Clock, clock, (), (const, override));
-  MOCK_METHOD(BrokerStub, connect, (BrokerStub conn), (override));
+  MOCK_METHOD(Connection, connect, (Connection conn), (override));
   MOCK_METHOD(
-    bool, refresh, (const BrokerStub& data, Source source), (override)
+    bool, refresh, (const Connection& data, Source source), (override)
   );
-  MOCK_METHOD(BrokerStub, stub, (), (override));
+  MOCK_METHOD(Connection, stub, (), (override));
   MOCK_METHOD(Clock, relay, (const Data& data, Source source), (override));
 };
 

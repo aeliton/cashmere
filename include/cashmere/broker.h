@@ -43,13 +43,13 @@ public:
   query(const Clock& from = {}, Source sender = 0) const override;
 
   Source disconnect(Source source);
-  virtual bool refresh(const BrokerStub& conn, Source source) override;
+  virtual bool refresh(const Connection& conn, Source source) override;
   virtual std::set<Source> connectedPorts() const;
 
   virtual BrokerBasePtr ptr();
-  virtual BrokerStub stub() override;
+  virtual Connection stub() override;
 
-  BrokerStub connect(BrokerStub conn) override;
+  Connection connect(Connection conn) override;
 
   Clock relay(const Data& entry, Source sender) override;
 
@@ -57,7 +57,7 @@ private:
   void refreshConnections(Source ignore = 0);
   void setClock(const Clock& clock);
 
-  std::vector<BrokerStub> _connections;
+  std::vector<Connection> _connections;
 };
 
 }

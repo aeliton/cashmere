@@ -23,9 +23,9 @@
 namespace Cashmere
 {
 
-BrokerStub::~BrokerStub() = default;
+Connection::~Connection() = default;
 
-BrokerStub::BrokerStub()
+Connection::Connection()
   : _url()
   , _type(Type::Invalid)
   , _source(0)
@@ -35,7 +35,7 @@ BrokerStub::BrokerStub()
 {
 }
 
-BrokerStub::BrokerStub(BrokerBasePtr broker, Type type)
+Connection::Connection(BrokerBasePtr broker, Type type)
   : _url()
   , _type(type)
   , _source(0)
@@ -46,7 +46,7 @@ BrokerStub::BrokerStub(BrokerBasePtr broker, Type type)
 {
 }
 
-BrokerStub::BrokerStub(
+Connection::Connection(
   BrokerBasePtr broker, Source source, const Clock& version,
   const IdConnectionInfoMap& sources
 )
@@ -60,7 +60,7 @@ BrokerStub::BrokerStub(
 {
 }
 
-BrokerStub::BrokerStub(const std::string& url)
+Connection::Connection(const std::string& url)
   : _url(url)
   , _type(Type::Grpc)
   , _source(0)
@@ -71,34 +71,34 @@ BrokerStub::BrokerStub(const std::string& url)
 {
 }
 
-BrokerStub::Type BrokerStub::type() const
+Connection::Type Connection::type() const
 {
   return _type;
 }
 
-void BrokerStub::reset()
+void Connection::reset()
 {
   if (_type == Type::Memory) {
     _memoryStub.reset();
   }
 }
 
-BrokerBasePtr BrokerStub::broker() const
+BrokerBasePtr Connection::broker() const
 {
   return _type == Type::Memory ? _memoryStub.lock() : _grpcStub;
 }
 
-std::string BrokerStub::url() const
+std::string Connection::url() const
 {
   return _url;
 }
 
-Source& BrokerStub::source() const
+Source& Connection::source() const
 {
   return _source;
 }
 
-Clock& BrokerStub::clock(Origin origin) const
+Clock& Connection::clock(Origin origin) const
 {
   if (origin == Origin::Remote) {
     _version = broker()->clock();
@@ -106,7 +106,7 @@ Clock& BrokerStub::clock(Origin origin) const
   return _version;
 }
 
-IdConnectionInfoMap& BrokerStub::provides(Origin origin) const
+IdConnectionInfoMap& Connection::provides(Origin origin) const
 {
   if (origin == Origin::Remote) {
     for (auto& [port, sources] : broker()->sources(_source)) {
@@ -120,15 +120,15 @@ IdConnectionInfoMap& BrokerStub::provides(Origin origin) const
   return _sources;
 }
 
-void BrokerStub::disconnect()
+void Connection::disconnect()
 {
   if (auto b = broker()) {
-    b->refresh(BrokerStub(), _source);
+    b->refresh(Connection(), _source);
     reset();
   }
 }
 
-Clock BrokerStub::insert(const Entry& data) const
+Clock Connection::insert(const Entry& data) const
 {
   auto source = broker();
   if (!source) {
@@ -144,7 +144,7 @@ Clock BrokerStub::insert(const Entry& data) const
   return _version = clock;
 }
 
-Clock BrokerStub::insert(const EntryList& data) const
+Clock Connection::insert(const EntryList& data) const
 {
   auto clock = broker()->insert(data, _source);
   if (clock.valid()) {
@@ -155,29 +155,29 @@ Clock BrokerStub::insert(const EntryList& data) const
   return clock;
 }
 
-EntryList BrokerStub::query(const Clock& clock) const
+EntryList Connection::query(const Clock& clock) const
 {
   return broker()->query(clock, _source);
 }
 
-Clock BrokerStub::relay(const Data& entry) const
+Clock Connection::relay(const Data& entry) const
 {
   return broker()->relay(entry, _source);
 }
 
-bool BrokerStub::valid() const
+bool Connection::valid() const
 {
-  return _type != BrokerStub::Type::Invalid && broker() != nullptr;
+  return _type != Connection::Type::Invalid && broker() != nullptr;
 }
 
-std::string BrokerStub::str() const
+std::string Connection::str() const
 {
   std::stringstream ss;
   ss << *this;
   return ss.str();
 }
 
-BrokerStub& BrokerStub::connect(BrokerStub data)
+Connection& Connection::connect(Connection data)
 {
   auto other = broker()->connect(data);
   _source = other._source;
@@ -186,7 +186,7 @@ BrokerStub& BrokerStub::connect(BrokerStub data)
   return *this;
 }
 
-bool BrokerStub::refresh(const BrokerStub& data) const
+bool Connection::refresh(const Connection& data) const
 {
   if (auto source = broker()) {
     return source->refresh(data, _source);
@@ -194,7 +194,7 @@ bool BrokerStub::refresh(const BrokerStub& data) const
   return false;
 }
 
-bool BrokerStub::operator==(const BrokerStub& other) const
+bool Connection::operator==(const Connection& other) const
 {
   return _type == other._type && _url == other._url &&
          _memoryStub.lock() == other._memoryStub.lock() &&
@@ -259,9 +259,9 @@ std::ostream& operator<<(std::ostream& os, const IdClockMap& data)
   return os << "}";
 }
 
-std::ostream& operator<<(std::ostream& os, const BrokerStub& info)
+std::ostream& operator<<(std::ostream& os, const Connection& info)
 {
-  return os << "BrokerStub{ .url: " << info._url
+  return os << "Connection{ .url: " << info._url
             << ", .source = " << info._source << ".version= " << info._version
             << ", .provides = " << info._sources << "}";
 }
