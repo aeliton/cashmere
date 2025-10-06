@@ -20,8 +20,8 @@
 
 using namespace Cashmere;
 
-TEST(BrokerStub, DefaultCreatedStubIsInvalid)
+TEST(Connection, DefaultCreatedStubIsInvalid)
 {
-  const BrokerStub stub;
+  const Connection stub;
   ASSERT_THAT(stub.valid(), false);
 }

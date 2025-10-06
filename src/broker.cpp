@@ -26,14 +26,14 @@ IdConnectionInfoMap UpdateProvides(SourcesMap provides);
 
 Broker::Broker()
 {
-  _connections.push_back(BrokerStub{});
+  _connections.push_back(Connection{});
 }
 
 Broker::~Broker() = default;
 
-BrokerStub Broker::connect(BrokerStub conn)
+Connection Broker::connect(Connection conn)
 {
-  BrokerStub out(stub());
+  Connection out(stub());
 
   if (conn.source() == 0) {
     if (!conn.valid()) {
@@ -79,7 +79,7 @@ BrokerStub Broker::connect(BrokerStub conn)
   return out;
 }
 
-bool Broker::refresh(const BrokerStub& data, Source sender)
+bool Broker::refresh(const Connection& data, Source sender)
 {
   if (sender <= 0 || static_cast<size_t>(sender) >= _connections.size()) {
     return false;
@@ -260,8 +260,8 @@ Clock Broker::relay(const Data& entry, Source sender)
   return _connections.at(shortestDistancePort).relay(entry);
 }
 
-BrokerStub Broker::stub()
+Connection Broker::stub()
 {
-  return BrokerStub(ptr());
+  return Connection(ptr());
 }
 }

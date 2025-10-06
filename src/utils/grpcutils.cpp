@@ -137,9 +137,9 @@ void SetSources(
   }
 }
 
-BrokerStub BrokerStubFrom(const Grpc::BrokerData& data)
+Connection ConnectionFrom(const Grpc::BrokerData& data)
 {
-  return BrokerStub(data.url());
+  return Connection(data.url());
 }
 
 }

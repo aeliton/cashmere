@@ -75,7 +75,7 @@ void RunCommand(const Options& options)
     case Command::Type::Invalid:
       break;
     case Command::Type::Connect:
-      stub.connect(BrokerStub(options.command.url));
+      stub.connect(Connection(options.command.url));
       break;
     case Command::Type::Disconnect:
       break;
@@ -110,7 +110,7 @@ void RunService(const Options& options)
     options.id, options.dbPath.empty() ? tempDir.directory : options.dbPath
   );
 
-  journal->connect(BrokerStub{broker});
+  journal->connect(Connection{broker});
 
   std::thread brokerThread = broker->start();
 
@@ -126,7 +126,7 @@ void RunService(const Options& options)
         break;
       case Command::Type::Connect:
       {
-        const auto conn = broker->connect(BrokerStub(command.url));
+        const auto conn = broker->connect(Connection(command.url));
         if (!conn.valid()) {
           std::println("{}: failed {}", command.name(), options.source);
         }

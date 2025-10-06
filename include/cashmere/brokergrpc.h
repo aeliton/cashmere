@@ -36,7 +36,7 @@ public:
   std::thread start();
   void stop();
 
-  BrokerStub stub() override;
+  Connection stub() override;
 
 private:
   std::string _hostname;
