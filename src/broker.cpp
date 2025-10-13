@@ -26,14 +26,14 @@ IdConnectionInfoMap UpdateProvides(SourcesMap provides);
 
 Broker::Broker()
 {
-  _connections.push_back(BrokerStub{});
+  _connections.push_back(Connection{});
 }
 
 Broker::~Broker() = default;
 
-BrokerStub Broker::connect(BrokerStub conn)
+Connection Broker::connect(Connection conn)
 {
-  BrokerStub out(stub());
+  Connection out(stub());
 
   if (conn.source() == 0) {
     if (!conn.valid()) {
@@ -46,9 +46,11 @@ BrokerStub Broker::connect(BrokerStub conn)
 
     auto& conn = _connections.at(out.source());
 
-    conn.connect(
-      stub({out.source(), clock(), UpdateProvides(sources(out.source()))})
-    );
+    auto s = stub();
+    s.source() = out.source();
+    s.clock() = clock();
+    s.provides() = UpdateProvides(sources(out.source()));
+    conn.connect(s);
 
     auto thisEntries = query(conn.clock(), out.source());
     auto brokerEntries = conn.query(clock());
@@ -77,12 +79,15 @@ BrokerStub Broker::connect(BrokerStub conn)
   return out;
 }
 
-bool Broker::refresh(const BrokerStub& data, Source sender)
+bool Broker::refresh(const Connection& data, Source sender)
 {
   if (sender <= 0 || static_cast<size_t>(sender) >= _connections.size()) {
     return false;
   }
-  _connections[sender].setData(data.data());
+
+  _connections[sender].source() = data.source();
+  _connections[sender].clock() = data.clock();
+  _connections[sender].provides() = data.provides();
 
   refreshConnections(sender);
   return true;
@@ -220,9 +225,11 @@ void Broker::refreshConnections(Source ignore)
       continue;
     }
     auto& conn = _connections.at(i);
-    conn.refresh(
-      stub({static_cast<Source>(i), clock(), UpdateProvides(sources(i))})
-    );
+    auto s = stub();
+    s.source() = static_cast<Source>(i);
+    s.clock() = clock();
+    s.provides() = UpdateProvides(sources(i));
+    conn.refresh(s);
   }
 }
 
@@ -253,8 +260,8 @@ Clock Broker::relay(const Data& entry, Source sender)
   return _connections.at(shortestDistancePort).relay(entry);
 }
 
-BrokerStub Broker::stub(const ConnectionData& data)
+Connection Broker::stub()
 {
-  return BrokerStub(ptr(), data);
+  return Connection(ptr());
 }
 }
