@@ -31,9 +31,6 @@
 
 #include <editline/readline.h>
 
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
-
 namespace
 {
 struct TempDir
@@ -46,8 +43,6 @@ struct TempDir
 
 using namespace Cashmere;
 
-namespace lg = spdlog;
-
 void RunService(const Options& options);
 void RunCommand(const Options& options);
 
@@ -55,8 +50,6 @@ void PrintCommands();
 
 int main(int argc, char* argv[])
 {
-  lg::set_default_logger(lg::stderr_color_mt("log"));
-
   Options options(argc, argv);
   if (!options.ok()) {
     std::println(
@@ -82,20 +75,17 @@ void RunCommand(const Options& options)
     case Command::Type::Invalid:
       break;
     case Command::Type::Connect:
-      lg::info("connect to {}", options.command.url);
       stub.connect(BrokerStub(options.command.url));
       break;
     case Command::Type::Disconnect:
       break;
     case Command::Type::Append:
       if (!stub.relay(options.command.data, 0).valid()) {
-        lg::error("add command failed!");
         exit(EXIT_FAILURE);
       }
       break;
     case Command::Type::Relay:
       if (!stub.relay(options.command.data, 0).valid()) {
-        lg::error("relay command failed!");
         exit(EXIT_FAILURE);
       }
       break;
@@ -121,11 +111,6 @@ void RunService(const Options& options)
   );
 
   journal->connect(BrokerStub{broker});
-
-  lg::info(
-    "Journal {:x}, port: {}, path: {}", options.id, options.source,
-    tempDir.directory
-  );
 
   std::thread brokerThread = broker->start();
 

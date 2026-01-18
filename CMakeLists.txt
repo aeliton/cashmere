@@ -29,7 +29,6 @@ else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
-find_package(spdlog REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 
 add_library(cashmere_proto STATIC proto/cashmere.proto)
@@ -85,7 +84,6 @@ target_include_directories(cashmere_objects
 target_link_libraries(cashmere_objects
   PUBLIC
     $<BUILD_LOCAL_INTERFACE:cashmere_proto>
-    spdlog::spdlog
 )
 
 set_target_properties(cashmere_objects cashmere_proto PROPERTIES

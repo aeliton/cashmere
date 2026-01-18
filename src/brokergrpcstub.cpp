@@ -21,9 +21,6 @@
 #include <grpcpp/create_channel.h>
 #include <proto/cashmere.grpc.pb.h>
 #include <proto/cashmere.pb.h>
-#include <spdlog/spdlog.h>
-
-namespace lg = spdlog;
 
 namespace Cashmere
 {
@@ -116,7 +113,6 @@ EntryList BrokerGrpcStub::query(const Clock& from, Source sender) const
 
 BrokerStub BrokerGrpcStub::connect(BrokerStub conn)
 {
-  lg::info("Broker grpc stub connect called with: {}", conn.str());
   ::grpc::ClientContext context;
 
   Grpc::ConnectionRequest request;
@@ -133,11 +129,6 @@ BrokerStub BrokerGrpcStub::connect(BrokerStub conn)
   if (status.ok()) {
     Clock clock = Utils::ClockFrom(response.clock());
     return BrokerStub(_url, {response.source(), clock, {}});
-  } else {
-    lg::error(
-      "BrokerGrpcStub: error {} connecting to {}",
-      static_cast<int>(status.error_code()), conn.url()
-    );
   }
   return BrokerStub{};
 }
@@ -170,11 +161,6 @@ Clock BrokerGrpcStub::relay(const Data& entry, Source sender)
   const auto status = _stub->Relay(&context, request, &response);
   if (status.ok()) {
     return Utils::ClockFrom(response.clock());
-  } else {
-    lg::error(
-      "BrokerGrpcStub: failed relaying message.. status {}",
-      static_cast<int>(status.error_code())
-    );
   }
   return {{0, 0}};
 }

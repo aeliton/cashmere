@@ -17,7 +17,7 @@ FROM ubuntu AS base
 
 RUN apt-get -qy update && \
     apt-get -qy install cmake ninja-build clang clang-tools protobuf-compiler-grpc \
-      libgrpc++-dev libgtest-dev libgmock-dev libedit-dev libspdlog-dev libstdc++-14-dev
+      libgrpc++-dev libgtest-dev libgmock-dev libedit-dev libstdc++-14-dev
 
 RUN printf '#include<print>\nint main(){std::println("");}' \
            | clang++ -std=c++23 -x c++ - -o /dev/null
@@ -37,7 +37,7 @@ RUN cmake --preset release && \
 FROM ubuntu AS runtime
 
 RUN apt-get update -qy && \
-    apt-get install -qy libgrpc++1.51t64 libedit2 libspdlog1.12
+    apt-get install -qy libgrpc++1.51t64 libedit2
 
 COPY --from=build /usr/local/. /usr/local/
 
