@@ -29,9 +29,8 @@ class Random;
 class CASHMERE_EXPORT JournalBase : public Broker
 {
 public:
-  JournalBase();
   virtual ~JournalBase();
-  explicit JournalBase(Id id);
+  explicit JournalBase(Id id = 0);
 
   virtual bool save(const Entry& entry) = 0;
   virtual Data entry(Clock time) const = 0;
@@ -43,12 +42,11 @@ public:
   virtual Clock relay(const Data& data, Source sender) override
   {
     if (data.id == 0) {
-      return Broker::relay({_id, data.value, data.alters}, sender);
+      return Broker::relay({id(), data.value, data.alters}, sender);
     }
     return Broker::relay(data, sender);
   }
 
-  Id id() const;
   Id bookId() const;
   bool append(Amount value);
   bool append(const Data& entry);
@@ -57,8 +55,6 @@ public:
   bool contains(const Clock& clock) const;
 
 private:
-  const Id _id;
-  static std::unique_ptr<Random> _random;
   const Id _bookId;
   Clock _version;
 };

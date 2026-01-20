@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "cashmere/entry.h"
+#include "utils/random.h"
 
 namespace Cashmere
 {
@@ -108,8 +109,10 @@ private:
 class CASHMERE_EXPORT BrokerBase
 {
 public:
+  BrokerBase(Id id = 0);
   virtual ~BrokerBase();
 
+  virtual Id id() const;
   virtual Connection connect(Connection conn) = 0;
   virtual bool refresh(const Connection& conn, Source sender) = 0;
   virtual Clock insert(const Entry& data, Source sender = 0) = 0;
@@ -121,6 +124,10 @@ public:
   virtual SourcesMap sources(Source sender = 0) const = 0;
   virtual Clock relay(const Data& entry, Source sender) = 0;
   virtual Connection stub() = 0;
+
+private:
+  Id _id;
+  static std::unique_ptr<Random> _random;
 };
 
 CASHMERE_EXPORT std::ostream&

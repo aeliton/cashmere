@@ -23,6 +23,8 @@
 namespace Cashmere
 {
 
+std::unique_ptr<Random> BrokerBase::_random = std::make_unique<Random>();
+
 Connection::~Connection() = default;
 
 Connection::Connection()
@@ -202,7 +204,17 @@ bool Connection::operator==(const Connection& other) const
          _sources == other._sources && _source == other._source;
 }
 
+BrokerBase::BrokerBase(Id id)
+  : _id(id > 0UL ? id : _random->next())
+{
+}
+
 BrokerBase::~BrokerBase() = default;
+
+Id BrokerBase::id() const
+{
+  return _id;
+}
 
 Clock BrokerBase::insert(const EntryList& entries, Source sender)
 {

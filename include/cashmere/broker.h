@@ -17,6 +17,7 @@
 #define CASHMERE_BROKER_H
 
 #include "cashmere/brokerbase.h"
+#include "utils/random.h"
 #include <memory>
 #include <vector>
 
@@ -31,7 +32,7 @@ class CASHMERE_EXPORT Broker : public std::enable_shared_from_this<Broker>,
                                public BrokerBase
 {
 public:
-  Broker();
+  Broker(Id id = 0UL);
 
   virtual ~Broker();
 

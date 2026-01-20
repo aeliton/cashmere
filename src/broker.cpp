@@ -24,7 +24,8 @@ namespace Cashmere
 
 IdConnectionInfoMap UpdateProvides(SourcesMap provides);
 
-Broker::Broker()
+Broker::Broker(Id id)
+  : BrokerBase(id)
 {
   _connections.push_back(Connection{});
 }
@@ -264,4 +265,5 @@ Connection Broker::stub()
 {
   return Connection(ptr());
 }
+
 }

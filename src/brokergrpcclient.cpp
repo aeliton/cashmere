@@ -19,7 +19,8 @@
 namespace Cashmere
 {
 BrokerGrpcClient::BrokerGrpcClient(const std::string& hostname, uint16_t port)
-  : _stub(std::make_unique<BrokerGrpcStub>(hostname, port))
+  : BrokerBase()
+  , _stub(std::make_unique<BrokerGrpcStub>(hostname, port))
 {
 }
 
