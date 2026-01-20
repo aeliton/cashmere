@@ -31,6 +31,9 @@ public:
   BrokerGrpcClient(const std::string& hostname, uint16_t port);
 
   ~BrokerGrpcClient();
+  virtual std::string schema() const override {
+    return "";
+  }
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;
   virtual SourcesMap sources(Source sender = 0) const override;

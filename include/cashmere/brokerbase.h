@@ -113,6 +113,8 @@ public:
   virtual ~BrokerBase();
 
   virtual Id id() const;
+  virtual std::string url() const;
+  virtual std::string schema() const = 0;
   virtual Connection connect(Connection conn) = 0;
   virtual bool refresh(const Connection& conn, Source sender) = 0;
   virtual Clock insert(const Entry& data, Source sender = 0) = 0;
@@ -124,7 +126,6 @@ public:
   virtual SourcesMap sources(Source sender = 0) const = 0;
   virtual Clock relay(const Data& entry, Source sender) = 0;
   virtual Connection stub() = 0;
-  virtual std::string url() const;
 
 private:
   Id _id;

@@ -38,6 +38,10 @@ public:
 
   Connection stub() override;
 
+  std::string schema() const override {
+    return "grpc";
+  }
+
 private:
   std::string _hostname;
   uint16_t _port;

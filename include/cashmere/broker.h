@@ -36,6 +36,9 @@ public:
 
   virtual ~Broker();
 
+  static BrokerBasePtr create(auto&& ...);
+
+  virtual std::string schema() const override;
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;
   virtual SourcesMap sources(Source sender = 0) const override;

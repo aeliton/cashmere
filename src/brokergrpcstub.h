@@ -44,6 +44,10 @@ public:
   virtual Connection stub() override;
   virtual Clock relay(const Data& entry, Source sender) override;
 
+  virtual std::string schema() const override {
+    return "";
+  }
+
 private:
   std::string _url;
   std::unique_ptr<Grpc::Broker::StubInterface> _stub;

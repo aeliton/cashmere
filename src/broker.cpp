@@ -266,4 +266,14 @@ Connection Broker::stub()
   return Connection(ptr());
 }
 
+std::string Broker::schema() const
+{
+  return "hub";
+}
+
+BrokerBasePtr Broker::create(auto&& ...)
+{
+  return nullptr;
+}
+
 }

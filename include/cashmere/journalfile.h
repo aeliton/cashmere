@@ -36,6 +36,9 @@ public:
   EntryList entries() const override;
 
   std::string filename() const;
+  std::string schema() const override {
+    return "file";
+  }
 
 private:
   const std::string _location;

@@ -43,6 +43,7 @@ public:
   );
   MOCK_METHOD(Connection, stub, (), (override));
   MOCK_METHOD(Clock, relay, (const Data& data, Source source), (override));
+  MOCK_METHOD(std::string, schema, (), (const, override));
 };
 
 }
