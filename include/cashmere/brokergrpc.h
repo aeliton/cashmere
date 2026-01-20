@@ -32,15 +32,14 @@ public:
   BrokerGrpc(const std::string& hostname, uint16_t port);
 
   ~BrokerGrpc();
+  static BrokerBasePtr create(const std::string& input);
 
   std::thread start();
   void stop();
 
   Connection stub() override;
 
-  std::string schema() const override {
-    return "grpc";
-  }
+  std::string schema() const override;
 
 private:
   std::string _hostname;

@@ -19,6 +19,7 @@
 #include "cashmere/brokerbase.h"
 #include "cashmere/cashmere.h"
 
+#include <functional>
 #include <unordered_map>
 
 namespace Cashmere {
@@ -31,9 +32,11 @@ class BrokerStore {
     static BrokerStorePtr instance();
     static BrokerBasePtr get(Id id);
     static bool load(const std::string& path);
+    BrokerBasePtr build(const std::string& schema, const std::string& input = {}) const;
   private:
     BrokerStore();
     std::unordered_map<Id, BrokerBasePtr> _store;
+    std::unordered_map<std::string, std::function<BrokerBasePtr(const std::string&)>> _builders;
     static BrokerStorePtr _instance;
 };
 

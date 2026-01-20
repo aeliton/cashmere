@@ -16,6 +16,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "cashmere/broker.h"
+#include "cashmere/brokergrpc.h"
+#include "cashmere/journalfile.h"
 #include "core.h"
 
 using namespace Cashmere;
@@ -23,4 +26,28 @@ using namespace Cashmere;
 TEST(BrokerStore, RetrieveInstance)
 {
   ASSERT_TRUE(BrokerStore::instance());
+}
+
+TEST(BrokerStore, CanCreateHubTypeBrokers)
+{
+  auto hub = BrokerStore::instance()->build("hub");
+  ASSERT_TRUE(dynamic_cast<Broker*>(hub.get()));
+}
+
+TEST(BrokerStore, ReturnNullptrForUnknownSchema)
+{
+  auto instance = BrokerStore::instance()->build("_unknown_schema_");
+  ASSERT_EQ(instance, nullptr);
+}
+
+TEST(BrokerStore, CanCreateJournalType)
+{
+  auto instance = BrokerStore::instance()->build("file");
+  ASSERT_TRUE(dynamic_cast<JournalFile*>(instance.get()));
+}
+
+TEST(BrokerStore, CanCreateGrpcType)
+{
+  auto instance = BrokerStore::instance()->build("grpc", "0.0.0.0:9999");
+  ASSERT_TRUE(dynamic_cast<BrokerGrpc*>(instance.get()));
 }

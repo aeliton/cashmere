@@ -36,7 +36,7 @@ public:
 
   virtual ~Broker();
 
-  static BrokerBasePtr create(auto&& ...);
+  static BrokerBasePtr create(const std::string& idStr = std::string());
 
   virtual std::string schema() const override;
   virtual Clock clock() const override;

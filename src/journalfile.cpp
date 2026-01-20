@@ -79,4 +79,15 @@ std::string JournalFile::filename() const
 {
   return Filename(_location, id());
 }
+
+
+BrokerBasePtr JournalFile::create(const std::string& input)
+{
+  return std::make_shared<JournalFile>(input);
+}
+
+std::string JournalFile::schema() const
+{
+  return "file";
+}
 }

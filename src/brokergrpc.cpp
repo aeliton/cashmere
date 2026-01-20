@@ -244,4 +244,20 @@ std::thread BrokerGrpc::start()
 
 BrokerGrpc::~BrokerGrpc() = default;
 
+BrokerBasePtr BrokerGrpc::create(const std::string& input)
+{
+  size_t pos = input.find(':');
+  std::string hostname = input.substr(0, pos);
+  try {
+    uint32_t port = std::stoul(input.substr(pos + 1), nullptr);
+    return std::make_shared<BrokerGrpc>(hostname, port);
+  } catch (std::exception) {
+    return nullptr;
+  }
+}
+
+std::string BrokerGrpc::schema() const
+{
+  return "grpc";
+}
 }

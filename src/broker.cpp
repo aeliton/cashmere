@@ -271,9 +271,14 @@ std::string Broker::schema() const
   return "hub";
 }
 
-BrokerBasePtr Broker::create(auto&& ...)
+BrokerBasePtr Broker::create(const std::string& idStr)
 {
-  return nullptr;
+  Id id = 0;
+  try {
+    id = std::stoul(idStr, nullptr, 16);
+  } catch (std::exception) {
+  }
+  return std::make_shared<Broker>(id);
 }
 
 }
