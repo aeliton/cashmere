@@ -216,6 +216,11 @@ Id BrokerBase::id() const
   return _id;
 }
 
+std::string BrokerBase::url() const
+{
+  return std::format("memory://{}", _id);
+}
+
 Clock BrokerBase::insert(const EntryList& entries, Source sender)
 {
   for (const auto& entry : entries) {
