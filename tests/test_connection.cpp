@@ -13,42 +13,15 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_BROKER_GRPC_H
-#define CASHMERE_BROKER_GRPC_H
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include "cashmere/broker.h"
-#include <thread>
+#include "cashmere/brokerbase.h"
 
-namespace Cashmere
+using namespace Cashmere;
+
+TEST(Connection, StoresUrl)
 {
-
-class BrokerGrpc;
-using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
-using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
-
-class CASHMERE_EXPORT BrokerGrpc : public Broker
-{
-public:
-  BrokerGrpc(const std::string& hostname, uint16_t port);
-
-  ~BrokerGrpc();
-  static BrokerBasePtr create(const Url& url = {});
-
-  std::thread start();
-  void stop();
-
-  Connection stub() override;
-
-  std::string schema() const override;
-
-private:
-  std::string _hostname;
-  uint16_t _port;
-
-  class Impl;
-  std::unique_ptr<Impl> _impl;
-};
-
+  auto conn = Connection("hub://baadcafe");
+  ASSERT_EQ(conn.url(), "hub://baadcafe");
 }
-
-#endif

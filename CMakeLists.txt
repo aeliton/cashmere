@@ -71,6 +71,7 @@ add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/urlutils.cpp
 )
 
 target_include_directories(cashmere_objects
@@ -193,6 +194,7 @@ find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 enable_testing()
 add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_connection.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker_store.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokerstub.cpp
@@ -203,6 +205,7 @@ add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_journalfile.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ledger.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_options.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_urlutils.cpp
 )
 
 target_include_directories(gtests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

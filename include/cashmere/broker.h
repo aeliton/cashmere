@@ -18,6 +18,7 @@
 
 #include "cashmere/brokerbase.h"
 #include "utils/random.h"
+#include "utils/urlutils.h"
 #include <memory>
 #include <vector>
 
@@ -36,7 +37,7 @@ public:
 
   virtual ~Broker();
 
-  static BrokerBasePtr create(const std::string& idStr = std::string());
+  static BrokerBasePtr create(const Url& url = {});
 
   virtual std::string schema() const override;
   virtual Clock clock() const override;

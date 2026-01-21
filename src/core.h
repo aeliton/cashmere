@@ -18,6 +18,7 @@
 
 #include "cashmere/brokerbase.h"
 #include "cashmere/cashmere.h"
+#include "utils/urlutils.h"
 
 #include <functional>
 #include <unordered_map>
@@ -32,11 +33,11 @@ class BrokerStore {
     static BrokerStorePtr instance();
     static BrokerBasePtr get(Id id);
     static bool load(const std::string& path);
-    BrokerBasePtr build(const std::string& schema, const std::string& input = {}) const;
+    BrokerBasePtr build(const std::string& url) const;
   private:
     BrokerStore();
-    std::unordered_map<Id, BrokerBasePtr> _store;
-    std::unordered_map<std::string, std::function<BrokerBasePtr(const std::string&)>> _builders;
+    std::unordered_map<std::string, BrokerBasePtr> _store;
+    std::unordered_map<std::string, std::function<BrokerBasePtr(const Url&)>> _builders;
     static BrokerStorePtr _instance;
 };
 

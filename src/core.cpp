@@ -2,6 +2,7 @@
 #include "cashmere/broker.h"
 #include "cashmere/journalfile.h"
 #include "cashmere/brokergrpc.h"
+#include "utils/urlutils.h"
 
 namespace Cashmere {
 
@@ -30,13 +31,14 @@ BrokerStorePtr BrokerStore::instance() {
 }
 
 
-BrokerBasePtr BrokerStore::build(const std::string& schema, const std::string& input) const
+BrokerBasePtr BrokerStore::build(const std::string& url) const
 {
-  auto it = _builders.find(schema);
+  const Url parsed = ParseUrl(url);
+  const auto it = _builders.find(parsed.schema);
   if (it == _builders.end()) {
     return nullptr;
   }
-  return it->second(input);
+  return it->second(parsed);
 }
 
 }

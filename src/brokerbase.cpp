@@ -19,6 +19,7 @@
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
 #include <proto/cashmere.grpc.pb.h>
+#include <regex>
 
 namespace Cashmere
 {

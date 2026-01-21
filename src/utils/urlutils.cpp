@@ -13,42 +13,34 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_BROKER_GRPC_H
-#define CASHMERE_BROKER_GRPC_H
+#include "urlutils.h"
 
-#include "cashmere/broker.h"
-#include <thread>
+#include <regex>
 
 namespace Cashmere
 {
 
-class BrokerGrpc;
-using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
-using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
-
-class CASHMERE_EXPORT BrokerGrpc : public Broker
+constexpr char const* kRegexStr = "([^:]*):/{2}(([^/][^@]*)@){0,1}([^/]*){0,1}(/.*){0,1}";
+Url ParseUrl(const std::string& url)
 {
-public:
-  BrokerGrpc(const std::string& hostname, uint16_t port);
-
-  ~BrokerGrpc();
-  static BrokerBasePtr create(const Url& url = {});
-
-  std::thread start();
-  void stop();
-
-  Connection stub() override;
-
-  std::string schema() const override;
-
-private:
-  std::string _hostname;
-  uint16_t _port;
-
-  class Impl;
-  std::unique_ptr<Impl> _impl;
-};
-
+  auto regex = std::regex(kRegexStr);
+  std::smatch matches;
+  std::regex_search(url, matches, regex);
+  if (matches.size() > 5) {
+    return {url, matches[1], matches[3], matches[4], matches[5]};
+  }
+  return {url, "", "", "", ""};
 }
 
-#endif
+bool Url::valid() const
+{
+  return url.size() > 0 && schema.size() > 0 && (id.size() > 0 || hostport.size() > 0);
+}
+
+std::ostream& operator<<(std::ostream& os, const Url& data)
+{
+  return os << "{" << data.url << ", " << data.id << ", " << data.hostport
+            << ", " << data.path << "}";
+}
+
+}

@@ -27,7 +27,7 @@ using JournalFilePtr = std::shared_ptr<JournalFile>;
 class CASHMERE_EXPORT JournalFile : public JournalBase
 {
 public:
-  static BrokerBasePtr create(const std::string& input = {});
+  static BrokerBasePtr create(const Url& url = {});
 
   explicit JournalFile(const std::string& location);
   explicit JournalFile(Id id, const std::string& location);

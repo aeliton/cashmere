@@ -13,41 +13,30 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_BROKER_GRPC_H
-#define CASHMERE_BROKER_GRPC_H
+#ifndef CASHMERE_UTILS_URL_H
+#define CASHMERE_UTILS_URL_H
 
-#include "cashmere/broker.h"
-#include <thread>
+#include <string>
+#include <ostream>
 
 namespace Cashmere
 {
 
-class BrokerGrpc;
-using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
-using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
-
-class CASHMERE_EXPORT BrokerGrpc : public Broker
+struct Url
 {
-public:
-  BrokerGrpc(const std::string& hostname, uint16_t port);
+  std::string url;
+  std::string schema;
+  std::string id;
+  std::string hostport;
+  std::string path;
 
-  ~BrokerGrpc();
-  static BrokerBasePtr create(const Url& url = {});
-
-  std::thread start();
-  void stop();
-
-  Connection stub() override;
-
-  std::string schema() const override;
-
-private:
-  std::string _hostname;
-  uint16_t _port;
-
-  class Impl;
-  std::unique_ptr<Impl> _impl;
+  bool valid() const;
+  auto operator<=>(const Url&) const = default;
 };
+
+Url ParseUrl(const std::string& url);
+
+std::ostream& operator<<(std::ostream& os, const Url& data);
 
 }
 

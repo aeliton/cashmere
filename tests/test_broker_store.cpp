@@ -30,8 +30,14 @@ TEST(BrokerStore, RetrieveInstance)
 
 TEST(BrokerStore, CanCreateHubTypeBrokers)
 {
-  auto hub = BrokerStore::instance()->build("hub");
+  auto hub = BrokerStore::instance()->build("hub://");
   ASSERT_TRUE(dynamic_cast<Broker*>(hub.get()));
+}
+
+TEST(BrokerStore, UseIdFromUrl)
+{
+  auto hub = BrokerStore::instance()->build("hub://baadcafe@localhost");
+  ASSERT_EQ(hub->id(), 0xbaadcafe);
 }
 
 TEST(BrokerStore, ReturnNullptrForUnknownSchema)
@@ -42,12 +48,12 @@ TEST(BrokerStore, ReturnNullptrForUnknownSchema)
 
 TEST(BrokerStore, CanCreateJournalType)
 {
-  auto instance = BrokerStore::instance()->build("file");
+  auto instance = BrokerStore::instance()->build("file:///tmp");
   ASSERT_TRUE(dynamic_cast<JournalFile*>(instance.get()));
 }
 
 TEST(BrokerStore, CanCreateGrpcType)
 {
-  auto instance = BrokerStore::instance()->build("grpc", "0.0.0.0:9999");
+  auto instance = BrokerStore::instance()->build("grpc://0.0.0.0:9999");
   ASSERT_TRUE(dynamic_cast<BrokerGrpc*>(instance.get()));
 }
