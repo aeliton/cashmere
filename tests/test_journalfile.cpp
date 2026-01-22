@@ -18,10 +18,12 @@
 
 #include <filesystem>
 #include <fstream>
+#include <format>
 
 #include "brokermock.h"
 
 #include "cashmere/journalfile.h"
+#include "core.h"
 #include "utils/fileutils.h"
 
 namespace fs = std::filesystem;
@@ -37,7 +39,7 @@ struct JournalFileTest : public ::testing::Test
     : ::testing::Test()
     , tmpdir(CreateTempDir())
     , filename(fs::path(tmpdir) / kFixtureIdStr)
-    , journal(std::make_shared<JournalFile>(kFixtureId, tmpdir))
+    , journal(BrokerStore::instance()->build(std::format("file://{:x}@localhost{}", kFixtureId, tmpdir)))
   {
   }
   virtual ~JournalFileTest()
@@ -46,7 +48,7 @@ struct JournalFileTest : public ::testing::Test
   }
   std::string tmpdir;
   std::string filename;
-  JournalFilePtr journal;
+  BrokerBasePtr journal;
 };
 
 struct JournalFileWithEntriesTest : public JournalFileTest
@@ -73,7 +75,7 @@ using ::testing::Return;
 
 TEST_F(JournalFileTest, FilenameIsTheHexRepresentationOfIdPaddedWithZeroes)
 {
-  ASSERT_TRUE(journal->filename().ends_with(kFixtureIdStr));
+  ASSERT_TRUE(journal->url().ends_with(kFixtureIdStr));
 }
 
 TEST_F(JournalFileTest, AppendEntriesToFile)
@@ -128,7 +130,7 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
 
   journal->connect(Connection{broker});
 
-  std::ifstream file(journal->filename());
+  std::ifstream file(ParseUrl(journal->url()).path);
   EXPECT_EQ(file.peek(), std::ifstream::traits_type::eof());
 
   EXPECT_TRUE(fs::exists(bbFilename));

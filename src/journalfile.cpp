@@ -83,11 +83,20 @@ std::string JournalFile::filename() const
 
 BrokerBasePtr JournalFile::create(const Url& url)
 {
-  return std::make_shared<JournalFile>(url.path);
+  Id id = 0;
+  try {
+    id = std::stoul(url.id, nullptr, 16);
+  } catch (std::exception) {
+  }
+  return std::make_shared<JournalFile>(id, url.path);
 }
 
 std::string JournalFile::schema() const
 {
   return "file";
+}
+std::string JournalFile::url() const
+{
+  return std::format("{}://{}@localhost{}", schema(), id(), filename());
 }
 }
