@@ -19,7 +19,6 @@
 #include "brokergrpcstub.h"
 #include "brokermock.h"
 #include "core.h"
-#include "cashmere/journal.h"
 
 #include <proto/cashmere_mock.grpc.pb.h>
 
@@ -71,7 +70,7 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 
 TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
 {
-  auto journal = std::make_shared<Journal>(0xAA);
+  auto journal = BrokerStore::instance()->build("cache://aa");
   journal->append(1000);
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
@@ -106,7 +105,7 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
 
 TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
 {
-  auto journal = std::make_shared<Journal>(0xAA);
+  auto journal = BrokerStore::instance()->build("cache://aa");
   journal->append(1000);
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
