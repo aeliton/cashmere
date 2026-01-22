@@ -18,6 +18,7 @@
 
 #include "brokergrpcstub.h"
 #include "brokermock.h"
+#include "core.h"
 #include "cashmere/journal.h"
 
 #include <proto/cashmere_mock.grpc.pb.h>
@@ -31,7 +32,7 @@ using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 
 TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
 {
-  auto broker = std::make_shared<Broker>();
+  auto broker = BrokerStore::instance()->build("hub://");
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
@@ -126,7 +127,7 @@ TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
 
 TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
 {
-  auto journal = std::make_shared<Broker>();
+  auto journal = BrokerStore::instance()->build("hub://");
 
   auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
@@ -151,7 +152,7 @@ TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
 
 TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
 {
-  auto broker = std::make_shared<Broker>();
+  auto broker = BrokerStore::instance()->build("hub://");
 
   auto other = std::make_shared<BrokerMock>();
   broker->connect(Connection{other});

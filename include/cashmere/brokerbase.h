@@ -128,6 +128,16 @@ public:
   virtual Connection stub() = 0;
   virtual std::set<Source> connectedPorts() const = 0;
   virtual Source disconnect(Source source) = 0;
+  virtual Data entry(Clock) const;
+
+  virtual EntryList entries() const;
+
+  virtual bool save(const Entry&);
+  virtual bool append(Amount value);
+  virtual bool append(const Data& entry);
+  virtual bool replace(Amount value, const Clock& clock);
+  virtual bool erase(Clock time);
+  virtual bool contains(const Clock& clock) const;
 
 private:
   Id _id;

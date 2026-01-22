@@ -23,12 +23,13 @@ namespace Cashmere
 class CASHMERE_EXPORT Journal : public JournalBase
 {
 public:
-  explicit Journal();
-  explicit Journal(Id id, const ClockDataMap& entries = {});
+  explicit Journal(Id id = 0, const ClockDataMap& entries = {});
 
   bool save(const Entry& data) override;
   Data entry(Clock time) const override;
   EntryList entries() const override;
+  virtual std::string schema() const override;
+  static BrokerBasePtr create(const Url& url);
 
 private:
   ClockDataMap _entries;

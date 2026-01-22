@@ -18,11 +18,6 @@
 namespace Cashmere
 {
 
-Journal::Journal()
-  : JournalBase()
-{
-}
-
 Journal::Journal(Id id, const ClockDataMap& entries)
   : JournalBase(id)
 {
@@ -57,4 +52,18 @@ EntryList Journal::entries() const
   return list;
 }
 
+std::string Journal::schema() const
+{
+  return "cache";
+}
+
+BrokerBasePtr Journal::create(const Url& url)
+{
+  Id id = 0;
+  try {
+    id = std::stoul(url.id, nullptr, 16);
+  } catch (std::exception) {
+  }
+  return std::make_shared<Journal>(id);
+}
 }

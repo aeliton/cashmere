@@ -32,16 +32,6 @@ Id JournalBase::bookId() const
   return _bookId;
 }
 
-bool JournalBase::append(Amount value)
-{
-  return append({id(), value, {}});
-}
-
-bool JournalBase::append(const Data& entry)
-{
-  return insert({clock().tick(entry.id), entry}).valid();
-}
-
 Clock JournalBase::insert(const Entry& data, Source source)
 {
   if (!data.clock.isNext(clock(), data.entry.id)) {
@@ -51,21 +41,6 @@ Clock JournalBase::insert(const Entry& data, Source source)
     return Broker::insert(data, source);
   }
   return Clock{{0, 0}};
-}
-
-bool JournalBase::replace(Amount value, const Clock& clock)
-{
-  return append({id(), value, clock});
-}
-
-bool JournalBase::erase(Clock time)
-{
-  return append({id(), 0, time});
-}
-
-bool JournalBase::contains(const Clock& time) const
-{
-  return entry(time).valid();
 }
 
 EntryList JournalBase::query(const Clock& from, Source) const
@@ -86,4 +61,11 @@ SourcesMap JournalBase::sources(Source sender) const
   return out;
 }
 
+Clock JournalBase::relay(const Data& data, Source sender)
+{
+  if (data.id == 0) {
+    return Broker::relay({id(), data.value, data.alters}, sender);
+  }
+  return Broker::relay(data, sender);
+}
 }

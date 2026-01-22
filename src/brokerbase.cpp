@@ -230,6 +230,31 @@ Clock BrokerBase::insert(const EntryList& entries, Source sender)
   return clock();
 }
 
+bool BrokerBase::append(Amount value)
+{
+  return append({id(), value, {}});
+}
+
+bool BrokerBase::append(const Data& entry)
+{
+  return insert({clock().tick(entry.id), entry}).valid();
+}
+
+bool BrokerBase::replace(Amount value, const Clock& clock)
+{
+  return append({id(), value, clock});
+}
+
+bool BrokerBase::erase(Clock time)
+{
+  return append({id(), 0, time});
+}
+
+bool BrokerBase::contains(const Clock& time) const
+{
+  return entry(time).valid();
+}
+
 std::ostream& operator<<(std::ostream& os, const ConnectionInfo& info)
 {
   return os << "ConnectionInfo{ .distance = " << info.distance
@@ -284,4 +309,18 @@ std::ostream& operator<<(std::ostream& os, const Connection& info)
             << ", .provides = " << info._sources << "}";
 }
 
+Data BrokerBase::entry(Clock) const
+{
+  return {};
+}
+
+bool BrokerBase::save(const Entry&)
+{
+  return {};
+}
+
+EntryList BrokerBase::entries() const
+{
+  return {};
+}
 }

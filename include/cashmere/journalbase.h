@@ -32,27 +32,13 @@ public:
   virtual ~JournalBase();
   explicit JournalBase(Id id = 0);
 
-  virtual bool save(const Entry& entry) = 0;
-  virtual Data entry(Clock time) const = 0;
-  virtual EntryList entries() const = 0;
   SourcesMap sources(Source sender = 0) const override;
 
   Clock insert(const Entry& data, Source source = 0) override;
   EntryList query(const Clock& from = {}, Source source = 0) const override;
-  virtual Clock relay(const Data& data, Source sender) override
-  {
-    if (data.id == 0) {
-      return Broker::relay({id(), data.value, data.alters}, sender);
-    }
-    return Broker::relay(data, sender);
-  }
+  virtual Clock relay(const Data& data, Source sender) override;
 
   Id bookId() const;
-  bool append(Amount value);
-  bool append(const Data& entry);
-  bool replace(Amount value, const Clock& clock);
-  bool erase(Clock time);
-  bool contains(const Clock& clock) const;
 
 private:
   const Id _bookId;

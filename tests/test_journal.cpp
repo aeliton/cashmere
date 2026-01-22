@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "brokermock.h"
+#include "core.h"
 #include "cashmere/journal.h"
 
 using namespace Cashmere;
@@ -157,7 +158,9 @@ TEST(Journal, RefusesEntriesOutOfOrder)
 
 TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
 {
-  const auto aa = std::make_shared<Journal>(0xAA);
+  const auto aa = BrokerStore::instance()->build("cache://aa@localhost");
+  EXPECT_EQ(aa->id(), 0xAA);
+  
   const auto bb = std::make_shared<BrokerMock>();
 
   aa->append(10);
@@ -180,7 +183,7 @@ TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
 
 TEST(Journal, RelayWithZeroedIdIsAppliedLocally)
 {
-  const auto journal = std::make_shared<Journal>(0xAA);
+  const auto journal = BrokerStore::instance()->build("cache://aa@localhost");
   const auto expectedClock = Clock{{0xAA, 1}};
   ASSERT_EQ(journal->relay(Data{0, 999, {}}, 0), expectedClock);
 }

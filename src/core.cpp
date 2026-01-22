@@ -1,7 +1,8 @@
 #include "core.h"
 #include "cashmere/broker.h"
-#include "cashmere/journalfile.h"
 #include "cashmere/brokergrpc.h"
+#include "cashmere/journal.h"
+#include "cashmere/journalfile.h"
 #include "utils/urlutils.h"
 
 namespace Cashmere {
@@ -13,6 +14,7 @@ BrokerStore::BrokerStore()
   _builders["hub"] = &Broker::create;
   _builders["file"] = &JournalFile::create;
   _builders["grpc"] = &BrokerGrpc::create;
+  _builders["cache"] = &Journal::create;
 }
 
 BrokerBasePtr BrokerStore::get([[maybe_unused]] Id id) {
