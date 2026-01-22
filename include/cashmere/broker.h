@@ -47,9 +47,9 @@ public:
   virtual EntryList
   query(const Clock& from = {}, Source sender = 0) const override;
 
-  Source disconnect(Source source);
+  Source disconnect(Source source) override;
   virtual bool refresh(const Connection& conn, Source source) override;
-  virtual std::set<Source> connectedPorts() const;
+  virtual std::set<Source> connectedPorts() const override;
 
   virtual BrokerBasePtr ptr();
   virtual Connection stub() override;

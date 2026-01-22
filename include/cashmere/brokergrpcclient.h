@@ -45,6 +45,12 @@ public:
   virtual bool refresh(const Connection& conn, Source sender) override;
   virtual Connection stub() override;
   virtual Clock relay(const Data& entry, Source sender) override;
+  virtual std::set<Source> connectedPorts() const override {
+    return {};
+  }
+  virtual Source disconnect(Source) override {
+    return {};
+  };
 
 private:
   std::unique_ptr<BrokerGrpcStub> _stub;

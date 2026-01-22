@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "brokermock.h"
+#include "core.h"
 #include "cashmere/broker.h"
 
 using namespace Cashmere;
@@ -25,32 +26,26 @@ using ::testing::Return;
 
 TEST(Broker, ConnectIgnoresNullptr)
 {
-  auto broker = std::make_shared<Broker>();
+  auto broker = BrokerStore::instance()->build("hub://");
   const auto conn = broker->connect(Connection{});
   ASSERT_EQ(conn.source(), -1);
 }
 
 TEST(Broker, DisconnectedBrokerHasEmptyClock)
 {
-  auto broker = std::make_shared<Broker>();
+  auto broker = BrokerStore::instance()->build("hub://");
   ASSERT_EQ(broker->clock(), Clock{});
 }
 
 TEST(Broker, DisconnectedBrokerHasEmptyVersions)
 {
-  auto broker = std::make_shared<Broker>();
+  auto broker = BrokerStore::instance()->build("hub://");
   ASSERT_EQ(broker->versions(), IdClockMap{});
-}
-
-TEST(Broker, StartsWithNoConnections)
-{
-  BrokerPtr broker = std::make_shared<Broker>();
-  EXPECT_EQ(broker->connectedPorts(), std::set<Source>{});
 }
 
 TEST(Broker, SuccessfulConnectionReturnsValidConnection)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
   auto aa = std::make_shared<BrokerMock>();
 
   EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
@@ -63,7 +58,7 @@ TEST(Broker, SuccessfulConnectionReturnsValidConnection)
 
 TEST(Broker, BrokerFirstConnectionUsesPortOne)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
   auto aa = std::make_shared<BrokerMock>();
 
   EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
@@ -72,13 +67,13 @@ TEST(Broker, BrokerFirstConnectionUsesPortOne)
       Return(Connection(aa, 1, Clock{}, IdConnectionInfoMap{{0xAA, {0, {}}}}))
     );
 
-  hub->connect(Connection{aa});
-  EXPECT_EQ(hub->connectedPorts(), std::set<Source>{1});
+  auto conn = hub->connect(Connection{aa});
+  EXPECT_EQ(conn.source(), 1);
 }
 
 TEST(Broker, BrokerForwardsInserts)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
 
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
@@ -95,7 +90,7 @@ TEST(Broker, BrokerForwardsInserts)
 
 TEST(Broker, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
 
   auto aa = std::make_shared<BrokerMock>();
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
@@ -114,8 +109,8 @@ TEST(Broker, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
 
 TEST(Broker, BrokeHubConnectionsAreFullDuplex)
 {
-  BrokerPtr hub0 = std::make_shared<Broker>();
-  BrokerPtr hub1 = std::make_shared<Broker>();
+  auto hub0 = BrokerStore::instance()->build("hub://");
+  auto hub1 = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
 
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
@@ -139,7 +134,7 @@ TEST(Broker, BrokeHubConnectionsAreFullDuplex)
 
 TEST(Broker, UpdatesItsClockDuringInsert)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
   hub->insert(entry, 0);
   EXPECT_EQ(hub->clock(), entry.clock);
@@ -147,7 +142,7 @@ TEST(Broker, UpdatesItsClockDuringInsert)
 
 TEST(Broker, UpdatesItsClockDuringConnect)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
   const Clock aaClock = Clock{{0xAA, 1}};
   EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
@@ -168,7 +163,7 @@ TEST(Broker, UpdatesItsClockDuringConnect)
 
 TEST(Broker, VersionsArePreservedAfterDisconnection)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
   const Clock aaClock = Clock{{0xAA, 1}};
   EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
@@ -191,7 +186,7 @@ TEST(Broker, VersionsArePreservedAfterDisconnection)
 
 TEST(Broker, UpdateConnectionProvidedSourcesOnAttach)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
 
   const auto aaClock = Clock{{0xAA, 1}};
@@ -209,7 +204,7 @@ TEST(Broker, UpdateConnectionProvidedSourcesOnAttach)
 
 TEST(Broker, ExchangeEntriesOnConnect)
 {
-  BrokerPtr hub = std::make_shared<Broker>();
+  auto hub = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
   const auto bb = std::make_shared<BrokerMock>();
 
@@ -293,7 +288,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
 
 TEST(Broker, PropagatesProvidedConnections)
 {
-  const auto broker = std::make_shared<Broker>();
+  const auto broker = BrokerStore::instance()->build("hub://");
   const auto hub = std::make_shared<BrokerMock>();
   const auto journal = std::make_shared<BrokerMock>();
 

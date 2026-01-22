@@ -47,6 +47,12 @@ public:
   virtual std::string schema() const override {
     return "";
   }
+  virtual std::set<Source> connectedPorts() const override {
+    return {};
+  }
+  virtual Source disconnect(Source) override {
+    return {};
+  }
 
 private:
   std::string _url;
