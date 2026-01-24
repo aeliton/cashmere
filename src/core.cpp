@@ -29,7 +29,22 @@ BrokerBasePtr BrokerStore::build(const std::string& url)
   }
   auto broker = it->second(parsed);
   broker->setStore(shared_from_this());
+  _store[url] = broker;
   return broker;
+}
+
+BrokerBasePtr BrokerStore::get(const std::string& url)
+{
+  auto it = _store.find(url);
+  if (it == _store.end()) {
+    return nullptr;
+  }
+  return it->second;
+}
+
+std::size_t BrokerStore::size() const
+{
+  return _store.size();
 }
 
 }

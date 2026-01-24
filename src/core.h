@@ -33,6 +33,8 @@ class BrokerStore : public BrokerStoreBase {
     BrokerStore(Private);
     static BrokerStorePtr create();
     BrokerBasePtr build(const std::string& url) override;
+    BrokerBasePtr get(const std::string& url) override;
+    std::size_t size() const override;
 
   private:
     std::unordered_map<std::string, BrokerBasePtr> _store;

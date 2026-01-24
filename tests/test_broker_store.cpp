@@ -66,3 +66,15 @@ TEST_F(BrokerStoreTest, CreatedBrokerHasWeakPtrToStore)
   auto hub = store->build("hub://");
   ASSERT_EQ(hub->store(), store);
 }
+
+TEST_F(BrokerStoreTest, GetInexistingBrokerReturnsNull)
+{
+  auto conn = store->get("hub://aa@localhost");
+  ASSERT_FALSE(conn);
+}
+
+TEST_F(BrokerStoreTest, GetInexistingBrokerWontChangeSizeOfStore)
+{
+  store->get("hub://aa@localhost");
+  ASSERT_EQ(store->size(), 0);
+}
