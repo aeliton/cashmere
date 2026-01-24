@@ -41,7 +41,7 @@ TEST_F(JournalTest, ClockInitializesToEmpty)
 TEST_F(JournalTest, ConstructJournalWithEntries)
 {
   JournalPtr journal = std::make_shared<Journal>(
-    0xAA, ClockDataMap{{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}}}
+    "cache://aa@localhost", ClockDataMap{{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}}}
   );
   const auto expectedClock = Clock{{0xAA, 1}};
   ASSERT_EQ(journal->clock(), expectedClock);
@@ -61,7 +61,7 @@ TEST_F(JournalTest, RefuseToInsertExistingEntry)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal(0xAA, {{clock, data}});
+  Journal journal("cache://aa@localhost", {{clock, data}});
   const auto result = journal.insert(Entry{clock, data});
   ASSERT_EQ(result.valid(), false);
 }
@@ -77,7 +77,7 @@ TEST_F(JournalTest, DataIsRetrievedByClock)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal(0xAA, {{clock, data}});
+  Journal journal("cache://aa@localhost", {{clock, data}});
   ASSERT_EQ(journal.entry(clock), data);
 }
 
@@ -85,7 +85,7 @@ TEST_F(JournalTest, QueryIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal(0xAA, {{clock, data}});
+  Journal journal("cache://aa@localhost", {{clock, data}});
 
   const auto validClockWithZeroes = Clock{{0xAA, 1}, {0x11, 0}, {0x22, 0}};
 
@@ -96,7 +96,7 @@ TEST_F(JournalTest, ReplaceIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal(0xAA, {{clock, data}});
+  Journal journal("cache://aa@localhost", {{clock, data}});
 
   const auto validClockWithZeroes = Clock{{0xAA, 1}, {0x11, 0}, {0x22, 0}};
 
@@ -110,7 +110,7 @@ TEST_F(JournalTest, InsertIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal(0xAA, {{clock, data}});
+  Journal journal("cache://aa@localhost", {{clock, data}});
 
   const auto validClockWithZeroes = Clock{{0xCC, 1}, {0x11, 0}, {0x22, 0}};
 
@@ -124,7 +124,7 @@ TEST_F(JournalTest, EraseIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal(0xAA, {{clock, data}});
+  Journal journal("cache://aa@localhost", {{clock, data}});
 
   const auto validClockWithZeroes = Clock{{0xAA, 1}, {0x11, 0}, {0x22, 0}};
 
@@ -139,7 +139,7 @@ TEST_F(JournalTest, QueryEntries)
     {Clock{{0xAA, 2}, {0xBB, 1}}, Data{0xAA, 2, Clock{{0xBB, 1}}}},
     {Clock{{0xCC, 1}}, Data{0xCC, 100, {}}},
   };
-  Journal journal(0xAA, entries);
+  Journal journal("cache://aa@localhost", entries);
 
   const EntryList expected{{Clock{{0xCC, 1}}, Data{0xCC, 100, {}}}};
   ASSERT_EQ(journal.query(Clock{{0xAA, 2}, {0xBB, 1}}), expected);
@@ -147,7 +147,7 @@ TEST_F(JournalTest, QueryEntries)
 
 TEST_F(JournalTest, ReportsProvidesItsOwnData)
 {
-  Journal journal(0xAA);
+  Journal journal("cache://aa@localhost");
   const auto expected = SourcesMap{
     {0,
      IdConnectionInfoMap{{0xAA, ConnectionInfo{.distance = 0, .clock = Clock{}}}
@@ -158,7 +158,7 @@ TEST_F(JournalTest, ReportsProvidesItsOwnData)
 
 TEST_F(JournalTest, RefusesEntriesOutOfOrder)
 {
-  Journal journal(0xAA);
+  Journal journal("cache://aa@localhost");
   const auto clock = journal.insert(Entry{{{0xBB, 2}}, {0xBB, 10, {}}});
   ASSERT_EQ(clock.valid(), false);
 }

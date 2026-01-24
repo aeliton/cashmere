@@ -29,10 +29,10 @@ using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
 class CASHMERE_EXPORT BrokerGrpc : public Broker
 {
 public:
-  BrokerGrpc(const std::string& hostname, uint16_t port);
+  BrokerGrpc(const std::string& url);
 
   ~BrokerGrpc();
-  static BrokerBasePtr create(const Url& url = {});
+  static BrokerBasePtr create(const std::string& url = {});
 
   std::thread start();
   void stop();
@@ -42,9 +42,6 @@ public:
   std::string schema() const override;
 
 private:
-  std::string _hostname;
-  uint16_t _port;
-
   class Impl;
   std::unique_ptr<Impl> _impl;
 };

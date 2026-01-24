@@ -30,7 +30,7 @@ class CASHMERE_EXPORT JournalBase : public Broker
 {
 public:
   virtual ~JournalBase();
-  explicit JournalBase(Id id = 0);
+  explicit JournalBase(const std::string& url);
 
   SourcesMap sources(Source sender = 0) const override;
 

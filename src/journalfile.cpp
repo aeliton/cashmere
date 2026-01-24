@@ -20,15 +20,8 @@
 namespace Cashmere
 {
 
-JournalFile::JournalFile(const std::string& location)
-  : JournalBase()
-  , _location(location)
-{
-}
-
-JournalFile::JournalFile(Id id, const std::string& location)
-  : JournalBase(id)
-  , _location(location)
+JournalFile::JournalFile(const std::string& url)
+  : JournalBase(url)
 {
 }
 
@@ -37,7 +30,7 @@ JournalFile::~JournalFile() {}
 bool JournalFile::save(const Entry& data)
 {
   std::ofstream file(
-    Filename(_location, data.entry.id), std::ios::binary | std::ios::app
+    Filename(location(), data.entry.id), std::ios::binary | std::ios::app
   );
   file << data << std::endl;
   return true;
@@ -46,7 +39,7 @@ bool JournalFile::save(const Entry& data)
 Data JournalFile::entry(Clock clock) const
 {
   for (const auto& [id, count] : clock) {
-    std::fstream file(Filename(_location, id), std::ios::binary | std::ios::in);
+    std::fstream file(Filename(location(), id), std::ios::binary | std::ios::in);
     if (!SeekToLine(file, count)) {
       break;
     }
@@ -63,7 +56,7 @@ EntryList JournalFile::entries() const
 {
   EntryList list;
   for (const auto& [id, count] : clock()) {
-    std::fstream file(Filename(_location, id), std::ios::binary | std::ios::in);
+    std::fstream file(Filename(location(), id), std::ios::binary | std::ios::in);
     for (size_t i = 0; i < count; ++i) {
       Entry entry;
       if (Entry::Read(file, entry)) {
@@ -77,18 +70,13 @@ EntryList JournalFile::entries() const
 
 std::string JournalFile::filename() const
 {
-  return Filename(_location, id());
+  return Filename(location(), id());
 }
 
 
-BrokerBasePtr JournalFile::create(const Url& url)
+BrokerBasePtr JournalFile::create(const std::string& url)
 {
-  Id id = 0;
-  try {
-    id = std::stoul(url.id, nullptr, 16);
-  } catch (std::exception) {
-  }
-  return std::make_shared<JournalFile>(id, url.path);
+  return std::make_shared<JournalFile>(url);
 }
 
 std::string JournalFile::schema() const

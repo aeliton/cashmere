@@ -22,6 +22,7 @@
 #include "cashmere/cashmere.h"
 #include "cashmere/entry.h"
 #include "utils/random.h"
+#include "utils/urlutils.h"
 
 namespace Cashmere
 {
@@ -106,7 +107,7 @@ private:
 class CASHMERE_EXPORT BrokerBase
 {
 public:
-  BrokerBase(Id id = 0);
+  BrokerBase(const std::string& url = {});
   virtual ~BrokerBase();
 
   virtual Id id() const;
@@ -139,8 +140,15 @@ public:
   virtual void setStore(BrokerStoreBasePtr store);
   virtual BrokerStoreBasePtr store() const;
 
+  virtual std::string location() const;
+  virtual uint16_t port() const;
+  virtual std::string hostname() const;
+
 private:
+  Url _url;
   Id _id;
+  std::string _hostname;
+  uint16_t _port;
   BrokerStoreBaseWeakPtr _store;
   static std::unique_ptr<Random> _random;
 };

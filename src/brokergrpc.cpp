@@ -220,17 +220,15 @@ void BrokerGrpc::stop()
   _impl->stop();
 }
 
-BrokerGrpc::BrokerGrpc(const std::string& hostname, uint16_t port)
-  : Broker()
-  , _hostname(hostname)
-  , _port(port)
+BrokerGrpc::BrokerGrpc(const std::string& url)
+  : Broker(url)
   , _impl(std::make_unique<BrokerGrpc::Impl>())
 {
 }
 
 Connection BrokerGrpc::stub()
 {
-  return Connection(_hostname + ":" + std::to_string(_port));
+  return Connection(hostname() + ":" + std::to_string(port()));
 }
 
 std::thread BrokerGrpc::start()
@@ -238,22 +236,15 @@ std::thread BrokerGrpc::start()
   _impl->setBroker(shared_from_this());
 
   std::stringstream ss;
-  ss << "0.0.0.0:" << _port;
+  ss << hostname() << ":" << port();
   return _impl->start(ss.str());
 }
 
 BrokerGrpc::~BrokerGrpc() = default;
 
-BrokerBasePtr BrokerGrpc::create(const Url& url)
+BrokerBasePtr BrokerGrpc::create(const std::string& url)
 {
-  size_t pos = url.hostport.find(':');
-  std::string hostname = url.hostport.substr(0, pos);
-  try {
-    uint32_t port = std::stoul(url.hostport.substr(pos + 1), nullptr);
-    return std::make_shared<BrokerGrpc>(hostname, port);
-  } catch (std::exception) {
-    return nullptr;
-  }
+    return std::make_shared<BrokerGrpc>(url);
 }
 
 std::string BrokerGrpc::schema() const

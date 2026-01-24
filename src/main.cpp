@@ -105,10 +105,9 @@ void RunCommand(const Options& options)
 void RunService(const Options& options)
 {
   auto tempDir = TempDir();
-  auto broker = std::make_shared<BrokerGrpc>(options.hostname, options.source);
-  auto journal = std::make_shared<JournalFile>(
-    options.id, options.dbPath.empty() ? tempDir.directory : options.dbPath
-  );
+  auto broker = std::make_shared<BrokerGrpc>(std::format("grpc://{}:{}", options.hostname, options.source));
+  auto path = options.dbPath.empty() ? tempDir.directory : options.dbPath;
+  auto journal = std::make_shared<JournalFile>(std::format("file://{:x}@localhost{}", options.id, path));
 
   journal->connect(Connection{broker});
 

@@ -38,7 +38,7 @@ class BrokerStore : public BrokerStoreBase {
 
   private:
     std::unordered_map<std::string, BrokerBasePtr> _store;
-    std::unordered_map<std::string, std::function<BrokerBasePtr(const Url&)>> _builders;
+    std::unordered_map<std::string, std::function<BrokerBasePtr(const std::string&)>> _builders;
 };
 
 }

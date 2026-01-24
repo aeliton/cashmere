@@ -17,7 +17,6 @@
 #define CASHMERE_BROKER_H
 
 #include "cashmere/brokerbase.h"
-#include "utils/random.h"
 #include "utils/urlutils.h"
 #include <memory>
 #include <vector>
@@ -33,11 +32,11 @@ class CASHMERE_EXPORT Broker : public std::enable_shared_from_this<Broker>,
                                public BrokerBase
 {
 public:
-  Broker(Id id = 0UL);
+  Broker(const std::string& url);
 
   virtual ~Broker();
 
-  static BrokerBasePtr create(const Url& url = {});
+  static BrokerBasePtr create(const std::string& url = {});
 
   virtual std::string schema() const override;
   virtual Clock clock() const override;

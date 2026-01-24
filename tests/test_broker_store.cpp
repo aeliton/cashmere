@@ -78,3 +78,10 @@ TEST_F(BrokerStoreTest, GetInexistingBrokerWontChangeSizeOfStore)
   store->get("hub://aa@localhost");
   ASSERT_EQ(store->size(), 0);
 }
+
+TEST_F(BrokerStoreTest, GetPreviouslyCreatedBroker)
+{
+  store->build("hub://aa@localhost");
+  const auto retrieved = store->get("hub://aa@localhost");
+  ASSERT_EQ(retrieved->url(), "hub://aa@localhost");
+}

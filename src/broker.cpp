@@ -24,8 +24,8 @@ namespace Cashmere
 
 IdConnectionInfoMap UpdateProvides(SourcesMap provides);
 
-Broker::Broker(Id id)
-  : BrokerBase(id)
+Broker::Broker(const std::string& url)
+  : BrokerBase(url)
 {
   _connections.push_back(Connection{});
 }
@@ -271,14 +271,9 @@ std::string Broker::schema() const
   return "hub";
 }
 
-BrokerBasePtr Broker::create(const Url& url)
+BrokerBasePtr Broker::create(const std::string& url)
 {
-  Id id = 0;
-  try {
-    id = std::stoul(url.id, nullptr, 16);
-  } catch (std::exception) {
-  }
-  return std::make_shared<Broker>(id);
+  return std::make_shared<Broker>(url);
 }
 
 }

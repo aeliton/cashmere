@@ -15,11 +15,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/brokerbase.h"
 #include "brokergrpcstub.h"
+#include "utils/urlutils.h"
 
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
 #include <proto/cashmere.grpc.pb.h>
-#include <regex>
 
 namespace Cashmere
 {
@@ -205,9 +205,21 @@ bool Connection::operator==(const Connection& other) const
          _sources == other._sources && _source == other._source;
 }
 
-BrokerBase::BrokerBase(Id id)
-  : _id(id > 0UL ? id : _random->next())
+BrokerBase::BrokerBase(const std::string& url)
+  : _url(ParseUrl(url))
 {
+  try {
+    _id = std::stoul(_url.id, nullptr, 16);
+  } catch (std::exception) {
+    _id = _random->next();
+  }
+  size_t pos = _url.hostport.find(':');
+  _hostname = _url.hostport.substr(0, pos);
+  try {
+    _port = std::stoul(_url.hostport.substr(pos + 1), nullptr);
+  } catch (std::exception) {
+    _port = 0;
+  }
 }
 
 BrokerBase::~BrokerBase() = default;
@@ -219,7 +231,7 @@ Id BrokerBase::id() const
 
 std::string BrokerBase::url() const
 {
-  return std::format("{}://{}", schema(), _id);
+  return _url.url;
 }
 
 Clock BrokerBase::insert(const EntryList& entries, Source sender)
@@ -332,5 +344,17 @@ void BrokerBase::setStore(BrokerStoreBasePtr store)
 BrokerStoreBasePtr BrokerBase::store() const
 {
   return _store.lock();
+}
+std::string BrokerBase::location() const
+{
+  return _url.path;
+}
+uint16_t BrokerBase::port() const
+{
+  return _port;
+}
+std::string BrokerBase::hostname() const
+{
+  return _hostname;
 }
 }

@@ -19,8 +19,8 @@
 namespace Cashmere
 {
 
-JournalBase::JournalBase(Id id)
-  : Broker(id)
+JournalBase::JournalBase(const std::string& url)
+  : Broker(url)
   , _bookId(0)
 {
 }
