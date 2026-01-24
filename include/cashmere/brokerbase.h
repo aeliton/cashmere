@@ -19,6 +19,7 @@
 #include <map>
 #include <memory>
 
+#include "cashmere/cashmere.h"
 #include "cashmere/entry.h"
 #include "utils/random.h"
 
@@ -38,10 +39,6 @@ struct CASHMERE_EXPORT ConnectionInfo
 using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
 
 using SourcesMap = std::map<Source, IdConnectionInfoMap>;
-
-class BrokerBase;
-using BrokerBasePtr = std::shared_ptr<BrokerBase>;
-using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 
 class Connection;
 using ConnectionPtr = std::shared_ptr<Connection>;
@@ -139,8 +136,12 @@ public:
   virtual bool erase(Clock time);
   virtual bool contains(const Clock& clock) const;
 
+  virtual void setStore(BrokerStoreBasePtr store);
+  virtual BrokerStoreBasePtr store() const;
+
 private:
   Id _id;
+  BrokerStoreBaseWeakPtr _store;
   static std::unique_ptr<Random> _random;
 };
 

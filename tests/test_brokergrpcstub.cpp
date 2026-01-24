@@ -32,7 +32,7 @@ using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 struct BrokerGrpcStubTest : public ::testing::Test
 {
   void SetUp() override {
-    store = std::make_shared<BrokerStore>();
+    store = BrokerStore::create();
     stub = std::make_unique<Grpc::MockBrokerStub>();
   }
   BrokerStorePtr store;

@@ -7,7 +7,7 @@
 
 namespace Cashmere {
 
-BrokerStore::BrokerStore()
+BrokerStore::BrokerStore(Private)
 {
   _builders["hub"] = &Broker::create;
   _builders["file"] = &JournalFile::create;
@@ -15,14 +15,21 @@ BrokerStore::BrokerStore()
   _builders["cache"] = &Journal::create;
 }
 
-BrokerBasePtr BrokerStore::build(const std::string& url) const
+BrokerStorePtr BrokerStore::create()
+{
+  return std::make_shared<BrokerStore>(Private());
+}
+
+BrokerBasePtr BrokerStore::build(const std::string& url)
 {
   const Url parsed = ParseUrl(url);
   const auto it = _builders.find(parsed.schema);
   if (it == _builders.end()) {
     return nullptr;
   }
-  return it->second(parsed);
+  auto broker = it->second(parsed);
+  broker->setStore(shared_from_this());
+  return broker;
 }
 
 }

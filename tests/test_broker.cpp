@@ -26,7 +26,7 @@ using ::testing::Return;
 struct BrokerTest : public ::testing::Test
 {
   void SetUp() override {
-    store = std::make_shared<BrokerStore>();
+    store = BrokerStore::create();
     hub0 = store->build("hub://");
   }
   BrokerStorePtr store;

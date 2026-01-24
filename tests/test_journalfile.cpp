@@ -37,7 +37,7 @@ struct JournalFileTest : public ::testing::Test
 {
   JournalFileTest()
     : ::testing::Test()
-    , store(std::make_shared<BrokerStore>())
+    , store(BrokerStore::create())
     , tmpdir(CreateTempDir())
     , filename(fs::path(tmpdir) / kFixtureIdStr)
     , journal(store->build(std::format("file://{:x}@localhost{}", kFixtureId, tmpdir)))

@@ -323,4 +323,14 @@ EntryList BrokerBase::entries() const
 {
   return {};
 }
+
+void BrokerBase::setStore(BrokerStoreBasePtr store)
+{
+  _store = store;
+}
+
+BrokerStoreBasePtr BrokerBase::store() const
+{
+  return _store.lock();
+}
 }

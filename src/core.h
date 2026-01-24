@@ -16,7 +16,7 @@
 #ifndef CASHMERE_CORE_H
 #define CASHMERE_CORE_H
 
-#include "cashmere/brokerbase.h"
+#include "cashmere/brokerstore.h"
 #include "utils/urlutils.h"
 
 #include <functional>
@@ -27,10 +27,13 @@ namespace Cashmere {
 class BrokerStore;
 using BrokerStorePtr = std::shared_ptr<BrokerStore>;
 
-class BrokerStore {
+class BrokerStore : public BrokerStoreBase {
+  struct Private{ explicit Private() = default; };
   public:
-    BrokerStore();
-    BrokerBasePtr build(const std::string& url) const;
+    BrokerStore(Private);
+    static BrokerStorePtr create();
+    BrokerBasePtr build(const std::string& url) override;
+
   private:
     std::unordered_map<std::string, BrokerBasePtr> _store;
     std::unordered_map<std::string, std::function<BrokerBasePtr(const Url&)>> _builders;

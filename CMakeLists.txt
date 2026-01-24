@@ -61,6 +61,7 @@ add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpc.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcclient.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/cashmere.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp

@@ -26,7 +26,7 @@ using namespace Cashmere;
 struct BrokerStoreTest : public ::testing::Test
 {
   void SetUp() override {
-    store = std::make_shared<BrokerStore>();
+    store = BrokerStore::create();
   }
   BrokerStorePtr store;
 };
@@ -59,4 +59,10 @@ TEST_F(BrokerStoreTest, CanCreateGrpcType)
 {
   auto instance = store->build("grpc://0.0.0.0:9999");
   ASSERT_TRUE(dynamic_cast<BrokerGrpc*>(instance.get()));
+}
+
+TEST_F(BrokerStoreTest, CreatedBrokerHasWeakPtrToStore)
+{
+  auto hub = store->build("hub://");
+  ASSERT_EQ(hub->store(), store);
 }

@@ -13,30 +13,20 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_CASHMERE_H
-#define CASHMERE_CASHMERE_H
+#ifndef CASHMERE_STORE_H
+#define CASHMERE_STORE_H
 
-#include <cashmere/cashmere_export.h>
-#include <cstdint>
-#include <memory>
-#include <set>
+#include "cashmere/cashmere.h"
 
 namespace Cashmere
 {
-using Amount = int64_t;
-using Id = uint64_t;
-using Time = uint64_t;
-using Source = uint32_t;
 
-using IdSet = std::set<Id>;
-
-class BrokerStoreBase;
-using BrokerStoreBasePtr = std::shared_ptr<BrokerStoreBase>;
-using BrokerStoreBaseWeakPtr = std::weak_ptr<BrokerStoreBase>;
-
-class BrokerBase;
-using BrokerBasePtr = std::shared_ptr<BrokerBase>;
-using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
+class CASHMERE_EXPORT BrokerStoreBase : public std::enable_shared_from_this<BrokerStoreBase>
+{
+public:
+  virtual ~BrokerStoreBase();
+  virtual BrokerBasePtr build(const std::string& url) = 0;
+};
 
 }
 

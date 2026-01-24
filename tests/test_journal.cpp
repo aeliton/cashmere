@@ -25,7 +25,7 @@ using namespace Cashmere;
 struct JournalTest : public ::testing::Test
 {
   void SetUp() override {
-    store = std::make_shared<BrokerStore>();
+    store = BrokerStore::create();
     journal = store->build("cache://aa@localhost");
   }
   BrokerStorePtr store;
