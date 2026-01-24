@@ -22,13 +22,23 @@
 
 using namespace Cashmere;
 
-TEST(Journal, ClockInitializesToEmpty)
+struct JournalTest : public ::testing::Test
 {
-  JournalPtr journal = std::make_shared<Journal>();
+  void SetUp() override {
+    store = std::make_shared<BrokerStore>();
+    journal = store->build("cache://aa@localhost");
+  }
+  BrokerStorePtr store;
+  BrokerBasePtr journal;
+};
+
+
+TEST_F(JournalTest, ClockInitializesToEmpty)
+{
   ASSERT_TRUE(journal->clock().empty());
 }
 
-TEST(Journal, ConstructJournalWithEntries)
+TEST_F(JournalTest, ConstructJournalWithEntries)
 {
   JournalPtr journal = std::make_shared<Journal>(
     0xAA, ClockDataMap{{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}}}
@@ -37,19 +47,17 @@ TEST(Journal, ConstructJournalWithEntries)
   ASSERT_EQ(journal->clock(), expectedClock);
 }
 
-TEST(Journal, NonExistingEntryQueryReturnsInvalidEntry)
+TEST_F(JournalTest, NonExistingEntryQueryReturnsInvalidEntry)
 {
-  Journal journal;
-  ASSERT_EQ(journal.entry(Clock{{0xAA, 1}}).valid(), false);
+  ASSERT_EQ(journal->entry(Clock{{0xAA, 1}}).valid(), false);
 }
 
-TEST(Journal, AllZeroedClockReturnsInvalid)
+TEST_F(JournalTest, AllZeroedClockReturnsInvalid)
 {
-  Journal journal;
-  ASSERT_EQ(journal.entry(Clock{{0xAA, 0}, {0xBB, 0}}).valid(), false);
+  ASSERT_EQ(journal->entry(Clock{{0xAA, 0}, {0xBB, 0}}).valid(), false);
 }
 
-TEST(Journal, RefuseToInsertExistingEntry)
+TEST_F(JournalTest, RefuseToInsertExistingEntry)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
@@ -58,15 +66,14 @@ TEST(Journal, RefuseToInsertExistingEntry)
   ASSERT_EQ(result.valid(), false);
 }
 
-TEST(Journal, UpdataClockOnAppend)
+TEST_F(JournalTest, UpdataClockOnAppend)
 {
-  Journal journal(0xAA);
-  journal.append(10);
+  journal->append(10);
   const auto expectedClock = Clock{{0xAA, 1}};
-  ASSERT_EQ(journal.clock(), expectedClock);
+  ASSERT_EQ(journal->clock(), expectedClock);
 }
 
-TEST(Journal, DataIsRetrievedByClock)
+TEST_F(JournalTest, DataIsRetrievedByClock)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
@@ -74,7 +81,7 @@ TEST(Journal, DataIsRetrievedByClock)
   ASSERT_EQ(journal.entry(clock), data);
 }
 
-TEST(Journal, QueryIgnoreZeroedClockEntries)
+TEST_F(JournalTest, QueryIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
@@ -85,7 +92,7 @@ TEST(Journal, QueryIgnoreZeroedClockEntries)
   EXPECT_EQ(journal.entry(validClockWithZeroes), data);
 }
 
-TEST(Journal, ReplaceIgnoreZeroedClockEntries)
+TEST_F(JournalTest, ReplaceIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
@@ -99,7 +106,7 @@ TEST(Journal, ReplaceIgnoreZeroedClockEntries)
   EXPECT_EQ(journal.clock(), expectedClock);
 }
 
-TEST(Journal, InsertIgnoreZeroedClockEntries)
+TEST_F(JournalTest, InsertIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
@@ -113,7 +120,7 @@ TEST(Journal, InsertIgnoreZeroedClockEntries)
   );
 }
 
-TEST(Journal, EraseIgnoreZeroedClockEntries)
+TEST_F(JournalTest, EraseIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
@@ -124,7 +131,7 @@ TEST(Journal, EraseIgnoreZeroedClockEntries)
   EXPECT_TRUE(journal.erase(validClockWithZeroes));
 }
 
-TEST(Journal, QueryEntries)
+TEST_F(JournalTest, QueryEntries)
 {
   const ClockDataMap entries = {
     {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
@@ -138,7 +145,7 @@ TEST(Journal, QueryEntries)
   ASSERT_EQ(journal.query(Clock{{0xAA, 2}, {0xBB, 1}}), expected);
 }
 
-TEST(Journal, ReportsProvidesItsOwnData)
+TEST_F(JournalTest, ReportsProvidesItsOwnData)
 {
   Journal journal(0xAA);
   const auto expected = SourcesMap{
@@ -149,23 +156,20 @@ TEST(Journal, ReportsProvidesItsOwnData)
   ASSERT_EQ(journal.sources(), expected);
 }
 
-TEST(Journal, RefusesEntriesOutOfOrder)
+TEST_F(JournalTest, RefusesEntriesOutOfOrder)
 {
   Journal journal(0xAA);
   const auto clock = journal.insert(Entry{{{0xBB, 2}}, {0xBB, 10, {}}});
   ASSERT_EQ(clock.valid(), false);
 }
 
-TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
+TEST_F(JournalTest, UpdatePreemptivellyTheLocalCacheOnConnect)
 {
-  const auto aa = BrokerStore::instance()->build("cache://aa@localhost");
-  EXPECT_EQ(aa->id(), 0xAA);
-  
   const auto bb = std::make_shared<BrokerMock>();
 
-  aa->append(10);
+  journal->append(10);
 
-  aa->connect(Connection(
+  journal->connect(Connection(
     bb, 1, Clock{}, IdConnectionInfoMap{{0xBB, {.distance = 1, .clock = {}}}}
   ));
 
@@ -175,15 +179,14 @@ TEST(Journal, UpdatePreemptivellyTheLocalCacheOnConnect)
     {1, IdConnectionInfoMap{{0xBB, {.distance = 1, .clock = Clock{{0xAA, 1}}}}}}
   };
 
-  EXPECT_EQ(aa->sources(), sources);
+  EXPECT_EQ(journal->sources(), sources);
 
   const auto versions = IdClockMap{{0xAA, {{0xAA, 1}}}, {0xBB, {{0xAA, 1}}}};
-  EXPECT_EQ(aa->versions(), versions);
+  EXPECT_EQ(journal->versions(), versions);
 }
 
-TEST(Journal, RelayWithZeroedIdIsAppliedLocally)
+TEST_F(JournalTest, RelayWithZeroedIdIsAppliedLocally)
 {
-  const auto journal = BrokerStore::instance()->build("cache://aa@localhost");
   const auto expectedClock = Clock{{0xAA, 1}};
   ASSERT_EQ(journal->relay(Data{0, 999, {}}, 0), expectedClock);
 }

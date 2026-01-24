@@ -7,21 +7,12 @@
 
 namespace Cashmere {
 
-BrokerStorePtr BrokerStore::_instance = nullptr;
-
 BrokerStore::BrokerStore()
 {
   _builders["hub"] = &Broker::create;
   _builders["file"] = &JournalFile::create;
   _builders["grpc"] = &BrokerGrpc::create;
   _builders["cache"] = &Journal::create;
-}
-
-BrokerStorePtr BrokerStore::instance() {
-  if (!_instance) {
-    _instance = std::shared_ptr<BrokerStore>(new BrokerStore());
-  }
-  return _instance;
 }
 
 BrokerBasePtr BrokerStore::build(const std::string& url) const

@@ -29,11 +29,19 @@ constexpr int32_t kSource = 10;
 
 using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 
-TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
+struct BrokerGrpcStubTest : public ::testing::Test
 {
-  auto broker = BrokerStore::instance()->build("hub://");
+  void SetUp() override {
+    store = std::make_shared<BrokerStore>();
+    stub = std::make_unique<Grpc::MockBrokerStub>();
+  }
+  BrokerStorePtr store;
+  std::unique_ptr<Grpc::MockBrokerStub> stub;
+};
 
-  auto stub = std::make_unique<Grpc::MockBrokerStub>();
+TEST_F(BrokerGrpcStubTest, StartsConnectionsUsingGrpcStub)
+{
+  auto broker = store->build("hub://");
 
   Grpc::ConnectionResponse resp;
   resp.set_source(kSource);
@@ -68,12 +76,10 @@ TEST(BrokerGrpcStub, StartsConnectionsUsingGrpcStub)
   EXPECT_EQ(broker->clock(), Clock({{0xBB, 1}}));
 }
 
-TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
+TEST_F(BrokerGrpcStubTest, InsertIsCalledPassingTheCorrectPort)
 {
-  auto journal = BrokerStore::instance()->build("cache://aa");
+  auto journal = store->build("cache://aa");
   journal->append(1000);
-
-  auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::ConnectionResponse resp;
   resp.set_source(kSource);
@@ -103,12 +109,10 @@ TEST(BrokerGrpcStub, InsertIsCalledPassingTheCorrectPort)
   journal->connect(brokerStub);
 }
 
-TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
+TEST_F(BrokerGrpcStubTest, InsertIsCalledOnConnect)
 {
-  auto journal = BrokerStore::instance()->build("cache://aa");
+  auto journal = store->build("cache://aa");
   journal->append(1000);
-
-  auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::InsertResponse response;
   (*response.mutable_clock())[0xAA] = 1;
@@ -124,11 +128,9 @@ TEST(BrokerGrpcStub, InsertIsCalledOnConnect)
   journal->connect(brokerStub);
 }
 
-TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
+TEST_F(BrokerGrpcStubTest, RefreshIsCalledOnDisconnect)
 {
-  auto journal = BrokerStore::instance()->build("hub://");
-
-  auto stub = std::make_unique<Grpc::MockBrokerStub>();
+  auto journal = store->build("hub://");
 
   Grpc::ConnectionResponse resp;
   resp.set_source(10);
@@ -149,14 +151,12 @@ TEST(BrokerGrpcStub, RefreshIsCalledOnDisconnect)
   EXPECT_EQ(journal->disconnect(1), 1);
 }
 
-TEST(BrokerGrpcStub, RefreshIsCalledWithSender)
+TEST_F(BrokerGrpcStubTest, RefreshIsCalledWithSender)
 {
-  auto broker = BrokerStore::instance()->build("hub://");
+  auto broker = store->build("hub://");
 
   auto other = std::make_shared<BrokerMock>();
   broker->connect(Connection{other});
-
-  auto stub = std::make_unique<Grpc::MockBrokerStub>();
 
   Grpc::ConnectionResponse resp;
   resp.set_source(kSource);

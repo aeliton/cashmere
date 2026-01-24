@@ -23,37 +23,40 @@
 
 using namespace Cashmere;
 
-TEST(BrokerStore, RetrieveInstance)
+struct BrokerStoreTest : public ::testing::Test
 {
-  ASSERT_TRUE(BrokerStore::instance());
-}
+  void SetUp() override {
+    store = std::make_shared<BrokerStore>();
+  }
+  BrokerStorePtr store;
+};
 
-TEST(BrokerStore, CanCreateHubTypeBrokers)
+TEST_F(BrokerStoreTest, CanCreateHubTypeBrokers)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
+  auto hub = store->build("hub://");
   ASSERT_TRUE(dynamic_cast<Broker*>(hub.get()));
 }
 
-TEST(BrokerStore, UseIdFromUrl)
+TEST_F(BrokerStoreTest, UseIdFromUrl)
 {
-  auto hub = BrokerStore::instance()->build("hub://baadcafe@localhost");
+  auto hub = store->build("hub://baadcafe@localhost");
   ASSERT_EQ(hub->id(), 0xbaadcafe);
 }
 
-TEST(BrokerStore, ReturnNullptrForUnknownSchema)
+TEST_F(BrokerStoreTest, ReturnNullptrForUnknownSchema)
 {
-  auto instance = BrokerStore::instance()->build("_unknown_schema_");
+  auto instance = store->build("_unknown_schema_");
   ASSERT_EQ(instance, nullptr);
 }
 
-TEST(BrokerStore, CanCreateJournalType)
+TEST_F(BrokerStoreTest, CanCreateJournalType)
 {
-  auto instance = BrokerStore::instance()->build("file:///tmp");
+  auto instance = store->build("file:///tmp");
   ASSERT_TRUE(dynamic_cast<JournalFile*>(instance.get()));
 }
 
-TEST(BrokerStore, CanCreateGrpcType)
+TEST_F(BrokerStoreTest, CanCreateGrpcType)
 {
-  auto instance = BrokerStore::instance()->build("grpc://0.0.0.0:9999");
+  auto instance = store->build("grpc://0.0.0.0:9999");
   ASSERT_TRUE(dynamic_cast<BrokerGrpc*>(instance.get()));
 }

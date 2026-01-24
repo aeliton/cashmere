@@ -37,15 +37,17 @@ struct JournalFileTest : public ::testing::Test
 {
   JournalFileTest()
     : ::testing::Test()
+    , store(std::make_shared<BrokerStore>())
     , tmpdir(CreateTempDir())
     , filename(fs::path(tmpdir) / kFixtureIdStr)
-    , journal(BrokerStore::instance()->build(std::format("file://{:x}@localhost{}", kFixtureId, tmpdir)))
+    , journal(store->build(std::format("file://{:x}@localhost{}", kFixtureId, tmpdir)))
   {
   }
   virtual ~JournalFileTest()
   {
     DeleteTempDir(tmpdir);
   }
+  BrokerStorePtr store;
   std::string tmpdir;
   std::string filename;
   BrokerBasePtr journal;

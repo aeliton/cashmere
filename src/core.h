@@ -17,7 +17,6 @@
 #define CASHMERE_CORE_H
 
 #include "cashmere/brokerbase.h"
-#include "cashmere/cashmere.h"
 #include "utils/urlutils.h"
 
 #include <functional>
@@ -30,15 +29,11 @@ using BrokerStorePtr = std::shared_ptr<BrokerStore>;
 
 class BrokerStore {
   public:
-    static BrokerStorePtr instance();
-    static BrokerBasePtr get(Id id);
-    static bool load(const std::string& path);
+    BrokerStore();
     BrokerBasePtr build(const std::string& url) const;
   private:
-    BrokerStore();
     std::unordered_map<std::string, BrokerBasePtr> _store;
     std::unordered_map<std::string, std::function<BrokerBasePtr(const Url&)>> _builders;
-    static BrokerStorePtr _instance;
 };
 
 }

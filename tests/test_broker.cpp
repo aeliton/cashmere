@@ -18,99 +18,98 @@
 
 #include "brokermock.h"
 #include "core.h"
-#include "cashmere/broker.h"
 
 using namespace Cashmere;
 
 using ::testing::Return;
 
-TEST(Broker, ConnectIgnoresNullptr)
+struct BrokerTest : public ::testing::Test
 {
-  auto broker = BrokerStore::instance()->build("hub://");
-  const auto conn = broker->connect(Connection{});
+  void SetUp() override {
+    store = std::make_shared<BrokerStore>();
+    hub0 = store->build("hub://");
+  }
+  BrokerStorePtr store;
+  BrokerBasePtr hub0;
+};
+
+TEST_F(BrokerTest, ConnectIgnoresNullptr)
+{
+  const auto conn = hub0->connect(Connection{});
   ASSERT_EQ(conn.source(), -1);
 }
 
-TEST(Broker, DisconnectedBrokerHasEmptyClock)
+TEST_F(BrokerTest, DisconnectedBrokerHasEmptyClock)
 {
-  auto broker = BrokerStore::instance()->build("hub://");
-  ASSERT_EQ(broker->clock(), Clock{});
+  ASSERT_EQ(hub0->clock(), Clock{});
 }
 
-TEST(Broker, DisconnectedBrokerHasEmptyVersions)
+TEST_F(BrokerTest, DisconnectedBrokerHasEmptyVersions)
 {
-  auto broker = BrokerStore::instance()->build("hub://");
-  ASSERT_EQ(broker->versions(), IdClockMap{});
+  ASSERT_EQ(hub0->versions(), IdClockMap{});
 }
 
-TEST(Broker, SuccessfulConnectionReturnsValidConnection)
+TEST_F(BrokerTest, SuccessfulConnectionReturnsValidConnection)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
   auto aa = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
+  EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(aa, 1, Clock{}, IdConnectionInfoMap{})));
 
-  const auto conn = hub->connect(Connection{aa});
+  const auto conn = hub0->connect(Connection{aa});
   ASSERT_TRUE(conn.valid());
 }
 
-TEST(Broker, BrokerFirstConnectionUsesPortOne)
+TEST_F(BrokerTest, BrokerFirstConnectionUsesPortOne)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
   auto aa = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
+  EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(
       Return(Connection(aa, 1, Clock{}, IdConnectionInfoMap{{0xAA, {0, {}}}}))
     );
 
-  auto conn = hub->connect(Connection{aa});
+  auto conn = hub0->connect(Connection{aa});
   EXPECT_EQ(conn.source(), 1);
 }
 
-TEST(Broker, BrokerForwardsInserts)
+TEST_F(BrokerTest, BrokerForwardsInserts)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
-
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
   const auto aa = std::make_shared<BrokerMock>();
 
-  EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
+  EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(aa, 1, {}, {{0xAA, {0, Clock{}}}})));
   EXPECT_CALL(*aa, insert(entry, 1)).Times(1);
 
-  hub->connect(Connection{aa});
-  hub->insert(entry, 0);
+  hub0->connect(Connection{aa});
+  hub0->insert(entry, 0);
 }
 
-TEST(Broker, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
+TEST_F(BrokerTest, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
-
   auto aa = std::make_shared<BrokerMock>();
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
-  EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
+  EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(aa, 1, {}, {{0xAA, {0, {}}}})));
   EXPECT_CALL(*aa, insert(entry, 1)).Times(0);
 
-  const auto conn = hub->connect(Connection{aa});
+  const auto conn = hub0->connect(Connection{aa});
 
   EXPECT_EQ(conn.source(), 1);
 
-  hub->insert(entry, conn.source());
+  hub0->insert(entry, conn.source());
 }
 
-TEST(Broker, BrokeHubConnectionsAreFullDuplex)
+TEST_F(BrokerTest, BrokeHubConnectionsAreFullDuplex)
 {
-  auto hub0 = BrokerStore::instance()->build("hub://");
-  auto hub1 = BrokerStore::instance()->build("hub://");
+  auto hub1 = store->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
 
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
@@ -132,86 +131,81 @@ TEST(Broker, BrokeHubConnectionsAreFullDuplex)
   hub1->insert(entry, 0);
 }
 
-TEST(Broker, UpdatesItsClockDuringInsert)
+TEST_F(BrokerTest, UpdatesItsClockDuringInsert)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
-  hub->insert(entry, 0);
-  EXPECT_EQ(hub->clock(), entry.clock);
+  hub0->insert(entry, 0);
+  EXPECT_EQ(hub0->clock(), entry.clock);
 }
 
-TEST(Broker, UpdatesItsClockDuringConnect)
+TEST_F(BrokerTest, UpdatesItsClockDuringConnect)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
   const Clock aaClock = Clock{{0xAA, 1}};
-  EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
+  EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(aa, 1, aaClock, {{0xAA, {1, aaClock}}})));
   EXPECT_CALL(*aa, query(Clock({}), /* aaPort */ 1))
     .Times(1)
     .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
 
-  hub->connect(Connection{aa});
+  hub0->connect(Connection{aa});
 
   const IdClockMap expectedVersion{{0xAA, aaClock}};
-  EXPECT_EQ(hub->versions(), expectedVersion);
+  EXPECT_EQ(hub0->versions(), expectedVersion);
   const SourcesMap expectedSources{{1, {{0xAA, {1, Clock{{0xAA, 1}}}}}}};
-  EXPECT_EQ(hub->sources(), expectedSources);
-  ASSERT_EQ(hub->clock(), aaClock);
+  EXPECT_EQ(hub0->sources(), expectedSources);
+  ASSERT_EQ(hub0->clock(), aaClock);
 }
 
-TEST(Broker, VersionsArePreservedAfterDisconnection)
+TEST_F(BrokerTest, VersionsArePreservedAfterDisconnection)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
   const Clock aaClock = Clock{{0xAA, 1}};
-  EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
+  EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(aa, 1, aaClock, {{0xAA, {1, aaClock}}})));
   EXPECT_CALL(*aa, query(Clock({}), 1))
     .Times(1)
     .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
 
-  hub->connect(Connection{aa});
-  const Source source = hub->disconnect(1);
+  hub0->connect(Connection{aa});
+  const Source source = hub0->disconnect(1);
   EXPECT_EQ(source, 1);
 
-  EXPECT_EQ(hub->sources(), SourcesMap{});
-  EXPECT_EQ(hub->clock(), aaClock);
+  EXPECT_EQ(hub0->sources(), SourcesMap{});
+  EXPECT_EQ(hub0->clock(), aaClock);
 
   const IdClockMap expectedVersion{{0xAA, aaClock}};
-  ASSERT_EQ(hub->versions(), expectedVersion);
+  ASSERT_EQ(hub0->versions(), expectedVersion);
 }
 
-TEST(Broker, UpdateConnectionProvidedSourcesOnAttach)
+TEST_F(BrokerTest, UpdateConnectionProvidedSourcesOnAttach)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
 
   const auto aaClock = Clock{{0xAA, 1}};
   const auto aaEntry = Entry{aaClock, Data{0xAA, 10, {}}};
 
-  EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
+  EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(aa, 1, aaClock, {{0xAA, {0, aaClock}}})));
   EXPECT_CALL(*aa, query(Clock{}, 1))
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
 
-  hub->connect(Connection{aa});
+  hub0->connect(Connection{aa});
 }
 
-TEST(Broker, ExchangeEntriesOnConnect)
+TEST_F(BrokerTest, ExchangeEntriesOnConnect)
 {
-  auto hub = BrokerStore::instance()->build("hub://");
   const auto aa = std::make_shared<BrokerMock>();
   const auto bb = std::make_shared<BrokerMock>();
 
   const auto aaEntry = Entry{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}};
   const auto bbEntry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 20, {}}};
 
-  EXPECT_CALL(*aa, connect(Connection(hub, 1, {}, {})))
+  EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(
       aa, 1, Clock{{0xAA, 1}}, IdConnectionInfoMap{{0xAA, {1, {{0xAA, 1}}}}}
@@ -222,7 +216,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
   EXPECT_CALL(
     *aa, refresh(
            Connection(
-             hub, 1, Clock{{0xAA, 1}, {0xBB, 1}},
+             hub0, 1, Clock{{0xAA, 1}, {0xBB, 1}},
              IdConnectionInfoMap{
                {0xBB, ConnectionInfo{2, Clock{{0xAA, 1}, {0xBB, 1}}}}
              }
@@ -242,7 +236,7 @@ TEST(Broker, ExchangeEntriesOnConnect)
   EXPECT_CALL(
     *bb,
     connect(Connection(
-      hub, 2, Clock{{0xAA, 1}},
+      hub0, 2, Clock{{0xAA, 1}},
       IdConnectionInfoMap{{0xAA, {.distance = 2, .clock = Clock{{0xAA, 1}}}}}
     ))
   )
@@ -258,11 +252,11 @@ TEST(Broker, ExchangeEntriesOnConnect)
     .Times(1)
     .WillOnce(Return(EntryList{bbEntry}));
 
-  hub->connect(Connection{aa});
-  hub->connect(Connection{bb});
+  hub0->connect(Connection{aa});
+  hub0->connect(Connection{bb});
 
   EXPECT_EQ(
-    hub->sources(),
+    hub0->sources(),
     SourcesMap(
       {{1,
         IdConnectionInfoMap(
@@ -279,22 +273,21 @@ TEST(Broker, ExchangeEntriesOnConnect)
     )
   );
   ASSERT_EQ(
-    hub->versions(),
+    hub0->versions(),
     IdClockMap(
       {{0xAA, Clock{{0xAA, 1}, {0xBB, 1}}}, {0xBB, Clock{{0xAA, 1}, {0xBB, 1}}}}
     )
   );
 }
 
-TEST(Broker, PropagatesProvidedConnections)
+TEST_F(BrokerTest, PropagatesProvidedConnections)
 {
-  const auto broker = BrokerStore::instance()->build("hub://");
   const auto hub = std::make_shared<BrokerMock>();
   const auto journal = std::make_shared<BrokerMock>();
 
   const auto aaEntry = Entry{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}};
 
-  EXPECT_CALL(*hub, connect(Connection(broker, 1, {}, {})))
+  EXPECT_CALL(*hub, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(hub, 1, {}, {})));
   EXPECT_CALL(*hub, query(Clock{}, 1)).Times(1).WillOnce(Return(EntryList{}));
@@ -304,7 +297,7 @@ TEST(Broker, PropagatesProvidedConnections)
   EXPECT_CALL(
     *hub, refresh(
             Connection(
-              broker, 1, Clock{{0xAA, 1}},
+              hub0, 1, Clock{{0xAA, 1}},
               IdConnectionInfoMap{{0xAA, {.distance = 2, .clock = {{0xAA, 1}}}}}
             ),
             1
@@ -313,7 +306,7 @@ TEST(Broker, PropagatesProvidedConnections)
     .Times(1)
     .WillOnce(Return(true));
 
-  EXPECT_CALL(*journal, connect(Connection(broker, 2, {}, {})))
+  EXPECT_CALL(*journal, connect(Connection(hub0, 2, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(
       journal, 1, Clock{{0xAA, 1}},
@@ -323,6 +316,6 @@ TEST(Broker, PropagatesProvidedConnections)
     .Times(1)
     .WillOnce(Return(EntryList{aaEntry}));
 
-  broker->connect(Connection{hub});
-  broker->connect(Connection{journal});
+  hub0->connect(Connection{hub});
+  hub0->connect(Connection{journal});
 }
