@@ -16,8 +16,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "brokergrpcstub.h"
 #include "cashmere/broker.h"
-#include "cashmere/grpcrunner.h"
 #include "cashmere/journalfile.h"
 #include "core.h"
 
@@ -58,7 +58,7 @@ TEST_F(BrokerStoreTest, CanCreateJournalType)
 TEST_F(BrokerStoreTest, CanCreateGrpcType)
 {
   auto instance = store->build("grpc://0.0.0.0:9999");
-  ASSERT_TRUE(dynamic_cast<GrpcRunner*>(instance.get()));
+  ASSERT_TRUE(dynamic_cast<BrokerGrpcStub*>(instance.get()));
 }
 
 TEST_F(BrokerStoreTest, CreatedBrokerHasWeakPtrToStore)

@@ -242,11 +242,6 @@ std::thread GrpcRunner::start()
 
 GrpcRunner::~GrpcRunner() = default;
 
-BrokerBasePtr GrpcRunner::create(const std::string& url)
-{
-    return std::make_shared<GrpcRunner>(url);
-}
-
 std::string GrpcRunner::schema() const
 {
   return "grpc";

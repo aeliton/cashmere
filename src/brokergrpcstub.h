@@ -30,8 +30,10 @@ class BrokerGrpcStub : public BrokerBase
 {
 public:
   explicit BrokerGrpcStub(const std::string& url);
-  explicit BrokerGrpcStub(const std::string& hostname, uint16_t port);
   explicit BrokerGrpcStub(std::unique_ptr<Grpc::Broker::StubInterface>&& stub);
+
+  static BrokerBasePtr create(const std::string& url);
+
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;
   virtual SourcesMap sources(Source sender = 0) const override;
@@ -45,7 +47,7 @@ public:
   virtual Clock relay(const Data& entry, Source sender) override;
 
   virtual std::string schema() const override {
-    return "";
+    return "grpc";
   }
   virtual std::set<Source> connectedPorts() const override {
     return {};

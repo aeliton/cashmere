@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 
 void RunCommand(const Options& options)
 {
-  auto stub = BrokerGrpcClient(options.hostname, options.source);
+  auto stub = BrokerGrpcClient(std::format("grpc://{}:{}", options.hostname, options.source));
   switch (options.command.type) {
     case Command::Type::Invalid:
       break;
@@ -125,7 +125,7 @@ void RunService(const Options& options)
         break;
       case Command::Type::Connect:
       {
-        const auto conn = broker->connect(Connection(command.url));
+        const auto conn = broker->connect(Connection(std::format("grpc://{}", command.url)));
         if (!conn.valid()) {
           std::println("{}: failed {}", command.name(), options.source);
         }

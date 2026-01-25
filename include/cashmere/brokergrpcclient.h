@@ -28,7 +28,7 @@ class BrokerGrpcStub;
 class CASHMERE_EXPORT BrokerGrpcClient : public BrokerBase
 {
 public:
-  BrokerGrpcClient(const std::string& hostname, uint16_t port);
+  BrokerGrpcClient(const std::string& url);
 
   ~BrokerGrpcClient();
   virtual std::string schema() const override {

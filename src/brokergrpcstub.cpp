@@ -35,18 +35,18 @@ BrokerGrpcStub::BrokerGrpcStub(
 }
 
 BrokerGrpcStub::BrokerGrpcStub(const std::string& url)
-  : BrokerBase()
-  , _url(url)
+  : BrokerBase(url)
   , _stub(Grpc::Broker::NewStub(
-      grpc::CreateChannel(_url, grpc::InsecureChannelCredentials())
+      grpc::CreateChannel(std::format("{}:{}", hostname(), port()), grpc::InsecureChannelCredentials())
     ))
 {
 }
 
-BrokerGrpcStub::BrokerGrpcStub(const std::string& hostname, uint16_t port)
-  : BrokerGrpcStub(hostname + ":" + std::to_string(port))
+BrokerBasePtr BrokerGrpcStub::create(const std::string& url)
 {
+    return std::make_shared<BrokerGrpcStub>(url);
 }
+
 
 Clock BrokerGrpcStub::clock() const
 {

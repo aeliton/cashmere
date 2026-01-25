@@ -32,7 +32,6 @@ public:
   GrpcRunner(const std::string& url);
 
   ~GrpcRunner();
-  static BrokerBasePtr create(const std::string& url = {});
 
   std::thread start();
   void stop();
