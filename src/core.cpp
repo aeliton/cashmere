@@ -1,6 +1,6 @@
 #include "core.h"
 #include "cashmere/broker.h"
-#include "cashmere/brokergrpc.h"
+#include "cashmere/grpcrunner.h"
 #include "cashmere/journal.h"
 #include "cashmere/journalfile.h"
 #include "utils/urlutils.h"
@@ -11,7 +11,7 @@ BrokerStore::BrokerStore(Private)
 {
   _builders["hub"] = &Broker::create;
   _builders["file"] = &JournalFile::create;
-  _builders["grpc"] = &BrokerGrpc::create;
+  _builders["grpc"] = &GrpcRunner::create;
   _builders["cache"] = &Journal::create;
 }
 

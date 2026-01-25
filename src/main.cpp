@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/brokerbase.h"
-#include "cashmere/brokergrpc.h"
 #include "cashmere/brokergrpcclient.h"
+#include "cashmere/grpcrunner.h"
 #include "cashmere/journalfile.h"
 #include "cashmere/ledger.h"
 #include "options.h"
@@ -105,7 +105,7 @@ void RunCommand(const Options& options)
 void RunService(const Options& options)
 {
   auto tempDir = TempDir();
-  auto broker = std::make_shared<BrokerGrpc>(std::format("grpc://{}:{}", options.hostname, options.source));
+  auto broker = std::make_shared<GrpcRunner>(std::format("grpc://{}:{}", options.hostname, options.source));
   auto path = options.dbPath.empty() ? tempDir.directory : options.dbPath;
   auto journal = std::make_shared<JournalFile>(std::format("file://{:x}@localhost{}", options.id, path));
 

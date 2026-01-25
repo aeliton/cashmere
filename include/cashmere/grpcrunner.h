@@ -13,8 +13,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_BROKER_GRPC_H
-#define CASHMERE_BROKER_GRPC_H
+#ifndef CASHMERE_BROKER_GRPC_RUNNER_H
+#define CASHMERE_BROKER_GRPC_RUNNER_H
 
 #include "cashmere/broker.h"
 #include <thread>
@@ -22,16 +22,16 @@
 namespace Cashmere
 {
 
-class BrokerGrpc;
-using BrokerGrpcPtr = std::shared_ptr<BrokerGrpc>;
-using BrokerGrpcWeakPtr = std::weak_ptr<BrokerGrpc>;
+class GrpcRunner;
+using GrpcRunnerPtr = std::shared_ptr<GrpcRunner>;
+using GrpcRunnerWeakPtr = std::weak_ptr<GrpcRunner>;
 
-class CASHMERE_EXPORT BrokerGrpc : public Broker
+class CASHMERE_EXPORT GrpcRunner : public Broker
 {
 public:
-  BrokerGrpc(const std::string& url);
+  GrpcRunner(const std::string& url);
 
-  ~BrokerGrpc();
+  ~GrpcRunner();
   static BrokerBasePtr create(const std::string& url = {});
 
   std::thread start();
