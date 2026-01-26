@@ -16,7 +16,6 @@
 #ifndef CASHMERE_UTILS_FILEUTILS_H
 #define CASHMERE_UTILS_FILEUTILS_H
 
-#include "cashmere/cashmere.h"
 #include <istream>
 
 namespace Cashmere
@@ -35,11 +34,11 @@ bool ReadSpaces(std::istream& in);
 
 bool ReadChar(std::istream& in, const char expected);
 
-bool ReadPair(std::istream& in, Id& id, Time& time);
+bool ReadPair(std::istream& in, uint64_t& id, uint64_t& time);
 
 bool SeekToLine(std::fstream& file, size_t line);
 
-std::string Filename(const std::string& base, Id id);
+std::string Filename(const std::string& base, uint64_t id);
 
 size_t LineCount(const std::string& filename);
 

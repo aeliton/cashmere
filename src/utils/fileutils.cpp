@@ -47,7 +47,7 @@ bool ReadChar(std::istream& in, const char expected)
   return false;
 }
 
-bool ReadPair(std::istream& in, Id& id, Time& time)
+bool ReadPair(std::istream& in, uint64_t& id, uint64_t& time)
 {
   if (!ReadChar(in, kOpenCurly)) {
     return false;
@@ -78,10 +78,10 @@ bool SeekToLine(std::fstream& file, size_t line)
   return line == 1;
 }
 
-std::string Filename(const std::string& base, Id id)
+std::string Filename(const std::string& base, uint64_t id)
 {
   std::stringstream ss;
-  ss << std::hex << std::setfill('0') << std::setw(sizeof(Id) * 2) << id
+  ss << std::hex << std::setfill('0') << std::setw(sizeof(uint64_t) * 2) << id
      << std::dec;
   const auto filename = fs::path(base) / ss.str();
   fs::create_directories(filename.parent_path());
