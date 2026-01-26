@@ -17,9 +17,10 @@
 #include <gtest/gtest.h>
 #include <proto/cashmere_mock.grpc.pb.h>
 
-#include "brokergrpcstub.h"
-#include "brokermock.h"
+#include "core/brokergrpcstub.h"
 #include "cashmere/brokerstore.h"
+
+#include "brokermock.h"
 
 using namespace ::Cashmere;
 using namespace ::testing;

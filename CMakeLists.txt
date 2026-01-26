@@ -56,20 +56,20 @@ protobuf_generate(
 include(GenerateExportHeader)
 
 add_library(cashmere_objects OBJECT
- ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbase.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbaseimpl.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerwrapperbase.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/cashmere.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/grpcrunner.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/journalbase.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/journalfile.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/ledger.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/broker.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokerbase.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokerbaseimpl.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokergrpcstub.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokerwrapperbase.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/cashmere.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/clock.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/core.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/grpcrunner.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/entry.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journal.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journalbase.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journalfile.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
