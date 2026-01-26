@@ -194,7 +194,7 @@ find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 enable_testing()
 add_executable (gtests
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_broker_store.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokerstore.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_brokerstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_clock.cpp
