@@ -23,8 +23,6 @@
 #include <grpcpp/create_channel.h>
 #include <proto/cashmere.grpc.pb.h>
 
-namespace fs = std::filesystem;
-
 namespace Cashmere
 {
 
