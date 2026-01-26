@@ -18,7 +18,6 @@
 
 #include <cashmere/cashmere_export.h>
 #include <cstdint>
-#include <memory>
 #include <set>
 
 namespace Cashmere
@@ -29,14 +28,6 @@ using Time = uint64_t;
 using Source = uint32_t;
 
 using IdSet = std::set<Id>;
-
-class BrokerStoreBase;
-using BrokerStoreBasePtr = std::shared_ptr<BrokerStoreBase>;
-using BrokerStoreBaseWeakPtr = std::weak_ptr<BrokerStoreBase>;
-
-class BrokerBase;
-using BrokerBasePtr = std::shared_ptr<BrokerBase>;
-using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 
 }
 

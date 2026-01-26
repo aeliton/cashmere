@@ -13,8 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "cashmere/broker.h"
-#include "cashmere/brokerbase.h"
+#include "broker.h"
 #include "cashmere/brokerstore.h"
 #include <cassert>
 #include <limits>

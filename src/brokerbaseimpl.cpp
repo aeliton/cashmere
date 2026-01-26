@@ -1,5 +1,5 @@
 // Cashmere - a distributed conflict-free replicated database.
-// Copyright (C) 2025 Aeliton G. Silva
+// Copyright (C) 2026 Aeliton G. Silva
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -13,36 +13,38 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_BROKER_GRPC_RUNNER_H
-#define CASHMERE_BROKER_GRPC_RUNNER_H
-
-#include "cashmere/cashmere.h"
-
-#include <memory>
-#include <thread>
+#include "brokerbaseimpl.h"
 
 namespace Cashmere
 {
 
-class GrpcRunner;
-using GrpcRunnerPtr = std::shared_ptr<GrpcRunner>;
-using GrpcRunnerWeakPtr = std::weak_ptr<GrpcRunner>;
+std::unique_ptr<Random> BrokerBase::Impl::random = std::make_unique<Random>();
 
-class CASHMERE_EXPORT GrpcRunner
+BrokerBase::Impl::Impl(const std::string& u)
+  : url(ParseUrl(u))
 {
-public:
-  GrpcRunner(const std::string& hostport, BrokerBasePtr broker);
-
-  ~GrpcRunner();
-
-  std::thread start();
-  void stop();
-
-private:
-  class Impl;
-  std::unique_ptr<Impl> _impl;
-};
-
+  try {
+    id = std::stoul(url.id, nullptr, 16);
+  } catch (std::exception) {
+    id = random->next();
+  }
+  size_t pos = url.hostport.find(':');
+  hostname = url.hostport.substr(0, pos);
+  try {
+    port = std::stoul(url.hostport.substr(pos + 1), nullptr);
+  } catch (std::exception) {
+    port = 0;
+  }
 }
 
-#endif
+void BrokerBase::Impl::setStore(BrokerStoreBasePtr value)
+{
+  storePtr = value;
+}
+
+BrokerStoreBasePtr BrokerBase::Impl::store()
+{
+  return storePtr.lock();
+}
+
+}

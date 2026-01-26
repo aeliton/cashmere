@@ -17,8 +17,8 @@
 #include <gtest/gtest.h>
 
 #include "brokermock.h"
-#include "core.h"
-#include "cashmere/journal.h"
+#include "journal.h"
+#include "cashmere/brokerstore.h"
 
 using namespace Cashmere;
 
@@ -28,7 +28,7 @@ struct JournalTest : public ::testing::Test
     store = BrokerStore::create();
     journal = store->getOrCreate("cache://aa@localhost");
   }
-  BrokerStorePtr store;
+  BrokerStoreBasePtr store;
   BrokerBasePtr journal;
 };
 

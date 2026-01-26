@@ -17,7 +17,6 @@
 #define CASHMERE_BROKER_H
 
 #include "cashmere/brokerbase.h"
-#include "utils/urlutils.h"
 #include <memory>
 #include <vector>
 

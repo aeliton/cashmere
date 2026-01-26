@@ -21,8 +21,6 @@
 
 #include "cashmere/cashmere.h"
 #include "cashmere/entry.h"
-#include "utils/random.h"
-#include "utils/urlutils.h"
 
 namespace Cashmere
 {
@@ -38,11 +36,14 @@ struct CASHMERE_EXPORT ConnectionInfo
 };
 
 using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
-
 using SourcesMap = std::map<Source, IdConnectionInfoMap>;
 
 class Connection;
 using ConnectionPtr = std::shared_ptr<Connection>;
+
+class BrokerBase;
+using BrokerBasePtr = std::shared_ptr<BrokerBase>;
+using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 
 class CASHMERE_EXPORT Connection
 {
@@ -94,6 +95,8 @@ private:
 
 class CASHMERE_EXPORT BrokerBase : public std::enable_shared_from_this<BrokerBase>
 {
+  struct Impl;
+  std::unique_ptr<Impl> _impl;
 public:
   BrokerBase(const std::string& url = {});
   virtual ~BrokerBase();
@@ -126,22 +129,13 @@ public:
   virtual bool erase(Clock time);
   virtual bool contains(const Clock& clock) const;
 
-  virtual void setStore(BrokerStoreBasePtr store);
-  virtual BrokerStoreBasePtr store() const;
-
   virtual std::string location() const;
   virtual uint16_t port() const;
   virtual std::string hostname() const;
 
   virtual BrokerBasePtr ptr();
 
-private:
-  Url _url;
-  Id _id;
-  std::string _hostname;
-  uint16_t _port;
-  BrokerStoreBaseWeakPtr _store;
-  static std::unique_ptr<Random> _random;
+  Impl* impl();
 };
 
 CASHMERE_EXPORT std::ostream&

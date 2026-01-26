@@ -22,8 +22,9 @@
 
 #include "brokermock.h"
 
-#include "core.h"
+#include "cashmere/brokerstore.h"
 #include "utils/fileutils.h"
+#include "utils/urlutils.h"
 
 namespace fs = std::filesystem;
 
@@ -47,7 +48,7 @@ struct JournalFileTest : public ::testing::Test
   {
     DeleteTempDir(tmpdir);
   }
-  BrokerStorePtr store;
+  BrokerStoreBasePtr store;
   std::string tmpdir;
   std::string filename;
   std::string url;

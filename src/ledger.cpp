@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/ledger.h"
+#include "cashmere/brokerbase.h"
 
 namespace Cashmere
 {
-Ledger::Ledger(BrokerPtr journal)
+Ledger::Ledger(BrokerBasePtr journal)
   : Ledger(journal->query())
 {
   _journal = journal;

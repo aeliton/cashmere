@@ -14,10 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/brokerbase.h"
-#include "brokergrpcstub.h"
 #include "utils/urlutils.h"
-#include <filesystem>
-#include "cashmere/brokerstore.h"
+#include "brokerbaseimpl.h"
 
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
@@ -25,8 +23,6 @@
 
 namespace Cashmere
 {
-
-std::unique_ptr<Random> BrokerBase::_random = std::make_unique<Random>();
 
 Connection::~Connection() = default;
 
@@ -174,32 +170,20 @@ bool Connection::operator==(const Connection& other) const
 }
 
 BrokerBase::BrokerBase(const std::string& url)
-  : _url(ParseUrl(url))
+  : _impl(std::make_unique<Impl>(url))
 {
-  try {
-    _id = std::stoul(_url.id, nullptr, 16);
-  } catch (std::exception) {
-    _id = _random->next();
-  }
-  size_t pos = _url.hostport.find(':');
-  _hostname = _url.hostport.substr(0, pos);
-  try {
-    _port = std::stoul(_url.hostport.substr(pos + 1), nullptr);
-  } catch (std::exception) {
-    _port = 0;
-  }
 }
 
 BrokerBase::~BrokerBase() = default;
 
 Id BrokerBase::id() const
 {
-  return _id;
+  return _impl->id;
 }
 
 std::string BrokerBase::url() const
 {
-  return _url.url;
+  return _impl->url.url;
 }
 
 Clock BrokerBase::insert(const EntryList& entries, Source sender)
@@ -304,40 +288,31 @@ EntryList BrokerBase::entries() const
   return {};
 }
 
-void BrokerBase::setStore(BrokerStoreBasePtr store)
-{
-  _store = store;
-}
-
-BrokerStoreBasePtr BrokerBase::store() const
-{
-  return _store.lock();
-}
 std::string BrokerBase::location() const
 {
-  return _url.path;
+  return _impl->url.path;
 }
 uint16_t BrokerBase::port() const
 {
-  return _port;
+  return _impl->port;
 }
 std::string BrokerBase::hostname() const
 {
-  return _hostname;
+  return _impl->hostname;
 }
 
 Connection BrokerBase::connect(const std::string& url)
 {
-  if (store()) {
-    return connect(Connection{store()->getOrCreate(url)});
+  if (auto store = _impl->store()) {
+    return connect(Connection{store->getOrCreate(url)});
   }
   return connect(Connection{});
 }
 
 Connection BrokerBase::stub()
 {
-  if (store()) {
-    return Connection(store()->getOrCreate(url()));
+  if (auto store = _impl->store()) {
+    return Connection(store->getOrCreate(url()));
   }
   return Connection(ptr());
 }
@@ -347,5 +322,9 @@ BrokerBasePtr BrokerBase::ptr()
   return this->shared_from_this();
 }
 
+BrokerBase::Impl* BrokerBase::impl()
+{
+  return _impl.get();
+}
 
 }

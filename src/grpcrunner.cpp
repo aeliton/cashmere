@@ -13,9 +13,11 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "cashmere/grpcrunner.h"
+
 #include "cashmere/brokerstore.h"
 #include "utils/grpcutils.h"
+#include "grpcrunner.h"
+#include "brokerbaseimpl.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpc/grpc.h>
@@ -27,76 +29,17 @@
 namespace Cashmere
 {
 
-class GrpcRunner::Impl : public Grpc::Broker::Service
+WrapperBasePtr GrpcRunner::create(const std::string& url)
 {
-public:
-  Impl(const std::string& hostport, BrokerBasePtr broker);
-
-  ~Impl();
-
-  BrokerBasePtr broker() const
-  {
-    return _broker.lock();
-  }
-
-  std::thread start();
-  void stop();
-
-private:
-  ::grpc::Status Connect(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::ConnectionRequest* request,
-    ::Cashmere::Grpc::ConnectionResponse* response
-  ) override;
-  ::grpc::Status Query(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::QueryRequest* request,
-    ::Cashmere::Grpc::QueryResponse* response
-  ) override;
-  ::grpc::Status Insert(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::InsertRequest* request,
-    ::Cashmere::Grpc::InsertResponse* response
-  ) override;
-  ::grpc::Status Refresh(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::RefreshRequest* request,
-    ::google::protobuf::Empty* response
-  ) override;
-  ::grpc::Status Relay(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::RelayInsertRequest* request,
-    ::Cashmere::Grpc::InsertResponse* response
-  ) override;
-  ::grpc::Status GetClock(
-    ::grpc::ServerContext* context, const ::google::protobuf::Empty* request,
-    ::Cashmere::Grpc::ClockResponse* response
-  ) override;
-  ::grpc::Status Sources(
-    ::grpc::ServerContext* context,
-    const ::Cashmere::Grpc::SourcesRequest* request,
-    ::Cashmere::Grpc::SourcesResponse* response
-  ) override;
-
-  BrokerBaseWeakPtr _broker;
-  std::string _hostport;
-  std::unique_ptr<grpc::Server> _server;
-};
-
-GrpcRunner::Impl::~Impl() {}
-
-GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
-  : _broker(broker)
-  , _hostport(hostport)
-{
+  return std::make_shared<GrpcRunner>(url);
 }
 
-::grpc::Status GrpcRunner::Impl::Connect(
+::grpc::Status GrpcRunner::Connect(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::ConnectionRequest* request, Grpc::ConnectionResponse* response
 )
 {
-  auto stub = Connection(broker()->store()->getOrCreate(request->broker().url()));
+  auto stub = Connection(broker()->impl()->store()->getOrCreate(request->broker().url()));
   if (request->source() == 0) {
     const auto conn = broker()->connect(stub);
     response->set_source(conn.source());
@@ -119,7 +62,7 @@ GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
   return ::grpc::Status::OK;
 }
 
-::grpc::Status GrpcRunner::Impl::Query(
+::grpc::Status GrpcRunner::Query(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::QueryRequest* request, Grpc::QueryResponse* response
 )
@@ -135,7 +78,7 @@ GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
   return ::grpc::Status::OK;
 }
 
-::grpc::Status GrpcRunner::Impl::Insert(
+::grpc::Status GrpcRunner::Insert(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::InsertRequest* request, Grpc::InsertResponse* response
 )
@@ -151,7 +94,7 @@ GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
   return ::grpc::Status::CANCELLED;
 }
 
-::grpc::Status GrpcRunner::Impl::Refresh(
+::grpc::Status GrpcRunner::Refresh(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::RefreshRequest* request,
   [[maybe_unused]] ::google::protobuf::Empty* response
@@ -165,7 +108,7 @@ GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
   return ::grpc::Status::OK;
 }
 
-::grpc::Status GrpcRunner::Impl::Relay(
+::grpc::Status GrpcRunner::Relay(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const Grpc::RelayInsertRequest* request, Grpc::InsertResponse* response
 )
@@ -176,7 +119,7 @@ GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
   return ::grpc::Status::OK;
 }
 
-::grpc::Status GrpcRunner::Impl::Sources(
+::grpc::Status GrpcRunner::Sources(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const ::Cashmere::Grpc::SourcesRequest* request,
   Grpc::SourcesResponse* response
@@ -187,22 +130,23 @@ GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
   return ::grpc::Status::OK;
 }
 
-std::thread GrpcRunner::Impl::start()
+std::thread GrpcRunner::start(BrokerBasePtr broker)
 {
+  _broker = broker;
   grpc::ServerBuilder builder;
-  builder.AddListeningPort(_hostport, grpc::InsecureServerCredentials());
+  builder.AddListeningPort(ParseUrl(url()).hostport, grpc::InsecureServerCredentials());
 
   builder.RegisterService(this);
   _server = builder.BuildAndStart();
   return std::thread([this]() { _server->Wait(); });
 }
 
-void GrpcRunner::Impl::stop()
+void GrpcRunner::stop()
 {
   _server->Shutdown();
 }
 
-::grpc::Status GrpcRunner::Impl::GetClock(
+::grpc::Status GrpcRunner::GetClock(
   [[maybe_unused]] ::grpc::ServerContext* context,
   const ::google::protobuf::Empty*, Grpc::ClockResponse* response
 )
@@ -211,21 +155,14 @@ void GrpcRunner::Impl::stop()
   return ::grpc::Status::OK;
 }
 
-void GrpcRunner::stop()
-{
-  _impl->stop();
-}
-
-GrpcRunner::GrpcRunner(const std::string& hostport, BrokerBasePtr broker)
-  : _impl(std::make_unique<GrpcRunner::Impl>(hostport, broker))
+GrpcRunner::GrpcRunner(const std::string& url)
+  : WrapperBase(url)
 {
 }
 
-std::thread GrpcRunner::start()
+BrokerBasePtr GrpcRunner::broker()
 {
-  return _impl->start();
+  return _broker.lock();
 }
-
-GrpcRunner::~GrpcRunner() = default;
 
 }

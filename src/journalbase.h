@@ -13,33 +13,39 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_CORE_H
-#define CASHMERE_CORE_H
+#ifndef CASHEMERE_JOURNAL_BASE_H
+#define CASHEMERE_JOURNAL_BASE_H
 
-#include "cashmere/brokerstore.h"
+#include <cassert>
 
-#include <functional>
-#include <unordered_map>
+#include "cashmere/cashmere.h"
+#include "broker.h"
 
-namespace Cashmere {
-  
-class BrokerStore;
-using BrokerStorePtr = std::shared_ptr<BrokerStore>;
+namespace Cashmere
+{
 
-class BrokerStore : public BrokerStoreBase {
-  struct Private{ explicit Private() = default; };
-  public:
-    BrokerStore(Private);
-    static BrokerStorePtr create();
-    bool insert(const std::string& url, BrokerBasePtr broker) override;
-    BrokerBasePtr getOrCreate(const std::string& url) override;
-    std::size_t size() const override;
+class Random;
 
-  private:
-    std::unordered_map<std::string, BrokerBasePtr> _store;
-    std::unordered_map<std::string, std::function<BrokerBasePtr(const std::string&)>> _builders;
+class CASHMERE_EXPORT JournalBase : public Broker
+{
+public:
+  virtual ~JournalBase();
+  explicit JournalBase(const std::string& url);
+
+  SourcesMap sources(Source sender = 0) const override;
+
+  Clock insert(const Entry& data, Source source = 0) override;
+  EntryList query(const Clock& from = {}, Source source = 0) const override;
+  virtual Clock relay(const Data& data, Source sender) override;
+
+  Id bookId() const;
+
+private:
+  const Id _bookId;
+  Clock _version;
 };
 
+using JournalPtr = std::shared_ptr<JournalBase>;
 }
 
 #endif

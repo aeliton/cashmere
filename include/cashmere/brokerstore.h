@@ -16,10 +16,16 @@
 #ifndef CASHMERE_STORE_H
 #define CASHMERE_STORE_H
 
-#include "cashmere/cashmere.h"
+#include "cashmere/brokerbase.h"
+#include <functional>
+#include <unordered_map>
 
 namespace Cashmere
 {
+
+class BrokerStoreBase;
+using BrokerStoreBasePtr = std::shared_ptr<BrokerStoreBase>;
+using BrokerStoreBaseWeakPtr = std::weak_ptr<BrokerStoreBase>;
 
 class CASHMERE_EXPORT BrokerStoreBase : public std::enable_shared_from_this<BrokerStoreBase>
 {
@@ -28,6 +34,20 @@ public:
   virtual BrokerBasePtr getOrCreate(const std::string& url) = 0;
   virtual bool insert(const std::string& url, BrokerBasePtr broker) = 0;
   virtual std::size_t size() const = 0;
+};
+
+class BrokerStore : public BrokerStoreBase {
+  struct Private{ explicit Private() = default; };
+  public:
+    BrokerStore(Private);
+    static BrokerStoreBasePtr create();
+    bool insert(const std::string& url, BrokerBasePtr broker) override;
+    BrokerBasePtr getOrCreate(const std::string& url) override;
+    std::size_t size() const override;
+
+  private:
+    std::unordered_map<std::string, BrokerBasePtr> _store;
+    std::unordered_map<std::string, std::function<BrokerBasePtr(const std::string&)>> _builders;
 };
 
 }

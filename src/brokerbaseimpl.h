@@ -1,5 +1,5 @@
 // Cashmere - a distributed conflict-free replicated database.
-// Copyright (C) 2025 Aeliton G. Silva
+// Copyright (C) 2026 Aeliton G. Silva
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -13,39 +13,30 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHEMERE_JOURNAL_BASE_H
-#define CASHEMERE_JOURNAL_BASE_H
+#ifndef CASHMERE_BROKER_BASE_IMPL_H
+#define CASHMERE_BROKER_BASE_IMPL_H
 
-#include <cassert>
-#include <memory>
-
-#include "cashmere/broker.h"
+#include "cashmere/brokerbase.h"
+#include "cashmere/brokerstore.h"
+#include "utils/random.h"
+#include "utils/urlutils.h"
 
 namespace Cashmere
 {
 
-class Random;
+struct BrokerBase::Impl {
+  Impl(const std::string& u);
+  void setStore(BrokerStoreBasePtr value);
+  BrokerStoreBasePtr store();
 
-class CASHMERE_EXPORT JournalBase : public Broker
-{
-public:
-  virtual ~JournalBase();
-  explicit JournalBase(const std::string& url);
-
-  SourcesMap sources(Source sender = 0) const override;
-
-  Clock insert(const Entry& data, Source source = 0) override;
-  EntryList query(const Clock& from = {}, Source source = 0) const override;
-  virtual Clock relay(const Data& data, Source sender) override;
-
-  Id bookId() const;
-
-private:
-  const Id _bookId;
-  Clock _version;
+  Url url;
+  Id id;
+  std::string hostname;
+  uint16_t port;
+  BrokerStoreBaseWeakPtr storePtr;
+  static std::unique_ptr<Random> random;
 };
 
-using JournalPtr = std::shared_ptr<JournalBase>;
 }
 
 #endif

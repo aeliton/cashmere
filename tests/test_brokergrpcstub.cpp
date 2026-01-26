@@ -15,12 +15,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <proto/cashmere_mock.grpc.pb.h>
 
 #include "brokergrpcstub.h"
 #include "brokermock.h"
-#include "core.h"
-
-#include <proto/cashmere_mock.grpc.pb.h>
+#include "cashmere/brokerstore.h"
 
 using namespace ::Cashmere;
 using namespace ::testing;
@@ -37,7 +36,7 @@ struct BrokerGrpcStubTest : public ::testing::Test
     stub = std::make_unique<Grpc::MockBrokerStub>();
   }
 
-  BrokerStorePtr store;
+  BrokerStoreBasePtr store;
   std::unique_ptr<Grpc::MockBrokerStub> stub;
 };
 

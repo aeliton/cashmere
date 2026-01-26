@@ -58,11 +58,13 @@ include(GenerateExportHeader)
 add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbase.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/grpcrunner.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerbaseimpl.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokergrpcstub.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerwrapperbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/cashmere.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/grpcrunner.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journal.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/journalbase.cpp

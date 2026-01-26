@@ -16,10 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "brokergrpcstub.h"
-#include "cashmere/broker.h"
-#include "cashmere/journalfile.h"
-#include "core.h"
+#include "cashmere/brokerstore.h"
 
 using namespace Cashmere;
 
@@ -28,13 +25,13 @@ struct BrokerStoreTest : public ::testing::Test
   void SetUp() override {
     store = BrokerStore::create();
   }
-  BrokerStorePtr store;
+  BrokerStoreBasePtr store;
 };
 
 TEST_F(BrokerStoreTest, CanCreateHubTypeBrokers)
 {
   auto hub = store->getOrCreate("hub://");
-  ASSERT_TRUE(dynamic_cast<Broker*>(hub.get()));
+  ASSERT_EQ(hub->schema(), "hub");
 }
 
 TEST_F(BrokerStoreTest, UseIdFromUrl)
@@ -52,19 +49,13 @@ TEST_F(BrokerStoreTest, ReturnNullptrForUnknownSchema)
 TEST_F(BrokerStoreTest, CanCreateJournalType)
 {
   auto instance = store->getOrCreate("file:///tmp");
-  ASSERT_TRUE(dynamic_cast<JournalFile*>(instance.get()));
+  ASSERT_EQ(instance->schema(), "file");
 }
 
 TEST_F(BrokerStoreTest, CanCreateGrpcType)
 {
   auto instance = store->getOrCreate("grpc://0.0.0.0:9999");
-  ASSERT_TRUE(dynamic_cast<BrokerGrpcStub*>(instance.get()));
-}
-
-TEST_F(BrokerStoreTest, CreatedBrokerHasWeakPtrToStore)
-{
-  auto hub = store->getOrCreate("hub://");
-  ASSERT_EQ(hub->store(), store);
+  ASSERT_EQ(instance->schema(), "grpc");
 }
 
 TEST_F(BrokerStoreTest, GetCreatesBrokerIfInexisting)

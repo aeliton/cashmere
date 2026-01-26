@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "brokermock.h"
-#include "core.h"
+#include "cashmere/brokerstore.h"
 
 using namespace Cashmere;
 
@@ -29,7 +29,7 @@ struct BrokerTest : public ::testing::Test
     store = BrokerStore::create();
     hub0 = store->getOrCreate("hub://cafe@localhost");
   }
-  BrokerStorePtr store;
+  BrokerStoreBasePtr store;
   BrokerBasePtr hub0;
 };
 

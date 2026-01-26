@@ -16,7 +16,9 @@
 #ifndef CASHMERE_LEDGER_H
 #define CASHMERE_LEDGER_H
 
-#include "cashmere/broker.h"
+#include "cashmere/cashmere.h"
+#include "cashmere/entry.h"
+#include "cashmere/brokerbase.h"
 
 namespace Cashmere
 {
@@ -34,7 +36,7 @@ public:
   };
   using ActionClock = std::tuple<Ledger::Action, Clock>;
   Ledger() = delete;
-  explicit Ledger(BrokerPtr journal);
+  explicit Ledger(BrokerBasePtr journal);
 
   Amount balance() const;
 
@@ -44,7 +46,7 @@ public:
 
 private:
   explicit Ledger(const EntryList& entries);
-  BrokerPtr _journal;
+  BrokerBasePtr _journal;
   Amount _balance;
   ClockEntryMap _rows;
 };
