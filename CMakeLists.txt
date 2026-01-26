@@ -111,9 +111,15 @@ generate_export_header(cashmere EXPORT_FILE_NAME export/cashmere/cashmere_export
 add_library(cashmere::cashmere ALIAS cashmere)
 
 add_library(options_objects OBJECT
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/command.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/cli/command.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/cli/options.cpp
 )
+
+target_include_directories(options_objects
+  PRIVATE
+    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
+
 target_link_libraries(options_objects PRIVATE cashmere_objects)
 
 add_executable(cash)
@@ -128,7 +134,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(libedit REQUIRED libedit)
 
 target_sources(cash PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/cli/main.cpp
 )
 target_include_directories(cash
   PUBLIC
