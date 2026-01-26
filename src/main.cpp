@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/brokerbase.h"
-#include "cashmere/brokergrpcclient.h"
 #include "cashmere/grpcrunner.h"
 #include "cashmere/ledger.h"
 #include "core.h"
@@ -71,10 +70,8 @@ int main(int argc, char* argv[])
 void RunCommand(const Options& options)
 {
   auto url = std::format("grpc://{}:{}", options.hostname, options.source);
-  auto stub = std::make_shared<BrokerGrpcClient>(url);
   auto store = BrokerStore::create();
-  store->insert(url, stub);
-  stub->setStore(store);
+  auto stub = store->build(url);
   switch (options.command.type) {
     case Command::Type::Invalid:
       break;
