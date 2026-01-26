@@ -36,8 +36,6 @@ public:
   std::thread start();
   void stop();
 
-  Connection stub() override;
-
   std::string schema() const override;
 
 private:

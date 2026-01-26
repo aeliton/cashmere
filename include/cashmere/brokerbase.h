@@ -62,12 +62,10 @@ public:
   virtual ~Connection();
 
   explicit Connection();
-  explicit Connection(BrokerBasePtr broker, Type type = Type::Memory);
   explicit Connection(
-    BrokerBasePtr broker, Source source, const Clock& version,
-    const IdConnectionInfoMap& sources
+    BrokerBasePtr broker, Source source = {}, const Clock& version = {},
+    const IdConnectionInfoMap& sources = {}
   );
-  explicit Connection(const std::string& url);
 
   Connection& connect(Connection conn);
   bool refresh(const Connection& conn) const;

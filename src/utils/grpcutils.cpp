@@ -137,9 +137,4 @@ void SetSources(
   }
 }
 
-Connection ConnectionFrom(const Grpc::BrokerData& data)
-{
-  return Connection(data.url());
-}
-
 }

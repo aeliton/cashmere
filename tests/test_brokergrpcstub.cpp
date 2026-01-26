@@ -102,16 +102,14 @@ TEST_F(BrokerGrpcStubTest, InsertIsCalledPassingTheCorrectPort)
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(response), Return(grpc::Status::OK)));
 
-  auto brokerStub = Connection{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), Connection::Type::Grpc
-  };
+  store->insert(kTestGrpcUrl, std::make_shared<BrokerGrpcStub>(std::move(stub)));
 
-  journal->connect(brokerStub);
+  journal->connect(kTestGrpcUrl);
 }
 
 TEST_F(BrokerGrpcStubTest, InsertIsCalledOnConnect)
 {
-  auto journal = store->build("cache://aa");
+  auto journal = store->build("cache://aa@localhost");
   journal->append(1000);
 
   Grpc::InsertResponse response;
@@ -121,11 +119,8 @@ TEST_F(BrokerGrpcStubTest, InsertIsCalledOnConnect)
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(response), Return(grpc::Status::OK)));
 
-  auto brokerStub = Connection{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), Connection::Type::Grpc
-  };
-
-  journal->connect(brokerStub);
+  store->insert(kTestGrpcUrl, std::make_shared<BrokerGrpcStub>(std::move(stub)));
+  journal->connect(kTestGrpcUrl);
 }
 
 TEST_F(BrokerGrpcStubTest, RefreshIsCalledOnDisconnect)
@@ -143,20 +138,17 @@ TEST_F(BrokerGrpcStubTest, RefreshIsCalledOnDisconnect)
     .Times(1)
     .WillOnce(Return(grpc::Status::OK));
 
-  auto brokerStub = Connection{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), Connection::Type::Grpc
-  };
-
-  journal->connect(brokerStub);
+  store->insert(kTestGrpcUrl, std::make_shared<BrokerGrpcStub>(std::move(stub)));
+  journal->connect(kTestGrpcUrl);
   EXPECT_EQ(journal->disconnect(1), 1);
 }
 
 TEST_F(BrokerGrpcStubTest, RefreshIsCalledWithSender)
 {
-  auto broker = store->build("hub://");
+  auto broker = store->build("hub://aa@localhost");
 
-  auto other = std::make_shared<BrokerMock>();
-  broker->connect(Connection{other});
+  store->insert("hub://bb@localhost", std::make_shared<BrokerMock>());
+  broker->connect("hub://bb@localhost");
 
   Grpc::ConnectionResponse resp;
   resp.set_source(kSource);
@@ -177,10 +169,7 @@ TEST_F(BrokerGrpcStubTest, RefreshIsCalledWithSender)
     .Times(1)
     .WillOnce(Return(grpc::Status::OK));
 
-  auto brokerStub = Connection{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), Connection::Type::Grpc
-  };
-
-  broker->connect(brokerStub);
+  store->insert(kTestGrpcUrl, std::make_shared<BrokerGrpcStub>(std::move(stub)));
+  broker->connect(kTestGrpcUrl);
   EXPECT_TRUE(broker->refresh(Connection{}, 1));
 }

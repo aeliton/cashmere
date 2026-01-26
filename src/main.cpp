@@ -16,8 +16,8 @@
 #include "cashmere/brokerbase.h"
 #include "cashmere/brokergrpcclient.h"
 #include "cashmere/grpcrunner.h"
-#include "cashmere/journalfile.h"
 #include "cashmere/ledger.h"
+#include "core.h"
 #include "options.h"
 
 #include <cstdlib>
@@ -70,27 +70,31 @@ int main(int argc, char* argv[])
 
 void RunCommand(const Options& options)
 {
-  auto stub = BrokerGrpcClient(std::format("grpc://{}:{}", options.hostname, options.source));
+  auto url = std::format("grpc://{}:{}", options.hostname, options.source);
+  auto stub = std::make_shared<BrokerGrpcClient>(url);
+  auto store = BrokerStore::create();
+  store->insert(url, stub);
+  stub->setStore(store);
   switch (options.command.type) {
     case Command::Type::Invalid:
       break;
     case Command::Type::Connect:
-      stub.connect(Connection(options.command.url));
+      stub->connect(Connection(store->build(std::format("grpc://{}", options.command.url))));
       break;
     case Command::Type::Disconnect:
       break;
     case Command::Type::Append:
-      if (!stub.relay(options.command.data, 0).valid()) {
+      if (!stub->relay(options.command.data, 0).valid()) {
         exit(EXIT_FAILURE);
       }
       break;
     case Command::Type::Relay:
-      if (!stub.relay(options.command.data, 0).valid()) {
+      if (!stub->relay(options.command.data, 0).valid()) {
         exit(EXIT_FAILURE);
       }
       break;
     case Command::Type::Sources:
-      std::cout << stub.sources(0) << std::endl;
+      std::cout << stub->sources(0) << std::endl;
       break;
     case Command::Type::Versions:
       break;
@@ -104,10 +108,13 @@ void RunCommand(const Options& options)
 
 void RunService(const Options& options)
 {
+  auto store = BrokerStore::create();
+
   auto tempDir = TempDir();
   auto broker = std::make_shared<GrpcRunner>(std::format("grpc://{}:{}", options.hostname, options.source));
+  broker->setStore(store);
   auto path = options.dbPath.empty() ? tempDir.directory : options.dbPath;
-  auto journal = std::make_shared<JournalFile>(std::format("file://{:x}@localhost{}", options.id, path));
+  auto journal = store->build(std::format("file://{:x}@localhost{}", options.id, path));
 
   journal->connect(Connection{broker});
 
@@ -125,7 +132,7 @@ void RunService(const Options& options)
         break;
       case Command::Type::Connect:
       {
-        const auto conn = broker->connect(Connection(std::format("grpc://{}", command.url)));
+        const auto conn = broker->connect(Connection(store->build(std::format("grpc://{}", command.url))));
         if (!conn.valid()) {
           std::println("{}: failed {}", command.name(), options.source);
         }

@@ -43,7 +43,6 @@ public:
 
   virtual Connection connect(Connection conn) override;
   virtual bool refresh(const Connection& conn, Source sender) override;
-  virtual Connection stub() override;
   virtual Clock relay(const Data& entry, Source sender) override;
 
   virtual std::string schema() const override {

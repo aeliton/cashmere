@@ -42,17 +42,6 @@ Connection::Connection()
 {
 }
 
-Connection::Connection(BrokerBasePtr broker, Type type)
-  : _url()
-  , _type(type)
-  , _source(0)
-  , _version()
-  , _sources()
-  , _memoryStub(type == Type::Memory ? broker : nullptr)
-  , _grpcStub(type == Type::Grpc ? broker : nullptr)
-{
-}
-
 Connection::Connection(
   BrokerBasePtr broker, Source source, const Clock& version,
   const IdConnectionInfoMap& sources
@@ -64,17 +53,6 @@ Connection::Connection(
   , _sources(sources)
   , _memoryStub(broker)
   , _grpcStub()
-{
-}
-
-Connection::Connection(const std::string& url)
-  : _url(url)
-  , _type(Type::Grpc)
-  , _source(0)
-  , _version()
-  , _sources()
-  , _memoryStub()
-  , _grpcStub(std::make_shared<BrokerGrpcStub>(url))
 {
 }
 

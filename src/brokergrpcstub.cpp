@@ -128,7 +128,7 @@ Connection BrokerGrpcStub::connect(Connection conn)
   auto status = _stub->Connect(&context, request, &response);
   if (status.ok()) {
     Clock clock = Utils::ClockFrom(response.clock());
-    Connection data(_url);
+    Connection data = stub();
     data.source() = response.source();
     data.clock() = clock;
     return data;
@@ -166,11 +166,6 @@ Clock BrokerGrpcStub::relay(const Data& entry, Source sender)
     return Utils::ClockFrom(response.clock());
   }
   return {{0, 0}};
-}
-
-Connection BrokerGrpcStub::stub()
-{
-  return Connection(_url);
 }
 
 }

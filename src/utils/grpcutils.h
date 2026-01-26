@@ -40,7 +40,6 @@ IdConnectionInfoMap IdConnectionInfoMapFrom(
 SourcesMap SourcesFrom(
   const google::protobuf::Map<uint32_t, Grpc::IdConnectionInfoMap>& sources
 );
-Connection ConnectionFrom(const Grpc::BrokerData& data);
 
 void SetClock(
   google::protobuf::Map<uint64_t, uint64_t>* version, const Clock& data

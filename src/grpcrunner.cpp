@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/grpcrunner.h"
 #include "utils/grpcutils.h"
+#include "cashmere/brokerstore.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpc/grpc.h>
@@ -100,7 +101,7 @@ GrpcRunner::Impl::Impl()
   const Grpc::ConnectionRequest* request, Grpc::ConnectionResponse* response
 )
 {
-  auto stub = Utils::ConnectionFrom(request->broker());
+  auto stub = Connection(broker()->store()->build(request->broker().url()));
   if (request->source() == 0) {
     const auto conn = broker()->connect(stub);
     response->set_source(conn.source());
@@ -224,11 +225,6 @@ GrpcRunner::GrpcRunner(const std::string& url)
   : Broker(url)
   , _impl(std::make_unique<GrpcRunner::Impl>())
 {
-}
-
-Connection GrpcRunner::stub()
-{
-  return Connection(hostname() + ":" + std::to_string(port()));
 }
 
 std::thread GrpcRunner::start()
