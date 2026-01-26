@@ -26,7 +26,7 @@ struct JournalTest : public ::testing::Test
 {
   void SetUp() override {
     store = BrokerStore::create();
-    journal = store->build("cache://aa@localhost");
+    journal = store->getOrCreate("cache://aa@localhost");
   }
   BrokerStorePtr store;
   BrokerBasePtr journal;

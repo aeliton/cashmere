@@ -31,9 +31,8 @@ class BrokerStore : public BrokerStoreBase {
   public:
     BrokerStore(Private);
     static BrokerStorePtr create();
-    BrokerBasePtr build(const std::string& url) override;
     bool insert(const std::string& url, BrokerBasePtr broker) override;
-    BrokerBasePtr get(const std::string& url) override;
+    BrokerBasePtr getOrCreate(const std::string& url) override;
     std::size_t size() const override;
 
   private:

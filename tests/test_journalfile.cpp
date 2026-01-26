@@ -41,7 +41,7 @@ struct JournalFileTest : public ::testing::Test
     , tmpdir(CreateTempDir())
     , filename(fs::path(tmpdir) / kFixtureIdStr)
     , url(std::format("file://{:x}@localhost{}", kFixtureId, tmpdir))
-    , journal(store->build(url))
+    , journal(store->getOrCreate(url))
   {
   }
   virtual ~JournalFileTest()

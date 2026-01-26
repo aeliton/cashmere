@@ -33,55 +33,49 @@ struct BrokerStoreTest : public ::testing::Test
 
 TEST_F(BrokerStoreTest, CanCreateHubTypeBrokers)
 {
-  auto hub = store->build("hub://");
+  auto hub = store->getOrCreate("hub://");
   ASSERT_TRUE(dynamic_cast<Broker*>(hub.get()));
 }
 
 TEST_F(BrokerStoreTest, UseIdFromUrl)
 {
-  auto hub = store->build("hub://baadcafe@localhost");
+  auto hub = store->getOrCreate("hub://baadcafe@localhost");
   ASSERT_EQ(hub->id(), 0xbaadcafe);
 }
 
 TEST_F(BrokerStoreTest, ReturnNullptrForUnknownSchema)
 {
-  auto instance = store->build("_unknown_schema_");
+  auto instance = store->getOrCreate("_unknown_schema_");
   ASSERT_EQ(instance, nullptr);
 }
 
 TEST_F(BrokerStoreTest, CanCreateJournalType)
 {
-  auto instance = store->build("file:///tmp");
+  auto instance = store->getOrCreate("file:///tmp");
   ASSERT_TRUE(dynamic_cast<JournalFile*>(instance.get()));
 }
 
 TEST_F(BrokerStoreTest, CanCreateGrpcType)
 {
-  auto instance = store->build("grpc://0.0.0.0:9999");
+  auto instance = store->getOrCreate("grpc://0.0.0.0:9999");
   ASSERT_TRUE(dynamic_cast<BrokerGrpcStub*>(instance.get()));
 }
 
 TEST_F(BrokerStoreTest, CreatedBrokerHasWeakPtrToStore)
 {
-  auto hub = store->build("hub://");
+  auto hub = store->getOrCreate("hub://");
   ASSERT_EQ(hub->store(), store);
 }
 
-TEST_F(BrokerStoreTest, GetInexistingBrokerReturnsNull)
+TEST_F(BrokerStoreTest, GetCreatesBrokerIfInexisting)
 {
-  auto conn = store->get("hub://aa@localhost");
-  ASSERT_FALSE(conn);
-}
-
-TEST_F(BrokerStoreTest, GetInexistingBrokerWontChangeSizeOfStore)
-{
-  store->get("hub://aa@localhost");
-  ASSERT_EQ(store->size(), 0);
+  store->getOrCreate("hub://aa@localhost");
+  ASSERT_EQ(store->size(), 1);
 }
 
 TEST_F(BrokerStoreTest, GetPreviouslyCreatedBroker)
 {
-  store->build("hub://aa@localhost");
-  const auto retrieved = store->get("hub://aa@localhost");
+  store->getOrCreate("hub://aa@localhost");
+  const auto retrieved = store->getOrCreate("hub://aa@localhost");
   ASSERT_EQ(retrieved->url(), "hub://aa@localhost");
 }

@@ -329,7 +329,7 @@ std::string BrokerBase::hostname() const
 Connection BrokerBase::connect(const std::string& url)
 {
   if (store()) {
-    return connect(Connection{store()->get(url)});
+    return connect(Connection{store()->getOrCreate(url)});
   }
   return connect(Connection{});
 }
@@ -337,7 +337,7 @@ Connection BrokerBase::connect(const std::string& url)
 Connection BrokerBase::stub()
 {
   if (store()) {
-    return Connection(store()->get(url()));
+    return Connection(store()->getOrCreate(url()));
   }
   return Connection(ptr());
 }

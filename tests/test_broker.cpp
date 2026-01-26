@@ -27,7 +27,7 @@ struct BrokerTest : public ::testing::Test
 {
   void SetUp() override {
     store = BrokerStore::create();
-    hub0 = store->build("hub://cafe@localhost");
+    hub0 = store->getOrCreate("hub://cafe@localhost");
   }
   BrokerStorePtr store;
   BrokerBasePtr hub0;
@@ -110,7 +110,7 @@ TEST_F(BrokerTest, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
 
 TEST_F(BrokerTest, BrokeHubConnectionsAreFullDuplex)
 {
-  auto hub1 = store->build("hub://beef@localhost");
+  auto hub1 = store->getOrCreate("hub://beef@localhost");
   const auto aa = std::make_shared<BrokerMock>();
   store->insert("cache://aa@localhost", aa);
 

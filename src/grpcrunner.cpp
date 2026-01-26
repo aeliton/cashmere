@@ -96,7 +96,7 @@ GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
   const Grpc::ConnectionRequest* request, Grpc::ConnectionResponse* response
 )
 {
-  auto stub = Connection(broker()->store()->build(request->broker().url()));
+  auto stub = Connection(broker()->store()->getOrCreate(request->broker().url()));
   if (request->source() == 0) {
     const auto conn = broker()->connect(stub);
     response->set_source(conn.source());

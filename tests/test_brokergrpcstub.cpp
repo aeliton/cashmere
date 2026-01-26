@@ -43,7 +43,7 @@ struct BrokerGrpcStubTest : public ::testing::Test
 
 TEST_F(BrokerGrpcStubTest, StartsConnectionsUsingGrpcStub)
 {
-  auto broker = store->build("hub://");
+  auto broker = store->getOrCreate("hub://");
 
   Grpc::ConnectionResponse resp;
   resp.set_source(kSource);
@@ -78,7 +78,7 @@ TEST_F(BrokerGrpcStubTest, StartsConnectionsUsingGrpcStub)
 
 TEST_F(BrokerGrpcStubTest, InsertIsCalledPassingTheCorrectPort)
 {
-  auto journal = store->build("cache://aa");
+  auto journal = store->getOrCreate("cache://aa");
   journal->append(1000);
 
   Grpc::ConnectionResponse resp;
@@ -109,7 +109,7 @@ TEST_F(BrokerGrpcStubTest, InsertIsCalledPassingTheCorrectPort)
 
 TEST_F(BrokerGrpcStubTest, InsertIsCalledOnConnect)
 {
-  auto journal = store->build("cache://aa@localhost");
+  auto journal = store->getOrCreate("cache://aa@localhost");
   journal->append(1000);
 
   Grpc::InsertResponse response;
@@ -125,7 +125,7 @@ TEST_F(BrokerGrpcStubTest, InsertIsCalledOnConnect)
 
 TEST_F(BrokerGrpcStubTest, RefreshIsCalledOnDisconnect)
 {
-  auto journal = store->build("hub://");
+  auto journal = store->getOrCreate("hub://");
 
   Grpc::ConnectionResponse resp;
   resp.set_source(10);
@@ -145,7 +145,7 @@ TEST_F(BrokerGrpcStubTest, RefreshIsCalledOnDisconnect)
 
 TEST_F(BrokerGrpcStubTest, RefreshIsCalledWithSender)
 {
-  auto broker = store->build("hub://aa@localhost");
+  auto broker = store->getOrCreate("hub://aa@localhost");
 
   store->insert("hub://bb@localhost", std::make_shared<BrokerMock>());
   broker->connect("hub://bb@localhost");

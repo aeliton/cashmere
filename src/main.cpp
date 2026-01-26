@@ -71,12 +71,12 @@ void RunCommand(const Options& options)
 {
   auto url = std::format("grpc://{}:{}", options.hostname, options.source);
   auto store = BrokerStore::create();
-  auto stub = store->build(url);
+  auto stub = store->getOrCreate(url);
   switch (options.command.type) {
     case Command::Type::Invalid:
       break;
     case Command::Type::Connect:
-      stub->connect(Connection(store->build(std::format("grpc://{}", options.command.url))));
+      stub->connect(Connection(store->getOrCreate(std::format("grpc://{}", options.command.url))));
       break;
     case Command::Type::Disconnect:
       break;
@@ -109,7 +109,7 @@ void RunService(const Options& options)
 
   auto tempDir = TempDir();
   auto path = options.dbPath.empty() ? tempDir.directory : options.dbPath;
-  auto journal = store->build(std::format("file://{:x}@localhost{}", options.id, path));
+  auto journal = store->getOrCreate(std::format("file://{:x}@localhost{}", options.id, path));
 
   auto runner = std::make_shared<GrpcRunner>(std::format("{}:{}", options.hostname, options.source), journal);
 
@@ -127,7 +127,7 @@ void RunService(const Options& options)
         break;
       case Command::Type::Connect:
       {
-        const auto conn = journal->connect(Connection(store->build(std::format("grpc://{}", command.url))));
+        const auto conn = journal->connect(Connection(store->getOrCreate(std::format("grpc://{}", command.url))));
         if (!conn.valid()) {
           std::println("{}: failed {}", command.name(), options.source);
         }

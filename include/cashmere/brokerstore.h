@@ -25,8 +25,7 @@ class CASHMERE_EXPORT BrokerStoreBase : public std::enable_shared_from_this<Brok
 {
 public:
   virtual ~BrokerStoreBase();
-  virtual BrokerBasePtr build(const std::string& url) = 0;
-  virtual BrokerBasePtr get(const std::string& url) = 0;
+  virtual BrokerBasePtr getOrCreate(const std::string& url) = 0;
   virtual bool insert(const std::string& url, BrokerBasePtr broker) = 0;
   virtual std::size_t size() const = 0;
 };

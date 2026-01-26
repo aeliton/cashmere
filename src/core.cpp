@@ -20,26 +20,21 @@ BrokerStorePtr BrokerStore::create()
   return std::make_shared<BrokerStore>(Private());
 }
 
-BrokerBasePtr BrokerStore::build(const std::string& url)
+BrokerBasePtr BrokerStore::getOrCreate(const std::string& url)
 {
+  auto storeIt = _store.find(url);
+  if (storeIt != _store.end()) {
+    return storeIt->second;
+  }
   const Url parsed = ParseUrl(url);
-  const auto it = _builders.find(parsed.schema);
-  if (it == _builders.end()) {
+  const auto builderIt = _builders.find(parsed.schema);
+  if (builderIt == _builders.end()) {
     return nullptr;
   }
-  auto broker = it->second(url);
+  auto broker = builderIt->second(url);
   broker->setStore(shared_from_this());
   _store[url] = broker;
   return broker;
-}
-
-BrokerBasePtr BrokerStore::get(const std::string& url)
-{
-  auto it = _store.find(url);
-  if (it == _store.end()) {
-    return nullptr;
-  }
-  return it->second;
 }
 
 std::size_t BrokerStore::size() const
