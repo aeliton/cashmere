@@ -38,7 +38,7 @@ Connection::Connection()
   , _source(0)
   , _version()
   , _sources()
-  , _grpcStub()
+  , _broker()
 {
 }
 
@@ -51,8 +51,7 @@ Connection::Connection(
   , _source(source)
   , _version(version)
   , _sources(sources)
-  , _memoryStub(broker)
-  , _grpcStub()
+  , _broker(broker)
 {
 }
 
@@ -64,13 +63,13 @@ Connection::Type Connection::type() const
 void Connection::reset()
 {
   if (_type == Type::Memory) {
-    _memoryStub.reset();
+    _broker.reset();
   }
 }
 
 BrokerBasePtr Connection::broker() const
 {
-  return _type == Type::Memory ? _memoryStub.lock() : _grpcStub;
+  return _broker.lock();
 }
 
 std::string Connection::url() const
@@ -152,7 +151,7 @@ Clock Connection::relay(const Data& entry) const
 
 bool Connection::valid() const
 {
-  return _type != Connection::Type::Invalid && broker() != nullptr;
+  return broker() != nullptr;
 }
 
 std::string Connection::str() const
@@ -181,10 +180,12 @@ bool Connection::refresh(const Connection& data) const
 
 bool Connection::operator==(const Connection& other) const
 {
-  return _type == other._type && _url == other._url &&
-         _memoryStub.lock() == other._memoryStub.lock() &&
-         _grpcStub == other._grpcStub && _version == other._version &&
-         _sources == other._sources && _source == other._source;
+  return _type == other._type &&
+         _url == other._url &&
+         _broker.lock() == other._broker.lock() &&
+         _version == other._version &&
+         _sources == other._sources &&
+         _source == other._source;
 }
 
 BrokerBase::BrokerBase(const std::string& url)

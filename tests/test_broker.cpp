@@ -52,12 +52,13 @@ TEST_F(BrokerTest, DisconnectedBrokerHasEmptyVersions)
 TEST_F(BrokerTest, SuccessfulConnectionReturnsValidConnection)
 {
   auto aa = std::make_shared<BrokerMock>();
+  store->insert("hub://", aa);
 
   EXPECT_CALL(*aa, connect(Connection(hub0, 1, {}, {})))
     .Times(1)
     .WillOnce(Return(Connection(aa, 1, Clock{}, IdConnectionInfoMap{})));
 
-  const auto conn = hub0->connect(Connection{aa});
+  const auto conn = hub0->connect("hub://");
   ASSERT_TRUE(conn.valid());
 }
 
@@ -170,7 +171,11 @@ TEST_F(BrokerTest, VersionsArePreservedAfterDisconnection)
     .Times(1)
     .WillOnce(Return(EntryList{{aaClock, Data{0xAA, 10, {}}}}));
 
-  hub0->connect(Connection{aa});
+  store->insert("hub://aa@mock", aa);
+
+  auto conn = hub0->connect("hub://aa@mock");
+  EXPECT_EQ(conn.source(), 1);
+
   const Source source = hub0->disconnect(1);
   EXPECT_EQ(source, 1);
 

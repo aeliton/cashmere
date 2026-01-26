@@ -98,8 +98,7 @@ private:
   mutable Source _source;
   mutable Clock _version;
   mutable IdConnectionInfoMap _sources;
-  BrokerBaseWeakPtr _memoryStub;
-  BrokerBasePtr _grpcStub;
+  BrokerBaseWeakPtr _broker;
 };
 
 class CASHMERE_EXPORT BrokerBase : public std::enable_shared_from_this<BrokerBase>
