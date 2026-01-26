@@ -31,8 +31,7 @@ std::unique_ptr<Random> BrokerBase::_random = std::make_unique<Random>();
 Connection::~Connection() = default;
 
 Connection::Connection()
-  : _url()
-  , _source(0)
+  : _source(0)
   , _version()
   , _sources()
   , _broker()
@@ -43,8 +42,7 @@ Connection::Connection(
   BrokerBasePtr broker, Source source, const Clock& version,
   const IdConnectionInfoMap& sources
 )
-  : _url()
-  , _source(source)
+  : _source(source)
   , _version(version)
   , _sources(sources)
   , _broker(broker)
@@ -63,7 +61,7 @@ BrokerBasePtr Connection::broker() const
 
 std::string Connection::url() const
 {
-  return _url;
+  return broker() ? broker()->url() : "";
 }
 
 Source& Connection::source() const
@@ -169,8 +167,7 @@ bool Connection::refresh(const Connection& data) const
 
 bool Connection::operator==(const Connection& other) const
 {
-  return _url == other._url &&
-         _broker.lock() == other._broker.lock() &&
+  return url() == other.url() &&
          _version == other._version &&
          _sources == other._sources &&
          _source == other._source;

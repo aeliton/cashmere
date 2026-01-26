@@ -86,7 +86,6 @@ public:
 
 private:
   virtual BrokerBasePtr broker() const;
-  std::string _url;
   mutable Source _source;
   mutable Clock _version;
   mutable IdConnectionInfoMap _sources;
