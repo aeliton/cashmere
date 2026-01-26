@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/grpcrunner.h"
-#include "utils/grpcutils.h"
 #include "cashmere/brokerstore.h"
+#include "utils/grpcutils.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpc/grpc.h>
@@ -30,18 +30,16 @@ namespace Cashmere
 class GrpcRunner::Impl : public Grpc::Broker::Service
 {
 public:
-  Impl();
+  Impl(const std::string& hostport, BrokerBasePtr broker);
 
   ~Impl();
-
-  void setBroker(BrokerBasePtr broker);
 
   BrokerBasePtr broker() const
   {
     return _broker.lock();
   }
 
-  std::thread start(const std::string& url);
+  std::thread start();
   void stop();
 
 private:
@@ -81,18 +79,15 @@ private:
   ) override;
 
   BrokerBaseWeakPtr _broker;
+  std::string _hostport;
   std::unique_ptr<grpc::Server> _server;
 };
 
-void GrpcRunner::Impl::setBroker(BrokerBasePtr broker)
-{
-  _broker = broker;
-}
-
 GrpcRunner::Impl::~Impl() {}
 
-GrpcRunner::Impl::Impl()
-  : _broker()
+GrpcRunner::Impl::Impl(const std::string& hostport, BrokerBasePtr broker)
+  : _broker(broker)
+  , _hostport(hostport)
 {
 }
 
@@ -192,10 +187,10 @@ GrpcRunner::Impl::Impl()
   return ::grpc::Status::OK;
 }
 
-std::thread GrpcRunner::Impl::start(const std::string& url)
+std::thread GrpcRunner::Impl::start()
 {
   grpc::ServerBuilder builder;
-  builder.AddListeningPort(url, grpc::InsecureServerCredentials());
+  builder.AddListeningPort(_hostport, grpc::InsecureServerCredentials());
 
   builder.RegisterService(this);
   _server = builder.BuildAndStart();
@@ -221,25 +216,16 @@ void GrpcRunner::stop()
   _impl->stop();
 }
 
-GrpcRunner::GrpcRunner(const std::string& url)
-  : Broker(url)
-  , _impl(std::make_unique<GrpcRunner::Impl>())
+GrpcRunner::GrpcRunner(const std::string& hostport, BrokerBasePtr broker)
+  : _impl(std::make_unique<GrpcRunner::Impl>(hostport, broker))
 {
 }
 
 std::thread GrpcRunner::start()
 {
-  _impl->setBroker(shared_from_this());
-
-  std::stringstream ss;
-  ss << hostname() << ":" << port();
-  return _impl->start(ss.str());
+  return _impl->start();
 }
 
 GrpcRunner::~GrpcRunner() = default;
 
-std::string GrpcRunner::schema() const
-{
-  return "grpc";
-}
 }

@@ -108,14 +108,12 @@ void RunService(const Options& options)
   auto store = BrokerStore::create();
 
   auto tempDir = TempDir();
-  auto broker = std::make_shared<GrpcRunner>(std::format("grpc://{}:{}", options.hostname, options.source));
-  broker->setStore(store);
   auto path = options.dbPath.empty() ? tempDir.directory : options.dbPath;
   auto journal = store->build(std::format("file://{:x}@localhost{}", options.id, path));
 
-  journal->connect(Connection{broker});
+  auto runner = std::make_shared<GrpcRunner>(std::format("{}:{}", options.hostname, options.source), journal);
 
-  std::thread brokerThread = broker->start();
+  std::thread brokerThread = runner->start();
 
   brokerThread.detach();
 
@@ -129,21 +127,21 @@ void RunService(const Options& options)
         break;
       case Command::Type::Connect:
       {
-        const auto conn = broker->connect(Connection(store->build(std::format("grpc://{}", command.url))));
+        const auto conn = journal->connect(Connection(store->build(std::format("grpc://{}", command.url))));
         if (!conn.valid()) {
           std::println("{}: failed {}", command.name(), options.source);
         }
         break;
       }
       case Command::Type::Disconnect:
-        broker->disconnect(command.source);
+        journal->disconnect(command.source);
         break;
       case Command::Type::Append:
         command.data.id = journal->id();
         journal->append(command.data);
         break;
       case Command::Type::Relay:
-        broker->relay(command.data, 0);
+        journal->relay(command.data, 0);
         break;
       case Command::Type::Sources:
         std::cout << journal->sources() << std::endl;
@@ -174,7 +172,7 @@ void RunService(const Options& options)
   } while (command.type != Command::Type::Quit);
   std::println("bye!");
 
-  broker->stop();
+  runner->stop();
 }
 
 void PrintCommands()

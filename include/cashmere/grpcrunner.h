@@ -16,7 +16,9 @@
 #ifndef CASHMERE_BROKER_GRPC_RUNNER_H
 #define CASHMERE_BROKER_GRPC_RUNNER_H
 
-#include "cashmere/broker.h"
+#include "cashmere/cashmere.h"
+
+#include <memory>
 #include <thread>
 
 namespace Cashmere
@@ -26,17 +28,15 @@ class GrpcRunner;
 using GrpcRunnerPtr = std::shared_ptr<GrpcRunner>;
 using GrpcRunnerWeakPtr = std::weak_ptr<GrpcRunner>;
 
-class CASHMERE_EXPORT GrpcRunner : public Broker
+class CASHMERE_EXPORT GrpcRunner
 {
 public:
-  GrpcRunner(const std::string& url);
+  GrpcRunner(const std::string& hostport, BrokerBasePtr broker);
 
   ~GrpcRunner();
 
   std::thread start();
   void stop();
-
-  std::string schema() const override;
 
 private:
   class Impl;
