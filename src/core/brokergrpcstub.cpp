@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "brokergrpcstub.h"
-#include "utils/grpcutils.h"
+#include "core/grpcutils.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpc/grpc.h>

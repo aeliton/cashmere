@@ -64,14 +64,14 @@ add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/cashmere.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/clock.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/core.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/grpcrunner.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/entry.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/grpcrunner.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/core/grpcutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journal.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journalbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journalfile.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/ledger.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/grpcutils.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/urlutils.cpp
 )

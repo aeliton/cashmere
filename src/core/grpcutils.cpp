@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "utils/grpcutils.h"
+#include "core/grpcutils.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpcpp/create_channel.h>
