@@ -17,7 +17,6 @@
 #define CASHMERE_CORE_H
 
 #include "cashmere/brokerstore.h"
-#include "utils/urlutils.h"
 
 #include <functional>
 #include <unordered_map>
