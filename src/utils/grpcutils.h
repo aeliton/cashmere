@@ -21,7 +21,6 @@
 
 namespace Cashmere::Grpc
 {
-class BrokerData;
 class ConnectionInfo;
 class Data;
 class Entry;
