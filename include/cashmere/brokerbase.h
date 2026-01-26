@@ -104,7 +104,7 @@ private:
   BrokerBasePtr _grpcStub;
 };
 
-class CASHMERE_EXPORT BrokerBase
+class CASHMERE_EXPORT BrokerBase : public std::enable_shared_from_this<BrokerBase>
 {
 public:
   BrokerBase(const std::string& url = {});
@@ -123,13 +123,14 @@ public:
   virtual IdClockMap versions() const = 0;
   virtual SourcesMap sources(Source sender = 0) const = 0;
   virtual Clock relay(const Data& entry, Source sender) = 0;
-  virtual Connection stub() = 0;
   virtual std::set<Source> connectedPorts() const = 0;
   virtual Source disconnect(Source source) = 0;
   virtual Data entry(Clock) const;
 
   virtual EntryList entries() const;
 
+  virtual Connection stub();
+  virtual Connection connect(const std::string& url);
   virtual bool save(const Entry&);
   virtual bool append(Amount value);
   virtual bool append(const Data& entry);
@@ -143,6 +144,8 @@ public:
   virtual std::string location() const;
   virtual uint16_t port() const;
   virtual std::string hostname() const;
+
+  virtual BrokerBasePtr ptr();
 
 private:
   Url _url;

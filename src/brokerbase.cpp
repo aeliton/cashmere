@@ -16,10 +16,14 @@
 #include "cashmere/brokerbase.h"
 #include "brokergrpcstub.h"
 #include "utils/urlutils.h"
+#include <filesystem>
+#include "cashmere/brokerstore.h"
 
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
 #include <proto/cashmere.grpc.pb.h>
+
+namespace fs = std::filesystem;
 
 namespace Cashmere
 {
@@ -316,7 +320,7 @@ std::ostream& operator<<(std::ostream& os, const IdClockMap& data)
 
 std::ostream& operator<<(std::ostream& os, const Connection& info)
 {
-  return os << "Connection{ .url: " << info._url
+  return os << "Connection{ .url: " << (info.broker() ? info.broker()->url() : "")
             << ", .source = " << info._source << ".version= " << info._version
             << ", .provides = " << info._sources << "}";
 }
@@ -357,4 +361,27 @@ std::string BrokerBase::hostname() const
 {
   return _hostname;
 }
+
+Connection BrokerBase::connect(const std::string& url)
+{
+  if (store()) {
+    return connect(Connection{store()->get(url)});
+  }
+  return connect(Connection{});
+}
+
+Connection BrokerBase::stub()
+{
+  if (store()) {
+    return Connection(store()->get(url()));
+  }
+  return Connection(ptr());
+}
+
+BrokerBasePtr BrokerBase::ptr()
+{
+  return this->shared_from_this();
+}
+
+
 }

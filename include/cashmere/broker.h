@@ -28,8 +28,7 @@ class Broker;
 using BrokerPtr = std::shared_ptr<Broker>;
 using BrokerWeakPtr = std::weak_ptr<Broker>;
 
-class CASHMERE_EXPORT Broker : public std::enable_shared_from_this<Broker>,
-                               public BrokerBase
+class CASHMERE_EXPORT Broker : public BrokerBase
 {
 public:
   Broker(const std::string& url);
@@ -49,9 +48,6 @@ public:
   Source disconnect(Source source) override;
   virtual bool refresh(const Connection& conn, Source source) override;
   virtual std::set<Source> connectedPorts() const override;
-
-  virtual BrokerBasePtr ptr();
-  virtual Connection stub() override;
 
   Connection connect(Connection conn) override;
 

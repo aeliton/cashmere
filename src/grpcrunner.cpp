@@ -33,9 +33,9 @@ public:
 
   ~Impl();
 
-  void setBroker(BrokerPtr broker);
+  void setBroker(BrokerBasePtr broker);
 
-  BrokerPtr broker() const
+  BrokerBasePtr broker() const
   {
     return _broker.lock();
   }
@@ -79,11 +79,11 @@ private:
     ::Cashmere::Grpc::SourcesResponse* response
   ) override;
 
-  std::weak_ptr<Broker> _broker;
+  BrokerBaseWeakPtr _broker;
   std::unique_ptr<grpc::Server> _server;
 };
 
-void GrpcRunner::Impl::setBroker(BrokerPtr broker)
+void GrpcRunner::Impl::setBroker(BrokerBasePtr broker)
 {
   _broker = broker;
 }

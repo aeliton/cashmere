@@ -83,8 +83,5 @@ std::string JournalFile::schema() const
 {
   return "file";
 }
-std::string JournalFile::url() const
-{
-  return std::format("{}://{}@localhost{}", schema(), id(), filename());
-}
+
 }

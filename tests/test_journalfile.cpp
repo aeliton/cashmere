@@ -40,7 +40,8 @@ struct JournalFileTest : public ::testing::Test
     , store(BrokerStore::create())
     , tmpdir(CreateTempDir())
     , filename(fs::path(tmpdir) / kFixtureIdStr)
-    , journal(store->build(std::format("file://{:x}@localhost{}", kFixtureId, tmpdir)))
+    , url(std::format("file://{:x}@localhost{}", kFixtureId, tmpdir))
+    , journal(store->build(url))
   {
   }
   virtual ~JournalFileTest()
@@ -50,6 +51,7 @@ struct JournalFileTest : public ::testing::Test
   BrokerStorePtr store;
   std::string tmpdir;
   std::string filename;
+  std::string url;
   BrokerBasePtr journal;
 };
 
@@ -77,7 +79,7 @@ using ::testing::Return;
 
 TEST_F(JournalFileTest, FilenameIsTheHexRepresentationOfIdPaddedWithZeroes)
 {
-  ASSERT_TRUE(journal->url().ends_with(kFixtureIdStr));
+  ASSERT_EQ(journal->location(), tmpdir);
 }
 
 TEST_F(JournalFileTest, AppendEntriesToFile)
@@ -115,6 +117,7 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
   const std::string bbFilename = fs::path(tmpdir) / "00000000000000bb";
 
   const auto broker = std::make_shared<BrokerMock>();
+  store->insert("cache://mock", broker);
 
   EXPECT_CALL(
     *broker, connect(Connection(
@@ -130,7 +133,7 @@ TEST_F(JournalFileTest, SeparateFilesPerJournal)
     .Times(1)
     .WillOnce(Return(EntryList{{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}}}));
 
-  journal->connect(Connection{broker});
+  journal->connect("cache://mock");
 
   std::ifstream file(ParseUrl(journal->url()).path);
   EXPECT_EQ(file.peek(), std::ifstream::traits_type::eof());

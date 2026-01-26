@@ -39,7 +39,6 @@ public:
 
   std::string filename() const;
   std::string schema() const override;
-  virtual std::string url() const override;
 };
 
 }

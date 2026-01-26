@@ -47,4 +47,11 @@ std::size_t BrokerStore::size() const
   return _store.size();
 }
 
+bool BrokerStore::insert(const std::string& url, BrokerBasePtr broker)
+{
+  broker->setStore(shared_from_this());
+  _store[url] = broker;
+  return {};
+}
+
 }

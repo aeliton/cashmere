@@ -27,7 +27,7 @@ struct BrokerTest : public ::testing::Test
 {
   void SetUp() override {
     store = BrokerStore::create();
-    hub0 = store->build("hub://");
+    hub0 = store->build("hub://cafe@localhost");
   }
   BrokerStorePtr store;
   BrokerBasePtr hub0;
@@ -109,8 +109,9 @@ TEST_F(BrokerTest, BrokerOnlyForwardsInsertsToPortsDifferentOfTheSender)
 
 TEST_F(BrokerTest, BrokeHubConnectionsAreFullDuplex)
 {
-  auto hub1 = store->build("hub://");
+  auto hub1 = store->build("hub://beef@localhost");
   const auto aa = std::make_shared<BrokerMock>();
+  store->insert("cache://aa@localhost", aa);
 
   const auto entry = Entry{Clock{{0xBB, 1}}, Data{0xBB, 10, {}}};
 
@@ -119,8 +120,8 @@ TEST_F(BrokerTest, BrokeHubConnectionsAreFullDuplex)
     .Times(1)
     .WillOnce(Return(Connection(aa, 1, {}, {{0xAA, {0, {}}}})));
 
-  const auto hub1Conn = hub0->connect(Connection{hub1});
-  const auto aaConn = hub0->connect(Connection{aa});
+  const auto hub1Conn = hub0->connect("hub://beef@localhost");
+  const auto aaConn = hub0->connect("cache://aa@localhost");
 
   EXPECT_EQ(hub1Conn.source(), 1);
   EXPECT_EQ(aaConn.source(), 2);

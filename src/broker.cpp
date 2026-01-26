@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/broker.h"
 #include "cashmere/brokerbase.h"
+#include "cashmere/brokerstore.h"
 #include <cassert>
 #include <limits>
 #include <utility>
@@ -178,11 +179,6 @@ Clock Broker::clock() const
   return _connections.front().clock();
 }
 
-BrokerBasePtr Broker::ptr()
-{
-  return this->shared_from_this();
-}
-
 void Broker::setClock(const Clock& clock)
 {
   _connections.front().clock() = clock;
@@ -259,11 +255,6 @@ Clock Broker::relay(const Data& entry, Source sender)
   }
 
   return _connections.at(shortestDistancePort).relay(entry);
-}
-
-Connection Broker::stub()
-{
-  return Connection(ptr());
 }
 
 std::string Broker::schema() const

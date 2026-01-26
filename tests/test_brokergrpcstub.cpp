@@ -26,6 +26,7 @@ using namespace ::Cashmere;
 using namespace ::testing;
 
 constexpr int32_t kSource = 10;
+constexpr char const* kTestGrpcUrl = "grpc://test:123";
 
 using StubInterfacePtr = std::unique_ptr<Grpc::Broker::StubInterface>;
 
@@ -35,6 +36,7 @@ struct BrokerGrpcStubTest : public ::testing::Test
     store = BrokerStore::create();
     stub = std::make_unique<Grpc::MockBrokerStub>();
   }
+
   BrokerStorePtr store;
   std::unique_ptr<Grpc::MockBrokerStub> stub;
 };
@@ -68,11 +70,9 @@ TEST_F(BrokerGrpcStubTest, StartsConnectionsUsingGrpcStub)
     .Times(1)
     .WillOnce(DoAll(SetArgPointee<2>(queryResponse), Return(grpc::Status::OK)));
 
-  auto brokerStub = Connection{
-    std::make_shared<BrokerGrpcStub>(std::move(stub)), Connection::Type::Grpc
-  };
+  store->insert(kTestGrpcUrl, std::make_shared<BrokerGrpcStub>(std::move(stub)));
 
-  broker->connect(brokerStub);
+  broker->connect(kTestGrpcUrl);
   EXPECT_EQ(broker->clock(), Clock({{0xBB, 1}}));
 }
 
