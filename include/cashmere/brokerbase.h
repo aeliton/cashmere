@@ -52,12 +52,6 @@ public:
     Cache,
     Remote
   };
-  enum class Type
-  {
-    Invalid,
-    Memory,
-    Grpc
-  };
 
   virtual ~Connection();
 
@@ -83,7 +77,6 @@ public:
   Source& source() const;
 
   std::string url() const;
-  Type type() const;
   void reset();
   std::string str() const;
 
@@ -94,7 +87,6 @@ public:
 private:
   virtual BrokerBasePtr broker() const;
   std::string _url;
-  Type _type;
   mutable Source _source;
   mutable Clock _version;
   mutable IdConnectionInfoMap _sources;

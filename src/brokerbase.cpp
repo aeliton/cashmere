@@ -34,7 +34,6 @@ Connection::~Connection() = default;
 
 Connection::Connection()
   : _url()
-  , _type(Type::Invalid)
   , _source(0)
   , _version()
   , _sources()
@@ -47,7 +46,6 @@ Connection::Connection(
   const IdConnectionInfoMap& sources
 )
   : _url()
-  , _type(Type::Memory)
   , _source(source)
   , _version(version)
   , _sources(sources)
@@ -55,16 +53,9 @@ Connection::Connection(
 {
 }
 
-Connection::Type Connection::type() const
-{
-  return _type;
-}
-
 void Connection::reset()
 {
-  if (_type == Type::Memory) {
-    _broker.reset();
-  }
+  _broker.reset();
 }
 
 BrokerBasePtr Connection::broker() const
@@ -180,8 +171,7 @@ bool Connection::refresh(const Connection& data) const
 
 bool Connection::operator==(const Connection& other) const
 {
-  return _type == other._type &&
-         _url == other._url &&
+  return _url == other._url &&
          _broker.lock() == other._broker.lock() &&
          _version == other._version &&
          _sources == other._sources &&
