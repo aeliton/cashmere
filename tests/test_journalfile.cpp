@@ -22,7 +22,6 @@
 
 #include "brokermock.h"
 
-#include "cashmere/journalfile.h"
 #include "core.h"
 #include "utils/fileutils.h"
 
