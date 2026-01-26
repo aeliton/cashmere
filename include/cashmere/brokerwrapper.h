@@ -56,7 +56,7 @@ public:
   virtual std::size_t size() const = 0;
 };
 
-class WrapperStore : public WrapperStoreBase
+class CASHMERE_EXPORT WrapperStore : public WrapperStoreBase
 {
   public:
     WrapperStore();

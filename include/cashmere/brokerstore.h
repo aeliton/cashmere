@@ -36,7 +36,7 @@ public:
   virtual std::size_t size() const = 0;
 };
 
-class BrokerStore : public BrokerStoreBase {
+class CASHMERE_EXPORT BrokerStore : public BrokerStoreBase {
   struct Private{ explicit Private() = default; };
   public:
     BrokerStore(Private);
