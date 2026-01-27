@@ -29,86 +29,11 @@ else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
-find_package(gRPC CONFIG REQUIRED)
-
-add_library(cashmere_proto STATIC proto/cashmere.proto)
-target_link_libraries(cashmere_proto
-    PUBLIC
-        protobuf::libprotobuf
-        gRPC::grpc
-        gRPC::grpc++
-)
-target_include_directories(cashmere_proto PUBLIC 
-  $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-
-get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
-protobuf_generate(TARGET cashmere_proto LANGUAGE cpp)
-protobuf_generate(
-  TARGET cashmere_proto
-  LANGUAGE grpc
-  GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc
-  PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"
-  PLUGIN_OPTIONS "generate_mock_code=true"
-)
-
 include(GenerateExportHeader)
 
 add_subdirectory(src/utils)
+add_subdirectory(src/core)
 add_subdirectory(src/cli)
-
-add_library(cashmere_objects OBJECT
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/broker.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokerbase.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokerbaseimpl.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokergrpcstub.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokerwrapperbase.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/cashmere.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/clock.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/core.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/entry.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/grpcrunner.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/grpcutils.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journal.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journalbase.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journalfile.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/core/ledger.cpp
-)
-
-target_include_directories(cashmere_objects
-  PUBLIC
-    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/export>
-    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  PRIVATE
-    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-)
-
-target_link_libraries(cashmere_objects
-  PUBLIC
-    $<BUILD_LOCAL_INTERFACE:cashmere_proto>
-)
-
-set_target_properties(cashmere_objects cashmere_proto PROPERTIES
-  POSITION_INDEPENDENT_CODE ON
-)
-
-add_library(cashmere SHARED)
-
-target_link_libraries(cashmere
-  PUBLIC
-    $<BUILD_LOCAL_INTERFACE:cashmere_objects>
-)
-
-set_target_properties(cashmere PROPERTIES
-  CXX_VISIBILITY_PRESET hidden
-  VISIBILITY_INLINES_HIDDEN TRUE
-)
-
-generate_export_header(cashmere EXPORT_FILE_NAME export/cashmere/cashmere_export.h)
-
-add_library(cashmere::cashmere ALIAS cashmere)
 
 install(
   TARGETS cashmere_utils cashmere cash
@@ -121,7 +46,7 @@ install(
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(
-  FILES "${CMAKE_CURRENT_BINARY_DIR}/export/cashmere/cashmere_export.h"
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/src/core/export/cashmere/cashmere_export.h"
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cashmere
 )
 
