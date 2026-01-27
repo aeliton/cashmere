@@ -55,25 +55,7 @@ protobuf_generate(
 
 include(GenerateExportHeader)
 
-add_library(cashmere_utils_objects OBJECT
- ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/urlutils.cpp
-)
-
-target_include_directories(cashmere_utils_objects
-  PUBLIC
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  PRIVATE
-    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-)
-
-add_library(cashmere_utils SHARED)
-target_link_libraries(cashmere_utils
-  PUBLIC
-    $<BUILD_LOCAL_INTERFACE:cashmere_utils_objects>
-)
-add_library(cashmere::cashmere_utils ALIAS cashmere_utils)
+add_subdirectory(src/utils)
 
 add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/broker.cpp
@@ -107,7 +89,7 @@ target_link_libraries(cashmere_objects
     $<BUILD_LOCAL_INTERFACE:cashmere_proto>
 )
 
-set_target_properties(cashmere_utils_objects cashmere_objects cashmere_proto PROPERTIES
+set_target_properties(cashmere_objects cashmere_proto PROPERTIES
   POSITION_INDEPENDENT_CODE ON
 )
 
@@ -168,7 +150,7 @@ target_link_libraries(cash PRIVATE
 )
 
 install(
-  TARGETS cashmere cash
+  TARGETS cashmere_utils cashmere cash
   EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
