@@ -1,5 +1,5 @@
 // Cashmere - a distributed conflict-free replicated database.
-// Copyright (C) 2025 Aeliton G. Silva
+// Copyright (C) 2026 Aeliton G. Silva
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -13,39 +13,24 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHEMERE_JOURNAL_BASE_H
-#define CASHEMERE_JOURNAL_BASE_H
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include <cassert>
+#include "utils/fileutils.h"
 
-#include "cashmere/cashmere.h"
-#include "broker.h"
+constexpr char const* kPluginsPath = "lib/cashmere/plugins";
+using testing::EndsWith;
 
-namespace Cashmere
+using namespace Cashmere;
+
+TEST(FileUtils, FindPluginPaths)
 {
-
-class Random;
-
-class CASHMERE_EXPORT JournalBase : public Broker
-{
-public:
-  virtual ~JournalBase();
-  explicit JournalBase(const std::string& url);
-
-  SourcesMap sources(Source sender = 0) const override;
-
-  Clock insert(const Entry& data, Source source = 0) override;
-  EntryList query(const Clock& from = {}, Source source = 0) const override;
-  virtual Clock relay(const Data& data, Source sender) override;
-
-  Id bookId() const;
-
-private:
-  const Id _bookId;
-  Clock _version;
-};
-
-using JournalPtr = std::shared_ptr<JournalBase>;
+  std::vector<std::string> found = ListFiles(InstallDirectory() / kPluginsPath);
+  EXPECT_THAT(found,
+    UnorderedElementsAre(
+      EndsWith("libcache.so"),
+      EndsWith("libfile.so"),
+      EndsWith("libgrpc.so"),
+      EndsWith("libhub.so"))
+  );
 }
-
-#endif

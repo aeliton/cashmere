@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "journalfile.h"
+#include "file.h"
 #include "utils/fileutils.h"
 #include <fstream>
 
@@ -74,9 +74,9 @@ std::string JournalFile::filename() const
 }
 
 
-BrokerBasePtr JournalFile::create(const std::string& url)
+BrokerBase* JournalFile::create(const std::string& url)
 {
-  return std::make_shared<JournalFile>(url);
+  return new JournalFile(url);
 }
 
 std::string JournalFile::schema() const

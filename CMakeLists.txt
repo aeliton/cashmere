@@ -34,9 +34,10 @@ include(GenerateExportHeader)
 add_subdirectory(src/utils)
 add_subdirectory(src/core)
 add_subdirectory(src/cli)
+add_subdirectory(plugins)
 
 install(
-  TARGETS cashmere_utils cashmere cash
+  TARGETS cashmere_proto cashmere_utils cashmere cash
   EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

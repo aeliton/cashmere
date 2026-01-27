@@ -29,8 +29,7 @@ struct CASHMERE_EXPORT ConnectionInfo
 {
   int16_t distance;
   Clock clock;
-  bool operator==(const ConnectionInfo& other) const;
-  bool operator<(const ConnectionInfo& other) const;
+  CASHMERE_EXPORT bool operator<=>(const ConnectionInfo& other) const = default;
   CASHMERE_EXPORT friend std::ostream&
   operator<<(std::ostream& os, const ConnectionInfo& info);
 };

@@ -17,8 +17,8 @@
 #include <gtest/gtest.h>
 #include <proto/cashmere_mock.grpc.pb.h>
 
-#include "core/brokergrpcstub.h"
 #include "cashmere/brokerstore.h"
+#include "plugins/grpc.h"
 
 #include "brokermock.h"
 

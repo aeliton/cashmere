@@ -1,5 +1,5 @@
 // Cashmere - a distributed conflict-free replicated database.
-// Copyright (C) 2025 Aeliton G. Silva
+// Copyright (C) 2026 Aeliton G. Silva
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -13,11 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "broker.h"
-#include "cashmere/brokerstore.h"
-#include <cassert>
-#include <limits>
-#include <utility>
+#include "hub.h"
 
 namespace Cashmere
 {
@@ -183,16 +179,6 @@ void Broker::setClock(const Clock& clock)
   _connections.front().clock() = clock;
 }
 
-bool ConnectionInfo::operator==(const ConnectionInfo& other) const
-{
-  return std::tie(distance, clock) == std::tie(other.distance, other.clock);
-}
-
-bool ConnectionInfo::operator<(const ConnectionInfo& other) const
-{
-  return std::tie(distance, clock) < std::tie(other.distance, other.clock);
-}
-
 IdConnectionInfoMap UpdateProvides(SourcesMap provides)
 {
   IdConnectionInfoMap out;
@@ -261,9 +247,5 @@ std::string Broker::schema() const
   return "hub";
 }
 
-BrokerBasePtr Broker::create(const std::string& url)
-{
-  return std::make_shared<Broker>(url);
 }
 
-}

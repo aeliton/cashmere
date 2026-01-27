@@ -26,13 +26,13 @@ class BrokerGrpcStub;
 using BrokerGrpcStubPtr = std::shared_ptr<BrokerGrpcStub>;
 using BrokerGrpcStubWeakPtr = std::weak_ptr<BrokerGrpcStub>;
 
-class BrokerGrpcStub : public BrokerBase
+class CASHMERE_EXPORT BrokerGrpcStub : public BrokerBase
 {
 public:
   explicit BrokerGrpcStub(const std::string& url);
   explicit BrokerGrpcStub(std::unique_ptr<Grpc::Broker::StubInterface>&& stub);
 
-  static BrokerBasePtr create(const std::string& url);
+  static BrokerBase* create(const std::string& url);
 
   virtual Clock clock() const override;
   virtual IdClockMap versions() const override;

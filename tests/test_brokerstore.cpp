@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "cashmere/brokerstore.h"
+#include "utils/fileutils.h"
 
 using namespace Cashmere;
 

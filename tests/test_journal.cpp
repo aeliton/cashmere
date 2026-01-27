@@ -17,7 +17,6 @@
 #include <gtest/gtest.h>
 
 #include "brokermock.h"
-#include "core/journal.h"
 #include "cashmere/brokerstore.h"
 
 using namespace Cashmere;
@@ -28,6 +27,11 @@ struct JournalTest : public ::testing::Test
     store = BrokerStore::create();
     journal = store->getOrCreate("cache://aa@localhost");
   }
+  void testInsertEntries(const ClockDataMap& entries) {
+    for (auto& [clock, data]: entries) {
+      journal->insert({clock, data});
+    }
+  }
   BrokerStoreBasePtr store;
   BrokerBasePtr journal;
 };
@@ -36,15 +40,6 @@ struct JournalTest : public ::testing::Test
 TEST_F(JournalTest, ClockInitializesToEmpty)
 {
   ASSERT_TRUE(journal->clock().empty());
-}
-
-TEST_F(JournalTest, ConstructJournalWithEntries)
-{
-  JournalPtr journal = std::make_shared<Journal>(
-    "cache://aa@localhost", ClockDataMap{{Clock{{0xAA, 1}}, Data{0xAA, 10, {}}}}
-  );
-  const auto expectedClock = Clock{{0xAA, 1}};
-  ASSERT_EQ(journal->clock(), expectedClock);
 }
 
 TEST_F(JournalTest, NonExistingEntryQueryReturnsInvalidEntry)
@@ -61,8 +56,10 @@ TEST_F(JournalTest, RefuseToInsertExistingEntry)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal("cache://aa@localhost", {{clock, data}});
-  const auto result = journal.insert(Entry{clock, data});
+
+  EXPECT_TRUE(journal->insert(Entry{clock, data}).valid());
+
+  const auto result = journal->insert(Entry{clock, data});
   ASSERT_EQ(result.valid(), false);
 }
 
@@ -77,46 +74,47 @@ TEST_F(JournalTest, DataIsRetrievedByClock)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal("cache://aa@localhost", {{clock, data}});
-  ASSERT_EQ(journal.entry(clock), data);
+  journal->insert({{clock, data}});
+  ASSERT_EQ(journal->entry(clock), data);
 }
 
 TEST_F(JournalTest, QueryIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal("cache://aa@localhost", {{clock, data}});
+
+  journal->insert({{clock, data}});
 
   const auto validClockWithZeroes = Clock{{0xAA, 1}, {0x11, 0}, {0x22, 0}};
-
-  EXPECT_EQ(journal.entry(validClockWithZeroes), data);
+  EXPECT_EQ(journal->entry(validClockWithZeroes), data);
 }
 
 TEST_F(JournalTest, ReplaceIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal("cache://aa@localhost", {{clock, data}});
+
+  journal->insert({{clock, data}});
 
   const auto validClockWithZeroes = Clock{{0xAA, 1}, {0x11, 0}, {0x22, 0}};
 
-  journal.replace(500, validClockWithZeroes);
+  journal->replace(500, validClockWithZeroes);
 
   const auto expectedClock = Clock{{0xAA, 2}};
-  EXPECT_EQ(journal.clock(), expectedClock);
+  EXPECT_EQ(journal->clock(), expectedClock);
 }
 
 TEST_F(JournalTest, InsertIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal("cache://aa@localhost", {{clock, data}});
+  journal->insert({{clock, data}});
 
   const auto validClockWithZeroes = Clock{{0xCC, 1}, {0x11, 0}, {0x22, 0}};
 
   const auto expectedClock = Clock{{0xAA, 1}, {0xCC, 1}};
   EXPECT_EQ(
-    journal.insert(Entry{validClockWithZeroes, {0xCC, 206, {}}}), expectedClock
+    journal->insert(Entry{validClockWithZeroes, {0xCC, 206, {}}}), expectedClock
   );
 }
 
@@ -124,42 +122,39 @@ TEST_F(JournalTest, EraseIgnoreZeroedClockEntries)
 {
   const auto clock = Clock{{0xAA, 1}};
   const auto data = Data{0xAA, 10, {}};
-  Journal journal("cache://aa@localhost", {{clock, data}});
+  journal->insert({{clock, data}});
 
   const auto validClockWithZeroes = Clock{{0xAA, 1}, {0x11, 0}, {0x22, 0}};
 
-  EXPECT_TRUE(journal.erase(validClockWithZeroes));
+  EXPECT_TRUE(journal->erase(validClockWithZeroes));
 }
 
 TEST_F(JournalTest, QueryEntries)
 {
-  const ClockDataMap entries = {
+  testInsertEntries({
     {Clock{{0xAA, 1}}, Data{0xAA, 1, {}}},
     {Clock{{0xBB, 1}}, Data{0xBB, 10, {}}},
     {Clock{{0xAA, 2}, {0xBB, 1}}, Data{0xAA, 2, Clock{{0xBB, 1}}}},
     {Clock{{0xCC, 1}}, Data{0xCC, 100, {}}},
-  };
-  Journal journal("cache://aa@localhost", entries);
+  });
 
   const EntryList expected{{Clock{{0xCC, 1}}, Data{0xCC, 100, {}}}};
-  ASSERT_EQ(journal.query(Clock{{0xAA, 2}, {0xBB, 1}}), expected);
+  ASSERT_EQ(journal->query(Clock{{0xAA, 2}, {0xBB, 1}}), expected);
 }
 
 TEST_F(JournalTest, ReportsProvidesItsOwnData)
 {
-  Journal journal("cache://aa@localhost");
   const auto expected = SourcesMap{
     {0,
      IdConnectionInfoMap{{0xAA, ConnectionInfo{.distance = 0, .clock = Clock{}}}
      }}
   };
-  ASSERT_EQ(journal.sources(), expected);
+  ASSERT_EQ(journal->sources(), expected);
 }
 
 TEST_F(JournalTest, RefusesEntriesOutOfOrder)
 {
-  Journal journal("cache://aa@localhost");
-  const auto clock = journal.insert(Entry{{{0xBB, 2}}, {0xBB, 10, {}}});
+  const auto clock = journal->insert(Entry{{{0xBB, 2}}, {0xBB, 10, {}}});
   ASSERT_EQ(clock.valid(), false);
 }
 

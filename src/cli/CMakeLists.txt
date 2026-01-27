@@ -12,6 +12,9 @@ target_link_libraries(options_objects PRIVATE cashmere_objects)
 
 add_executable(cash)
 
+set_target_properties(cash PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+
 if (UNIX AND NOT CYGWIN)
   set_target_properties(cash PROPERTIES
     INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"

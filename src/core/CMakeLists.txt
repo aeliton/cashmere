@@ -1,6 +1,6 @@
 find_package(gRPC CONFIG REQUIRED)
 
-add_library(cashmere_proto STATIC proto/cashmere.proto)
+add_library(cashmere_proto SHARED proto/cashmere.proto)
 target_link_libraries(cashmere_proto
     PUBLIC
         protobuf::libprotobuf
@@ -11,6 +11,8 @@ target_include_directories(cashmere_proto PUBLIC
   $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+
+add_library(cashmere::cashmere_proto ALIAS cashmere_proto)
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 protobuf_generate(TARGET cashmere_proto LANGUAGE cpp)
@@ -23,10 +25,8 @@ protobuf_generate(
 )
 
 add_library(cashmere_objects OBJECT
- ${CMAKE_CURRENT_SOURCE_DIR}/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/brokerbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/brokerbaseimpl.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/brokergrpcstub.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/brokerwrapperbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/cashmere.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/clock.cpp
@@ -34,9 +34,6 @@ add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/entry.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/grpcrunner.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/grpcutils.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/journal.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/journalbase.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/journalfile.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/ledger.cpp
 )
 
@@ -74,3 +71,7 @@ generate_export_header(cashmere EXPORT_FILE_NAME export/cashmere/cashmere_export
 
 add_library(cashmere::cashmere ALIAS cashmere)
 
+set_target_properties(cashmere PROPERTIES
+  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set_target_properties(cashmere_proto PROPERTIES
+  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})

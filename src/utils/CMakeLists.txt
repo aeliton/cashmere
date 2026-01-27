@@ -21,3 +21,6 @@ add_library(cashmere::cashmere_utils ALIAS cashmere_utils)
 set_target_properties(cashmere_utils_objects PROPERTIES
   POSITION_INDEPENDENT_CODE ON
 )
+
+set_target_properties(cashmere_utils PROPERTIES
+  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})

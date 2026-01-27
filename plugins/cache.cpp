@@ -13,17 +13,14 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "journal.h"
+#include "cache.h"
 
 namespace Cashmere
 {
 
-Journal::Journal(const std::string& url, const ClockDataMap& entries)
+Journal::Journal(const std::string& url)
   : JournalBase(url)
 {
-  for (auto& [clock, entry] : entries) {
-    insert({clock, entry});
-  }
 }
 
 bool Journal::save(const Entry& data)
@@ -57,8 +54,8 @@ std::string Journal::schema() const
   return "cache";
 }
 
-BrokerBasePtr Journal::create(const std::string& url)
+BrokerBase* Journal::create(const std::string& url)
 {
-  return std::make_shared<Journal>(url);
+  return new Journal(url);
 }
 }

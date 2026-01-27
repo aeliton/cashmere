@@ -17,8 +17,6 @@
 #define CASHMERE_STORE_H
 
 #include "cashmere/brokerbase.h"
-#include <functional>
-#include <unordered_map>
 
 namespace Cashmere
 {
@@ -45,9 +43,10 @@ class CASHMERE_EXPORT BrokerStore : public BrokerStoreBase {
     BrokerBasePtr getOrCreate(const std::string& url) override;
     std::size_t size() const override;
 
+    struct Impl;
+
   private:
-    std::unordered_map<std::string, BrokerBasePtr> _store;
-    std::unordered_map<std::string, std::function<BrokerBasePtr(const std::string&)>> _builders;
+    std::unique_ptr<Impl> _impl;
 };
 
 }

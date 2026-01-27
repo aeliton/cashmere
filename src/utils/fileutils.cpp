@@ -97,6 +97,22 @@ size_t LineCount(const std::string& filename)
   return std::count(isbuf_it(file), isbuf_it(), kLineFeed);
 }
 
+fs::path InstallDirectory()
+{
+  return fs::canonical("/proc/self/exe")
+    .parent_path()
+    .parent_path();
+}
+
+std::vector<std::string> ListFiles(const std::string& path)
+{
+  std::vector<std::string> found;
+  for (const auto& entry : fs::directory_iterator(path)) {
+    found.push_back(entry.path());
+  }
+  return found;
+}
+
 std::string CreateTempDir()
 {
   std::string tempDir;

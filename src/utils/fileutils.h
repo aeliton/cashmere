@@ -17,6 +17,8 @@
 #define CASHMERE_UTILS_FILEUTILS_H
 
 #include <istream>
+#include <filesystem>
+#include <vector>
 
 namespace Cashmere
 {
@@ -41,6 +43,10 @@ bool SeekToLine(std::fstream& file, size_t line);
 std::string Filename(const std::string& base, uint64_t id);
 
 size_t LineCount(const std::string& filename);
+
+std::filesystem::path InstallDirectory();
+
+std::vector<std::string> ListFiles(const std::string& path);
 
 struct TempDir
 {

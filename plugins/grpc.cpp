@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "brokergrpcstub.h"
+#include "grpc.h"
 #include "core/grpcutils.h"
 
 #include <google/protobuf/empty.pb.h>
@@ -42,9 +42,9 @@ BrokerGrpcStub::BrokerGrpcStub(const std::string& url)
 {
 }
 
-BrokerBasePtr BrokerGrpcStub::create(const std::string& url)
+BrokerBase* BrokerGrpcStub::create(const std::string& url)
 {
-    return std::make_shared<BrokerGrpcStub>(url);
+    return new BrokerGrpcStub(url);
 }
 
 
