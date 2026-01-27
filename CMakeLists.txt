@@ -55,6 +55,26 @@ protobuf_generate(
 
 include(GenerateExportHeader)
 
+add_library(cashmere_utils_objects OBJECT
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/urlutils.cpp
+)
+
+target_include_directories(cashmere_utils_objects
+  PUBLIC
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PRIVATE
+    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
+
+add_library(cashmere_utils SHARED)
+target_link_libraries(cashmere_utils
+  PUBLIC
+    $<BUILD_LOCAL_INTERFACE:cashmere_utils_objects>
+)
+add_library(cashmere::cashmere_utils ALIAS cashmere_utils)
+
 add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/broker.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/brokerbase.cpp
@@ -71,9 +91,6 @@ add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journalbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/journalfile.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/ledger.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/fileutils.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/random.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/urlutils.cpp
 )
 
 target_include_directories(cashmere_objects
@@ -90,7 +107,7 @@ target_link_libraries(cashmere_objects
     $<BUILD_LOCAL_INTERFACE:cashmere_proto>
 )
 
-set_target_properties(cashmere_objects cashmere_proto PROPERTIES
+set_target_properties(cashmere_utils_objects cashmere_objects cashmere_proto PROPERTIES
   POSITION_INDEPENDENT_CODE ON
 )
 
@@ -146,6 +163,7 @@ target_include_directories(cash
 target_link_libraries(cash PRIVATE
   $<BUILD_LOCAL_INTERFACE:options_objects>
   cashmere::cashmere
+  cashmere::cashmere_utils
   edit
 )
 
@@ -221,6 +239,7 @@ target_link_libraries (gtests
   GTest::gmock
   GTest::gtest_main
   cashmere_objects
+  cashmere::cashmere_utils
   options_objects
 )
 
