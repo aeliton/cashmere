@@ -35,6 +35,7 @@ struct Options
     Status status = Status::Ok;
     char option;
     std::string optionArgument;
+    friend std::ostream& operator<<(std::ostream& os, const Error& info);
   };
 
   explicit Options();

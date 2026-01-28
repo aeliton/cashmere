@@ -53,8 +53,6 @@ Options::Options(int argc, char* argv[])
       case 's':
         service = true;
         break;
-      case '?':
-        break;
       default:
         break;
     }
@@ -103,4 +101,12 @@ bool operator==(const Options::Error& a, const Options::Error& b)
 bool Options::ok() const
 {
   return _error.status == Status::Ok;
+}
+
+std::ostream& operator<<(std::ostream& os, const Options::Error& error)
+{
+  os << "Options::Error{";
+  os << "status = " << static_cast<int>(error.status) << ", option = " << error.option
+     << ", optionArgument = " << error.optionArgument << "}" << std::endl;
+  return os << "}";
 }

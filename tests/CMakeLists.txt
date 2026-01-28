@@ -4,12 +4,6 @@ find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 
 add_executable(cli_tests)
 
-# To be able to test plugin loading, the search will be relative to the
-# executable: <exec path>/../lib/cashmere/plugins
-set_target_properties(cli_tests PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
-)
-
 target_sources(cli_tests PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/test_command.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_options.cpp
