@@ -31,7 +31,6 @@ target_link_libraries (gtests
   GTest::gtest_main
   cashmere::cashmere
   cashmere::cashmere_utils
-  options_objects
   $<BUILD_LOCAL_INTERFACE:plugin_grpc_objects>
 )
 
