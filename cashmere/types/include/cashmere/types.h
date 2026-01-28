@@ -13,37 +13,22 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_CLOCK_H
-#define CASHMERE_CLOCK_H
+#ifndef CASHMERE_TYPES_H
+#define CASHMERE_TYPES_H
 
-#include <list>
-#include <map>
-#include <ostream>
-
-#include "cashmere/cashmere.h"
+#include <cashmere/cashmere_export.h>
+#include <cstdint>
+#include <set>
 
 namespace Cashmere
 {
+using Amount = int64_t;
+using Id = uint64_t;
+using Time = uint64_t;
+using Source = uint32_t;
 
-class CASHMERE_EXPORT Clock : public std::map<Id, Time>
-{
-public:
-  Clock();
-  Clock(const std::initializer_list<std::pair<const Id, Time>>& list);
-  Clock merge(const Clock& other) const;
-  Clock tick(Id id) const;
-  bool isNext(const Clock& other, Id id) const;
-  bool smallerThan(const Clock& other) const;
-  bool concurrent(const Clock& other) const;
-  bool valid() const;
-  std::string str() const;
+using IdSet = std::set<Id>;
 
-  static bool Read(std::istream& in, Clock& clock);
-  CASHMERE_EXPORT friend std::ostream&
-  operator<<(std::ostream& os, const Clock& clock);
-};
-
-using ClockList = std::list<Clock>;
-using IdClockMap = std::map<Id, Clock>;
 }
+
 #endif

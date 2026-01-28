@@ -16,7 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "core/storeimpl.h"
+#include "storeimpl.h"
 #include "cashmere/utils/file.h"
 
 using testing::ElementsAre;

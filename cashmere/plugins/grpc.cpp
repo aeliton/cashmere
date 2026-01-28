@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "grpc.h"
-#include "core/grpcutils.h"
+#include "cashmere/utils/grpc.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpc/grpc.h>

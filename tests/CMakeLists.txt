@@ -2,36 +2,26 @@ include(CTest)
 
 find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 
-enable_testing()
-add_executable(gtests)
+add_executable(cli_tests)
 
 # To be able to test plugin loading, the search will be relative to the
 # executable: <exec path>/../lib/cashmere/plugins
-set_target_properties(gtests PROPERTIES
+set_target_properties(cli_tests PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
 )
 
-target_sources(gtests PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_broker.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_brokergrpcstub.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_brokerstore.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_brokerstub.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_clock.cpp
+target_sources(cli_tests PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/test_command.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_entry.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_journal.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_journalfile.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_ledger.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_options.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_plugins.cpp
 )
 
-target_include_directories(gtests PRIVATE
+target_include_directories(cli_tests PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/../src
-  ${CMAKE_CURRENT_SOURCE_DIR}/..
+  ${CMAKE_CURRENT_SOURCE_DIR}/../cashmere
+  ${CMAKE_CURRENT_SOURCE_DIR}/../cashmere/src
 )
 
-target_link_libraries (gtests
+target_link_libraries (cli_tests
   GTest::gmock
   GTest::gtest_main
   cashmere::cashmere
@@ -41,4 +31,4 @@ target_link_libraries (gtests
 )
 
 include(GoogleTest)
-gtest_discover_tests(gtests)
+gtest_discover_tests(cli_tests)

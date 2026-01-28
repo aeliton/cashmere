@@ -16,8 +16,11 @@
 #ifndef CASHMERE_UTILS_GRPCUTILS_H
 #define CASHMERE_UTILS_GRPCUTILS_H
 
-#include "cashmere/brokerbase.h"
 #include <google/protobuf/map.h>
+#include <cashmere/cashmere_export.h>
+#include <cashmere/clock.h>
+#include <cashmere/entry.h>
+#include <cashmere/connectioninfo.h>
 
 namespace Cashmere::Grpc
 {
@@ -29,29 +32,28 @@ class IdConnectionInfoMap;
 
 namespace Cashmere::Utils
 {
-
-Clock ClockFrom(const ::google::protobuf::Map<uint64_t, uint64_t>& version);
-Data DataFrom(const Grpc::Data& data);
-Entry EntryFrom(const Grpc::Entry& entry);
-IdConnectionInfoMap IdConnectionInfoMapFrom(
+Clock CASHMERE_EXPORT ClockFrom(const ::google::protobuf::Map<uint64_t, uint64_t>& version);
+Data CASHMERE_EXPORT DataFrom(const Grpc::Data& data);
+Entry CASHMERE_EXPORT EntryFrom(const Grpc::Entry& entry);
+IdConnectionInfoMap CASHMERE_EXPORT IdConnectionInfoMapFrom(
   const google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>& sources
 );
-SourcesMap SourcesFrom(
+SourcesMap CASHMERE_EXPORT SourcesFrom(
   const google::protobuf::Map<uint32_t, Grpc::IdConnectionInfoMap>& sources
 );
 
-void SetClock(
+void CASHMERE_EXPORT SetClock(
   google::protobuf::Map<uint64_t, uint64_t>* version, const Clock& data
 );
-void SetData(Grpc::Data* entry, const Data& data);
-void SetEntry(Grpc::Entry* proto, const Entry& entry);
-void SetConnectionInfo(Grpc::ConnectionInfo& info, const ConnectionInfo& data);
-void SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data);
-void SetIdConnectionInfoMap(
+void CASHMERE_EXPORT SetData(Grpc::Data* entry, const Data& data);
+void CASHMERE_EXPORT SetEntry(Grpc::Entry* proto, const Entry& entry);
+void CASHMERE_EXPORT SetConnectionInfo(Grpc::ConnectionInfo& info, const ConnectionInfo& data);
+void CASHMERE_EXPORT SetConnectionInfo(Grpc::ConnectionInfo* info, const ConnectionInfo& data);
+void CASHMERE_EXPORT SetIdConnectionInfoMap(
   google::protobuf::Map<uint64_t, Grpc::ConnectionInfo>* sources,
   const IdConnectionInfoMap& data
 );
-void SetSources(
+void CASHMERE_EXPORT SetSources(
   google::protobuf::Map<uint32_t, Grpc::IdConnectionInfoMap>* proto,
   const SourcesMap sources
 );

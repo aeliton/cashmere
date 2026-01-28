@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 cmake_minimum_required(VERSION 3.28)
 
-project(CashmereCli VERSION 0.0.1 LANGUAGES CXX)
+project(CashmereTypes VERSION 0.0.1 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -29,20 +29,47 @@ else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
-enable_testing()
+include(GenerateExportHeader)
 
-add_subdirectory(cashmere)
-add_subdirectory(src/cli)
-add_subdirectory(tests)
+add_library(types SHARED)
+target_sources(types PRIVATE
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/clock.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/connectioninfo.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/entry.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/ledger.cpp
+)
+
+target_include_directories(types
+  PUBLIC
+    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PRIVATE
+    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
+
+set_target_properties(types PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN TRUE
+)
+
+target_link_libraries(types
+  PRIVATE
+  cashmere::cashmere_utils
+)
+
+add_library(cashmere::types ALIAS types)
 
 install(
-  TARGETS cash
+  TARGETS types
   EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include(CMakePackageConfigHelpers)
 
@@ -74,3 +101,5 @@ install(
 
 list( APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR} )
 
+enable_testing()
+add_subdirectory(tests)

@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "cashmere/brokerstore.h"
-#include "core/grpcutils.h"
+#include "cashmere/utils/grpc.h"
 #include "grpcrunner.h"
 #include "brokerbaseimpl.h"
 

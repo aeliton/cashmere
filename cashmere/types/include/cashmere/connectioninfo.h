@@ -13,43 +13,25 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_LEDGER_H
-#define CASHMERE_LEDGER_H
+#ifndef CASHMERE_TYPES_CONNECTION_INFO_H
+#define CASHMERE_TYPES_CONNECTION_INFO_H
 
-#include "cashmere/cashmere.h"
-#include "cashmere/entry.h"
-#include "cashmere/brokerbase.h"
+#include "cashmere/clock.h"
 
 namespace Cashmere
 {
 
-using ClockEntryMap = std::map<Clock, Entry>;
-
-class CASHMERE_EXPORT Ledger
+struct CASHMERE_EXPORT ConnectionInfo
 {
-public:
-  enum class Action
-  {
-    Ignore,
-    Insert,
-    Replace
-  };
-  using ActionClock = std::tuple<Ledger::Action, Clock>;
-  Ledger() = delete;
-  explicit Ledger(BrokerBasePtr journal);
-
-  Amount balance() const;
-
-  static Amount Balance(const EntryList& entries);
-  static ActionClock Evaluate(const ClockEntryMap& rows, const Entry& incoming);
-  static ActionClock Replaces(const Entry& existing, const Entry& incoming);
-
-private:
-  explicit Ledger(const EntryList& entries);
-  BrokerBasePtr _journal;
-  Amount _balance;
-  ClockEntryMap _rows;
+  int16_t distance;
+  Clock clock;
+  CASHMERE_EXPORT bool operator<=>(const ConnectionInfo& other) const = default;
+  CASHMERE_EXPORT friend std::ostream&
+  operator<<(std::ostream& os, const ConnectionInfo& info);
 };
+
+using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
+using SourcesMap = std::map<Source, IdConnectionInfoMap>;
 
 }
 

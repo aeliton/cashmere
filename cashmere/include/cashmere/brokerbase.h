@@ -16,26 +16,14 @@
 #ifndef CASHMERE_BROKER_INTERFACE_H
 #define CASHMERE_BROKER_INTERFACE_H
 
-#include <map>
 #include <memory>
 
 #include "cashmere/cashmere.h"
+#include "cashmere/connectioninfo.h"
 #include "cashmere/entry.h"
 
 namespace Cashmere
 {
-
-struct CASHMERE_EXPORT ConnectionInfo
-{
-  int16_t distance;
-  Clock clock;
-  CASHMERE_EXPORT bool operator<=>(const ConnectionInfo& other) const = default;
-  CASHMERE_EXPORT friend std::ostream&
-  operator<<(std::ostream& os, const ConnectionInfo& info);
-};
-
-using IdConnectionInfoMap = std::map<Id, ConnectionInfo>;
-using SourcesMap = std::map<Source, IdConnectionInfoMap>;
 
 class Connection;
 using ConnectionPtr = std::shared_ptr<Connection>;

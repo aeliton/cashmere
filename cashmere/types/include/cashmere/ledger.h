@@ -13,45 +13,39 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHMERE_ENTRY_H
-#define CASHMERE_ENTRY_H
+#ifndef CASHMERE_TYPES_LEDGER_H
+#define CASHMERE_TYPES_LEDGER_H
 
-#include "cashmere/clock.h"
-
-#include <list>
+#include <cashmere/types.h>
+#include <cashmere/entry.h>
 
 namespace Cashmere
 {
 
-struct Data;
-struct Entry;
-
-using ClockDataMap = std::map<Clock, Data>;
 using ClockEntryMap = std::map<Clock, Entry>;
-using EntryList = std::list<Entry>;
 
-struct CASHMERE_EXPORT Data
+class CASHMERE_EXPORT Ledger
 {
-  Id id;
-  Amount value;
-  Clock alters;
-  bool operator==(const Data& other) const;
-  bool valid() const;
-  static bool Read(std::istream& in, Data& data);
-  std::string str() const;
-  CASHMERE_EXPORT friend std::ostream&
-  operator<<(std::ostream& os, const Data& data);
-};
+public:
+  enum class Action
+  {
+    Ignore,
+    Insert,
+    Replace
+  };
+  using ActionClock = std::tuple<Ledger::Action, Clock>;
+  Ledger() = delete;
+  explicit Ledger(const EntryList& entries);
 
-struct CASHMERE_EXPORT Entry
-{
-  Clock clock;
-  Data entry;
-  bool operator==(const Entry& other) const;
-  static bool Read(std::istream& in, Entry& entry);
-  std::string str() const;
-  CASHMERE_EXPORT friend std::ostream&
-  operator<<(std::ostream& os, const Entry& data);
+  Amount balance() const;
+
+  static Amount Balance(const EntryList& entries);
+  static ActionClock Evaluate(const ClockEntryMap& rows, const Entry& incoming);
+  static ActionClock Replaces(const Entry& existing, const Entry& incoming);
+
+private:
+  Amount _balance;
+  ClockEntryMap _rows;
 };
 
 }
