@@ -17,9 +17,7 @@
 #include "cashmere/utils/url.h"
 #include "brokerbaseimpl.h"
 
-#include <grpc/grpc.h>
-#include <grpcpp/create_channel.h>
-#include <proto/cashmere.grpc.pb.h>
+#include <sstream>
 
 namespace Cashmere
 {
@@ -320,6 +318,11 @@ Connection BrokerBase::stub()
 BrokerBasePtr BrokerBase::ptr()
 {
   return this->shared_from_this();
+}
+
+BrokerStoreBasePtr BrokerBase::store()
+{
+  return impl()->store();
 }
 
 BrokerBase::Impl* BrokerBase::impl()

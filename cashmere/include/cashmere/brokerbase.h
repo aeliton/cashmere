@@ -32,6 +32,9 @@ class BrokerBase;
 using BrokerBasePtr = std::shared_ptr<BrokerBase>;
 using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
 
+class BrokerStoreBase;
+using BrokerStoreBasePtr = std::shared_ptr<BrokerStoreBase>;
+
 class CASHMERE_EXPORT Connection
 {
 public:
@@ -121,6 +124,8 @@ public:
   virtual std::string hostname() const;
 
   virtual BrokerBasePtr ptr();
+
+  virtual BrokerStoreBasePtr store();
 
   Impl* impl();
 };

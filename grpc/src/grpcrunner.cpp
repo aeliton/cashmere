@@ -16,8 +16,8 @@
 
 #include "cashmere/brokerstore.h"
 #include "cashmere/utils/grpc.h"
+#include "cashmere/utils/url.h"
 #include "grpcrunner.h"
-#include "brokerbaseimpl.h"
 
 #include <google/protobuf/empty.pb.h>
 #include <grpc/grpc.h>
@@ -39,7 +39,7 @@ WrapperBasePtr GrpcRunner::create(const std::string& url)
   const Grpc::ConnectionRequest* request, Grpc::ConnectionResponse* response
 )
 {
-  auto stub = Connection(broker()->impl()->store()->getOrCreate(request->broker().url()));
+  auto stub = Connection(broker()->store()->getOrCreate(request->broker().url()));
   if (request->source() == 0) {
     const auto conn = broker()->connect(stub);
     response->set_source(conn.source());

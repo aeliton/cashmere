@@ -53,12 +53,6 @@ TEST_F(BrokerStoreTest, CanCreateJournalType)
   ASSERT_EQ(instance->schema(), "file");
 }
 
-TEST_F(BrokerStoreTest, CanCreateGrpcType)
-{
-  auto instance = store->getOrCreate("grpc://0.0.0.0:9999");
-  ASSERT_EQ(instance->schema(), "grpc");
-}
-
 TEST_F(BrokerStoreTest, GetCreatesBrokerIfInexisting)
 {
   store->getOrCreate("hub://aa@localhost");

@@ -13,30 +13,10 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
-#include "storeimpl.h"
-#include "cashmere/utils/file.h"
+#include "grpcrunner.h"
 
-using testing::IsSupersetOf;
-using testing::ResultOf;
-
-using namespace Cashmere;
-
-std::string CallSchema(const std::pair<std::string, BrokerCreator>& pair)
+extern "C" CASHMERE_EXPORT Cashmere::WrapperBase* create(const std::string& url)
 {
-  return pair.second("")->schema();
-}
-
-TEST(Plugin, LoadPlugins)
-{
-  SchemaFunctorMap plugins = BrokerStore::Impl::LoadPlugins(InstallDirectory() / "lib/cashmere/plugins");
-  EXPECT_THAT(plugins,
-    IsSupersetOf({
-      ResultOf(CallSchema, "cache"),
-      ResultOf(CallSchema, "file"),
-      ResultOf(CallSchema, "hub")}
-    )
-  );
+  return new Cashmere::GrpcRunner(url);
 }

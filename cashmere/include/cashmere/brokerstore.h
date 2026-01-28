@@ -44,7 +44,6 @@ class CASHMERE_EXPORT BrokerStore : public BrokerStoreBase {
     std::size_t size() const override;
 
     struct Impl;
-
   private:
     std::unique_ptr<Impl> _impl;
 };

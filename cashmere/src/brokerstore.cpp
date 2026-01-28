@@ -1,8 +1,8 @@
 #include "cashmere/utils/url.h"
 #include "cashmere/utils/file.h"
 #include "brokerbaseimpl.h"
-#include "grpcrunner.h"
 #include "storeimpl.h"
+#include "cashmere/brokerwrapper.h"
 
 namespace Cashmere {
 
@@ -51,29 +51,4 @@ bool BrokerStore::insert(const std::string& url, BrokerBasePtr broker)
   return {};
 }
 
-WrapperBasePtr WrapperStore::getOrCreate(const std::string& url)
-{
-  auto storeIt = _store.find(url);
-  if (storeIt != _store.end()) {
-    return storeIt->second;
-  }
-  const Url parsed = ParseUrl(url);
-  const auto builderIt = _builders.find(parsed.schema);
-  if (builderIt == _builders.end()) {
-    return nullptr;
-  }
-  return _store[url] = builderIt->second(url);
-}
-
-std::size_t WrapperStore::size() const
-{
-  return _store.size();
-}
-WrapperStore::WrapperStore()
-  : WrapperStoreBase()
-  , _store()
-  , _builders()
-{
-  _builders["grpc"] = &GrpcRunner::create;
-}
 }

@@ -58,17 +58,18 @@ public:
 
 class CASHMERE_EXPORT WrapperStore : public WrapperStoreBase
 {
+  struct Private { explicit Private() = default; };
   public:
-    WrapperStore();
+    WrapperStore(Private);
+    static WrapperStoreBasePtr create();
     WrapperBasePtr getOrCreate(const std::string& url) override;
 
     std::size_t size() const override;
 
   private:
-    std::unordered_map<std::string, WrapperBasePtr> _store;
-    std::unordered_map<std::string, std::function<WrapperBasePtr(const std::string&)>> _builders;
+    struct Impl;
+    std::unique_ptr<Impl> _impl;
 };
-
 
 }
 

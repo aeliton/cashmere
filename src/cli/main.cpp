@@ -111,7 +111,7 @@ void RunService(const Options& options)
   auto path = options.dbPath.empty() ? tempDir.directory : options.dbPath;
   auto journal = store->getOrCreate(std::format("file://{:x}@localhost{}", options.id, path));
 
-  auto wrapperStore = std::make_shared<WrapperStore>();
+  auto wrapperStore = WrapperStore::create();
   auto runner = wrapperStore->getOrCreate(std::format("grpc://{}:{}", options.hostname, options.source));
 
   std::thread brokerThread = runner->start(journal);

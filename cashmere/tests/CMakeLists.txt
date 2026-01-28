@@ -13,7 +13,6 @@ set_target_properties(cashmere_tests PROPERTIES
 
 target_sources(cashmere_tests PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/test_broker.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_brokergrpcstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_brokerstore.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_brokerstub.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_journal.cpp

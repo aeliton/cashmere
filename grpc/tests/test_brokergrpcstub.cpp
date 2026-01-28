@@ -173,3 +173,10 @@ TEST_F(BrokerGrpcStubTest, RefreshIsCalledWithSender)
   broker->connect(kTestGrpcUrl);
   EXPECT_TRUE(broker->refresh(Connection{}, 1));
 }
+
+TEST(BrokerStore, CanCreateGrpcType)
+{
+  auto store = BrokerStore::create();
+  auto instance = store->getOrCreate("grpc://0.0.0.0:9999");
+  ASSERT_EQ(instance->schema(), "grpc");
+}
