@@ -2,13 +2,12 @@ include(CTest)
 
 find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
 
-enable_testing()
 add_executable(cashmere_tests)
 
 # To be able to test plugin loading, the search will be relative to the
 # executable: <exec path>/../lib/cashmere/plugins
 set_target_properties(cashmere_tests PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
 )
 
 target_sources(cashmere_tests PRIVATE
@@ -30,7 +29,6 @@ target_link_libraries (cashmere_tests
   GTest::gtest_main
   cashmere::cashmere
   cashmere::cashmere_utils
-  $<BUILD_LOCAL_INTERFACE:plugin_grpc_objects>
 )
 
 include(GoogleTest)

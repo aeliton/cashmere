@@ -25,4 +25,4 @@ protobuf_generate(
 add_library(cashmere::proto ALIAS proto)
 
 set_target_properties(proto PROPERTIES
-  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+  LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})

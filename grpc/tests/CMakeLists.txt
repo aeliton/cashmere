@@ -8,7 +8,7 @@ add_executable(cashmere_grpc_tests)
 # To be able to test plugin loading, the search will be relative to the
 # executable: <exec path>/../lib/cashmere/plugins
 set_target_properties(cashmere_grpc_tests PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
 )
 
 target_sources(cashmere_grpc_tests PRIVATE
@@ -19,8 +19,6 @@ target_include_directories(cashmere_grpc_tests PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/../src
   ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
-
-add_dependencies(cashmere_grpc_tests core_plugins)
 
 target_link_libraries (cashmere_grpc_tests
   GTest::gmock

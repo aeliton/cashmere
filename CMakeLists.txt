@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 cmake_minimum_required(VERSION 3.28)
 
-project(cashmere VERSION 0.0.1 LANGUAGES CXX)
+project(CashmereCli VERSION 0.0.1 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -37,7 +37,7 @@ add_subdirectory(src/cli)
 add_subdirectory(tests)
 
 install(
-  TARGETS cash cashmere cashmere_utils types proto grpc_utils
+  TARGETS cash proto grpc_utils cashmere_utils cashmere_crdt
   EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
