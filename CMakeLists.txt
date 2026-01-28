@@ -31,7 +31,7 @@ endif()
 
 include(GenerateExportHeader)
 
-add_subdirectory(src/utils)
+add_subdirectory(utils)
 add_subdirectory(src/core)
 add_subdirectory(src/cli)
 add_subdirectory(plugins)

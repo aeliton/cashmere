@@ -16,21 +16,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "utils/fileutils.h"
+#include "cashmere/utils/file.h"
 
-constexpr char const* kPluginsPath = "lib/cashmere/plugins";
 using testing::EndsWith;
 
 using namespace Cashmere;
 
 TEST(FileUtils, FindPluginPaths)
 {
-  std::vector<std::string> found = ListFiles(InstallDirectory() / kPluginsPath);
-  EXPECT_THAT(found,
-    UnorderedElementsAre(
-      EndsWith("libcache.so"),
-      EndsWith("libfile.so"),
-      EndsWith("libgrpc.so"),
-      EndsWith("libhub.so"))
-  );
+  std::vector<std::string> found = ListFiles(InstallDirectory() / "bin");
+  EXPECT_THAT(found, ElementsAre(EndsWith("utils_tests")));
 }

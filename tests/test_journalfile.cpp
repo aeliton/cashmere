@@ -23,8 +23,8 @@
 #include "brokermock.h"
 
 #include "cashmere/brokerstore.h"
-#include "utils/fileutils.h"
-#include "utils/urlutils.h"
+#include "cashmere/utils/file.h"
+#include "cashmere/utils/url.h"
 
 namespace fs = std::filesystem;
 

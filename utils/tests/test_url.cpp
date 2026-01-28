@@ -16,7 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "utils/urlutils.h"
+#include "cashmere/utils/url.h"
 
 using namespace Cashmere;
 

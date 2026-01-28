@@ -49,6 +49,7 @@ target_include_directories(cashmere_objects
 target_link_libraries(cashmere_objects
   PUBLIC
     $<BUILD_LOCAL_INTERFACE:cashmere_proto>
+    cashmere::cashmere_utils
 )
 
 set_target_properties(cashmere_objects cashmere_proto PROPERTIES

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "command.h"
-#include "utils/fileutils.h"
+#include "cashmere/utils/file.h"
 
 #include <istream>
 #include <unordered_map>

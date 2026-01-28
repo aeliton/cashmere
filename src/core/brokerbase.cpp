@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cashmere/brokerbase.h"
-#include "utils/urlutils.h"
+#include "cashmere/utils/url.h"
 #include "brokerbaseimpl.h"
 
 #include <grpc/grpc.h>

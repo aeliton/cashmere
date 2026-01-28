@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "core/storeimpl.h"
-#include "utils/fileutils.h"
+#include "cashmere/utils/file.h"
 
 using testing::ElementsAre;
 using testing::ResultOf;

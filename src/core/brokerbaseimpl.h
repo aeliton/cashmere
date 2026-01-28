@@ -18,8 +18,8 @@
 
 #include "cashmere/brokerbase.h"
 #include "cashmere/brokerstore.h"
-#include "utils/random.h"
-#include "utils/urlutils.h"
+#include "cashmere/utils/random.h"
+#include "cashmere/utils/url.h"
 
 namespace Cashmere
 {

@@ -19,13 +19,11 @@ target_sources(gtests PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/test_clock.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_command.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_entry.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_fileutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_journal.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_journalfile.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_ledger.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_options.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_plugins.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_urlutils.cpp
 )
 
 target_include_directories(gtests PRIVATE
