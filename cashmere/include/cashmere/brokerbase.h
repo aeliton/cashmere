@@ -19,69 +19,14 @@
 #include <memory>
 
 #include "cashmere/cashmere.h"
-#include "cashmere/connectioninfo.h"
+#include "cashmere/connection.h"
 #include "cashmere/entry.h"
 
 namespace Cashmere
 {
 
-class Connection;
-using ConnectionPtr = std::shared_ptr<Connection>;
-
-class BrokerBase;
-using BrokerBasePtr = std::shared_ptr<BrokerBase>;
-using BrokerBaseWeakPtr = std::weak_ptr<BrokerBase>;
-
 class BrokerStoreBase;
 using BrokerStoreBasePtr = std::shared_ptr<BrokerStoreBase>;
-
-class CASHMERE_EXPORT Connection
-{
-public:
-  enum class Origin
-  {
-    Cache,
-    Remote
-  };
-
-  virtual ~Connection();
-
-  explicit Connection();
-  explicit Connection(
-    BrokerBasePtr broker, Source source = {}, const Clock& version = {},
-    const IdConnectionInfoMap& sources = {}
-  );
-
-  Connection& connect(Connection conn);
-  bool refresh(const Connection& conn) const;
-  Clock insert(const Entry& data) const;
-  Clock insert(const EntryList& data) const;
-
-  EntryList query(const Clock& clock = {}) const;
-  Clock& clock(Origin origin = Origin::Cache) const;
-  Clock relay(const Data& entry) const;
-
-  IdConnectionInfoMap& provides(Origin origin = Origin::Cache) const;
-
-  void disconnect();
-  bool valid() const;
-  Source& source() const;
-
-  std::string url() const;
-  void reset();
-  std::string str() const;
-
-  bool operator==(const Connection& other) const;
-  CASHMERE_EXPORT friend std::ostream&
-  operator<<(std::ostream& os, const Connection& data);
-
-private:
-  virtual BrokerBasePtr broker() const;
-  mutable Source _source;
-  mutable Clock _version;
-  mutable IdConnectionInfoMap _sources;
-  BrokerBaseWeakPtr _broker;
-};
 
 class CASHMERE_EXPORT BrokerBase : public std::enable_shared_from_this<BrokerBase>
 {
