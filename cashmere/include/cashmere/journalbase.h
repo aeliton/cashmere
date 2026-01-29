@@ -13,28 +13,39 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#ifndef CASHEMERE_JOURNAL_H
-#define CASHEMERE_JOURNAL_H
+#ifndef CASHEMERE_JOURNAL_BASE_H
+#define CASHEMERE_JOURNAL_BASE_H
 
-#include "journalbase.h"
+#include <cassert>
+
+#include "cashmere/cashmere.h"
+#include "cashmere/hub.h"
 
 namespace Cashmere
 {
-class CASHMERE_EXPORT Journal : public JournalBase
+
+class Random;
+
+class CASHMERE_EXPORT JournalBase : public Broker
 {
 public:
-  explicit Journal(const std::string& url);
+  virtual ~JournalBase();
+  explicit JournalBase(const std::string& url);
 
-  bool save(const Entry& data) override;
-  Data entry(Clock time) const override;
-  EntryList entries() const override;
-  virtual std::string schema() const override;
-  static BrokerBase* create(const std::string& url);
+  SourcesMap sources(Source sender = 0) const override;
+
+  Clock insert(const Entry& data, Source source = 0) override;
+  EntryList query(const Clock& from = {}, Source source = 0) const override;
+  virtual Clock relay(const Data& data, Source sender) override;
+
+  Id bookId() const;
 
 private:
-  ClockDataMap _entries;
+  const Id _bookId;
+  Clock _version;
 };
 
+using JournalPtr = std::shared_ptr<JournalBase>;
 }
 
 #endif

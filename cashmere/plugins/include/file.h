@@ -16,7 +16,7 @@
 #ifndef CASHEMERE_JOURNAL_FILE_H
 #define CASHEMERE_JOURNAL_FILE_H
 
-#include "journalbase.h"
+#include "cashmere/journalbase.h"
 
 namespace Cashmere
 {

@@ -41,6 +41,8 @@ add_library(cashmere_objects OBJECT
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerstore.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/brokerwrapperbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/cashmere.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/hub.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/src/journalbase.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/src/wrapperstore.cpp
 )
 
@@ -79,6 +81,14 @@ add_library(cashmere::cashmere ALIAS cashmere)
 
 set_target_properties(cashmere PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+
+set(PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cashmere/plugins")
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/cmake")
+include(CashmerePluginsFunctions)
+add_cashmere_plugin(hub
+  COMPILE_DEFINITIONS CASHMERE_BUILD_PLUGIN
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 

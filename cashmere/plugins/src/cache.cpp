@@ -58,4 +58,10 @@ BrokerBase* Journal::create(const std::string& url)
 {
   return new Journal(url);
 }
+
+extern "C" CASHMERE_EXPORT Cashmere::BrokerBase* create(const std::string& url)
+{
+  return new Cashmere::Journal(url);
+}
+
 }

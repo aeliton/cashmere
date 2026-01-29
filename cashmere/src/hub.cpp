@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "hub.h"
+#include "cashmere/hub.h"
 
 namespace Cashmere
 {
@@ -245,6 +245,14 @@ Clock Broker::relay(const Data& entry, Source sender)
 std::string Broker::schema() const
 {
   return "hub";
+}
+
+#ifdef CASHMERE_BUILD_PLUGIN
+extern "C" CASHMERE_EXPORT
+#endif
+Cashmere::BrokerBase* create(const std::string& url)
+{
+  return new Cashmere::Broker(url);
 }
 
 }

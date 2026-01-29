@@ -84,4 +84,9 @@ std::string JournalFile::schema() const
   return "file";
 }
 
+extern "C" CASHMERE_EXPORT Cashmere::BrokerBase* create(const std::string& url)
+{
+  return new Cashmere::JournalFile(url);
+}
+
 }
