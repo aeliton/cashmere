@@ -133,7 +133,7 @@ configure_package_config_file(
 install(
   EXPORT ${PROJECT_NAME}Targets
   FILE ${PROJECT_NAME}Targets.cmake
-  NAMESPACE ${PROJECT_NAME}::
+  NAMESPACE cashmere::
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
 )
 
