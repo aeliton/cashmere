@@ -20,7 +20,7 @@ target_sources(type_tests PRIVATE
 target_link_libraries (type_tests
   GTest::gmock
   GTest::gtest_main
-  cashmere::crdt
+  cashmere::cashmere_crdt
 )
 
 include(GoogleTest)

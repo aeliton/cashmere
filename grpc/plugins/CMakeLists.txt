@@ -1,5 +1,3 @@
-include(CashmerePluginsFunctions)
-
 add_cashmere_plugin(grpc
   COMPILE_DEFINITIONS
     CASHMERE_GRPC_BUILD_PLUGIN

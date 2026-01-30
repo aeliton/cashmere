@@ -17,6 +17,8 @@ cmake_minimum_required(VERSION 3.28)
 
 project(CashmereGrpc VERSION 0.0.1 LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
@@ -29,6 +31,7 @@ endif()
 
 if (PROJECT_IS_TOP_LEVEL)
   find_package(cashmere CONFIG REQUIRED)
+  find_package(CashmereCRDT CONFIG REQUIRED)
 endif()
 
 enable_testing()

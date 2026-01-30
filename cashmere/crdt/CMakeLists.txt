@@ -65,7 +65,7 @@ target_link_libraries(cashmere_crdt
   cashmere::cashmere_utils
 )
 
-add_library(cashmere::crdt ALIAS cashmere_crdt)
+add_library(cashmere::cashmere_crdt ALIAS cashmere_crdt)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 

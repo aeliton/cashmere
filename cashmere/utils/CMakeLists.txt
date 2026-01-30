@@ -35,8 +35,8 @@ add_subdirectory(tests)
 add_library(cashmere_utils SHARED)
 
 target_include_directories(cashmere_utils PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+  $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_sources(cashmere_utils PRIVATE

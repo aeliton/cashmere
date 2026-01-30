@@ -29,6 +29,10 @@ else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
+set(PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cashmere/plugins")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(CashmerePluginsFunctions)
+
 enable_testing()
 add_subdirectory(utils)
 add_subdirectory(crdt)
@@ -57,7 +61,7 @@ target_include_directories(cashmere_objects
 
 target_link_libraries(cashmere_objects
   PUBLIC
-    cashmere::crdt
+    cashmere::cashmere_crdt
     cashmere::cashmere_utils
 )
 
@@ -82,10 +86,6 @@ add_library(cashmere::cashmere ALIAS cashmere)
 set_target_properties(cashmere PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 
-set(PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cashmere/plugins")
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/cmake")
-include(CashmerePluginsFunctions)
 add_cashmere_plugin(hub
   COMPILE_DEFINITIONS CASHMERE_BUILD_PLUGIN
 )

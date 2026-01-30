@@ -29,8 +29,6 @@ else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
-include(CashmerePluginsFunctions)
-
 add_cashmere_plugin(cache)
 add_cashmere_plugin(file LINK_LIBRARIES cashmere::cashmere_utils)
 

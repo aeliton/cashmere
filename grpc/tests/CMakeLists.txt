@@ -20,10 +20,12 @@ target_include_directories(cashmere_grpc_tests PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_link_libraries (cashmere_grpc_tests
+target_link_libraries(cashmere_grpc_tests PUBLIC
+  $<BUILD_LOCAL_INTERFACE:plugin_grpc_objects>
   GTest::gmock
   GTest::gtest_main
-  $<BUILD_LOCAL_INTERFACE:plugin_grpc_objects>
+  cashmere::cashmere
+  cashmere::cashmere_crdt
 )
 
 include(GoogleTest)
