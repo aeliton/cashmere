@@ -125,6 +125,7 @@ install(
   FILES
     "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/CashmerePluginsFunctions.cmake"
   DESTINATION
     ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
 )
