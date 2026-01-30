@@ -21,7 +21,6 @@ target_link_libraries (cli_tests
   cashmere::cashmere
   cashmere::cashmere_utils
   options_objects
-  $<BUILD_LOCAL_INTERFACE:plugin_grpc_objects>
 )
 
 include(GoogleTest)

@@ -165,4 +165,9 @@ BrokerBasePtr GrpcRunner::broker()
   return _broker.lock();
 }
 
+extern "C" CASHMERE_EXPORT Cashmere::WrapperBase* create(const std::string& url)
+{
+  return new Cashmere::GrpcRunner(url);
+}
+
 }

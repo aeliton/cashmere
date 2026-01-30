@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#include "grpc.h"
+#include "cashmere/plugins/grpc.h"
 #include "cashmere/utils/grpc.h"
 
 #include <google/protobuf/empty.pb.h>
@@ -168,4 +168,11 @@ Clock BrokerGrpcStub::relay(const Data& entry, Source sender)
   return {{0, 0}};
 }
 
+#ifdef CASHMERE_GRPC_BUILD_PLUGIN
+extern "C" CASHMERE_EXPORT
+#endif
+Cashmere::BrokerBase* create(const std::string& url)
+{
+  return new Cashmere::BrokerGrpcStub(url);
+}
 }

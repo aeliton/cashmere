@@ -29,6 +29,8 @@ else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cashmere/cmake")
+
 enable_testing()
 
 add_subdirectory(cashmere)

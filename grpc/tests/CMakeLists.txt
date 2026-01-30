@@ -23,8 +23,6 @@ target_include_directories(cashmere_grpc_tests PRIVATE
 target_link_libraries (cashmere_grpc_tests
   GTest::gmock
   GTest::gtest_main
-  cashmere::cashmere
-  cashmere::grpc_utils
   $<BUILD_LOCAL_INTERFACE:plugin_grpc_objects>
 )
 
