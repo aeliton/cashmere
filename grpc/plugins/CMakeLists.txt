@@ -4,10 +4,7 @@ add_library(plugin_grpc_objects OBJECT
   ${CMAKE_CURRENT_SOURCE_DIR}/grpc.cpp
 )
 set_target_properties(plugin_grpc_objects PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_include_directories(plugin_grpc_objects
-  PRIVATE
-    $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>
-)
+
 target_link_libraries(plugin_grpc_objects
   PUBLIC
   cashmere::cashmere
