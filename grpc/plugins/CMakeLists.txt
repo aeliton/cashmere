@@ -18,3 +18,8 @@ target_link_libraries(plugin_grpc_objects PUBLIC
   cashmere::cashmere
   cashmere::grpc_utils
 )
+
+set_target_properties(plugin_grpc_objects PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN TRUE
+)

@@ -61,7 +61,7 @@ set_target_properties(cashmere_crdt PROPERTIES
 )
 
 target_link_libraries(cashmere_crdt
-  PRIVATE
+  PUBLIC
   cashmere::cashmere_utils
 )
 

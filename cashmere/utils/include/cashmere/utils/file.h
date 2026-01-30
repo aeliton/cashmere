@@ -19,6 +19,7 @@
 #include <istream>
 #include <filesystem>
 #include <vector>
+#include <cashmere/cashmere_export.h>
 
 namespace Cashmere
 {
@@ -28,27 +29,27 @@ constexpr char kOpenCurly = '{';
 constexpr char kCloseCurly = '}';
 constexpr char kLineFeed = '\n';
 
-std::string CreateTempDir();
+std::string CASHMERE_EXPORT CreateTempDir();
 
-void DeleteTempDir(std::string tempDir);
+void CASHMERE_EXPORT DeleteTempDir(std::string tempDir);
 
-bool ReadSpaces(std::istream& in);
+bool CASHMERE_EXPORT ReadSpaces(std::istream& in);
 
-bool ReadChar(std::istream& in, const char expected);
+bool CASHMERE_EXPORT ReadChar(std::istream& in, const char expected);
 
-bool ReadPair(std::istream& in, uint64_t& id, uint64_t& time);
+bool CASHMERE_EXPORT ReadPair(std::istream& in, uint64_t& id, uint64_t& time);
 
-bool SeekToLine(std::fstream& file, size_t line);
+bool CASHMERE_EXPORT SeekToLine(std::fstream& file, size_t line);
 
-std::string Filename(const std::string& base, uint64_t id);
+std::string CASHMERE_EXPORT Filename(const std::string& base, uint64_t id);
 
-size_t LineCount(const std::string& filename);
+size_t CASHMERE_EXPORT LineCount(const std::string& filename);
 
-std::filesystem::path InstallDirectory();
+std::filesystem::path CASHMERE_EXPORT InstallDirectory();
 
-std::vector<std::string> ListFiles(const std::string& path);
+std::vector<std::string> CASHMERE_EXPORT ListFiles(const std::string& path);
 
-struct TempDir
+struct CASHMERE_EXPORT  TempDir
 {
   TempDir()
     : directory(CreateTempDir())

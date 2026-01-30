@@ -19,6 +19,8 @@ function(add_cashmere_plugin PLUGIN_NAME)
   set_target_properties(${PLUGIN_NAME} PROPERTIES
     INSTALL_RPATH "$ORIGIN/../.."
     POSITION_INDEPENDENT_CODE ON
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN TRUE
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cashmere/plugins
   )
   install(

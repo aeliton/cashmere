@@ -17,11 +17,12 @@
 #define CASHMERE_RANDOM_H
 
 #include <random>
+#include <cashmere/cashmere_export.h>
 
 namespace Cashmere
 {
 
-class Random
+class CASHMERE_EXPORT  Random
 {
   std::mt19937_64 _engine;
   std::uniform_int_distribution<uint64_t> _distribution;

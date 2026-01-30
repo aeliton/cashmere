@@ -29,22 +29,13 @@ else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 include(CashmerePluginsFunctions)
 
 add_cashmere_plugin(cache)
 add_cashmere_plugin(file LINK_LIBRARIES cashmere::cashmere_utils)
 
-add_library(core_plugins INTERFACE)
-
-add_dependencies(core_plugins
-  cache
-  file
-)
-
 install(
-  TARGETS core_plugins
+  TARGETS cache file
   EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -49,6 +49,8 @@ add_library(cashmere::cashmere_utils ALIAS cashmere_utils)
 
 set_target_properties(cashmere_utils PROPERTIES
   POSITION_INDEPENDENT_CODE ON
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN TRUE
   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
 )
 

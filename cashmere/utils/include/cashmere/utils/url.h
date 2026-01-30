@@ -18,11 +18,12 @@
 
 #include <string>
 #include <ostream>
+#include <cashmere/cashmere_export.h>
 
 namespace Cashmere
 {
 
-struct Url
+struct CASHMERE_EXPORT Url
 {
   std::string url;
   std::string schema;
@@ -34,9 +35,9 @@ struct Url
   auto operator<=>(const Url&) const = default;
 };
 
-Url ParseUrl(const std::string& url);
+Url CASHMERE_EXPORT ParseUrl(const std::string& url);
 
-std::ostream& operator<<(std::ostream& os, const Url& data);
+std::ostream& CASHMERE_EXPORT operator<<(std::ostream& os, const Url& data);
 
 }
 
