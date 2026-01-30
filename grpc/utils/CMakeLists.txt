@@ -29,9 +29,7 @@ target_include_directories(grpc_utils
 )
 
 target_link_libraries(grpc_utils PUBLIC
-  cashmere::crdt
   cashmere::cashmere
-  cashmere::cashmere_utils
   cashmere::proto
 )
 

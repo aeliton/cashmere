@@ -17,8 +17,6 @@ cmake_minimum_required(VERSION 3.28)
 
 project(CashmereGrpc VERSION 0.0.1 LANGUAGES CXX)
 
-include(GNUInstallDirs)
-
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
@@ -42,7 +40,7 @@ add_subdirectory(plugins)
 add_subdirectory(tests)
 
 install(
-  TARGETS grpc_utils proto cashmere_utils cashmere_crdt
+  TARGETS grpc_utils proto
   EXPORT ${PROJECT_NAME}Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

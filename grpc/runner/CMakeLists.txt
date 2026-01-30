@@ -32,8 +32,6 @@ target_link_libraries(grpc_runner PRIVATE
   cashmere::grpc_utils
 )
 
-add_library(cashmere::grpc_runner ALIAS grpc_runner)
-
 set_target_properties(grpc_runner PROPERTIES
   LIBRARY_OUTPUT_NAME grpc
   POSITION_INDEPENDENT_CODE ON
