@@ -1,6 +1,6 @@
 ![build][1] ![docker-image][2]
 
-# Cashmere (in active development and nowhere near production)
+# Cashmere
 
 Cashmere is a distributed conflict-free replicated registry database. It's
 designed to allow multiple devices from the same pool to exchange data in
