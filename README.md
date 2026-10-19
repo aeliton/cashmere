@@ -102,7 +102,7 @@ end-to-end communication in between clients.
 ## Requirements
 
 - CMake
-- C++ compiler std-23
+- clang C++ compiler std-23
 - gRPC >= 1.51.0
 - googletests >= 1.17.0
 
@@ -111,7 +111,7 @@ end-to-end communication in between clients.
 ### Debian dependencies
 
 ```
-sudo apt install cmake ninja-build libgtest-dev gRPCConfig.cmake libgrpc-dev protobuf-compiler-grpc libedit-dev libgrpc++-dev
+sudo apt install clang cmake ninja-build libgtest-dev gRPCConfig.cmake libgrpc-dev protobuf-compiler-grpc libedit-dev libgrpc++-dev
 ```
 
 To configure, build and run the tests run:
