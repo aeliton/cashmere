@@ -108,6 +108,12 @@ end-to-end communication in between clients.
 
 ## Building
 
+### Debian dependencies
+
+```
+sudo apt install cmake ninja-build libgtest-dev gRPCConfig.cmake libgrpc-dev protobuf-compiler-grpc libedit-dev libgrpc++-dev
+```
+
 To configure, build and run the tests run:
 
 ```
