@@ -50,7 +50,7 @@ public:
   virtual SourcesMap sources(Source sender = 0) const = 0;
   virtual Clock relay(const Data& entry, Source sender) = 0;
   virtual std::set<Source> connectedPorts() const = 0;
-  virtual Source disconnect(Source source) = 0;
+  virtual bool disconnect(Source source) = 0;
   virtual Data entry(Clock) const;
 
   virtual EntryList entries() const;

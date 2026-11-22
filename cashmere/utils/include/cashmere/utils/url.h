@@ -37,7 +37,7 @@ struct CASHMERE_EXPORT Url
 
 Url CASHMERE_EXPORT ParseUrl(const std::string& url);
 
-std::ostream& CASHMERE_EXPORT operator<<(std::ostream& os, const Url& data);
+CASHMERE_EXPORT std::ostream& operator<<(std::ostream& os, const Url& data);
 
 }
 

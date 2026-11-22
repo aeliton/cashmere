@@ -78,7 +78,7 @@ Connection Broker::connect(Connection conn)
 
 bool Broker::refresh(const Connection& data, Source sender)
 {
-  if (sender <= 0 || static_cast<size_t>(sender) >= _connections.size()) {
+  if (!sender || static_cast<size_t>(sender) >= _connections.size()) {
     return false;
   }
 
@@ -92,7 +92,7 @@ bool Broker::refresh(const Connection& data, Source sender)
 
 Clock Broker::insert(const Entry& data, Source source)
 {
-  if (source < 0 || static_cast<size_t>(source) >= _connections.size()) {
+  if (static_cast<size_t>(source) >= _connections.size()) {
     return Clock{{0, 0}};
   }
 
@@ -155,10 +155,10 @@ IdClockMap Broker::versions() const
   return out;
 }
 
-Source Broker::disconnect(Source source)
+bool Broker::disconnect(Source source)
 {
-  if (source < 0 || _connections.size() <= static_cast<size_t>(source)) {
-    return -1;
+  if (static_cast<size_t>(source) >= _connections.size()) {
+    return false;
   }
   auto& conn = _connections.at(source);
   if (conn.valid()) {
@@ -166,7 +166,7 @@ Source Broker::disconnect(Source source)
     refreshConnections(source);
     return source;
   }
-  return -1;
+  return false;
 }
 
 Clock Broker::clock() const

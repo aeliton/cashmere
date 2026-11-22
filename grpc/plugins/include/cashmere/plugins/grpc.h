@@ -51,7 +51,7 @@ public:
   virtual std::set<Source> connectedPorts() const override {
     return {};
   }
-  virtual Source disconnect(Source) override {
+  virtual bool disconnect(Source) override {
     return {};
   }
 

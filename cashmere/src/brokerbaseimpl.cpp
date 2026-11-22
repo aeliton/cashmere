@@ -25,14 +25,14 @@ BrokerBase::Impl::Impl(const std::string& u)
 {
   try {
     id = std::stoul(url.id, nullptr, 16);
-  } catch (std::exception) {
+  } catch (std::exception&) {
     id = random->next();
   }
   size_t pos = url.hostport.find(':');
   hostname = url.hostport.substr(0, pos);
   try {
     port = std::stoul(url.hostport.substr(pos + 1), nullptr);
-  } catch (std::exception) {
+  } catch (std::exception&) {
     port = 0;
   }
 }

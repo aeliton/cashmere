@@ -43,7 +43,7 @@ public:
   virtual EntryList
   query(const Clock& from = {}, Source sender = 0) const override;
 
-  Source disconnect(Source source) override;
+  bool disconnect(Source source) override;
   virtual bool refresh(const Connection& conn, Source source) override;
   virtual std::set<Source> connectedPorts() const override;
 

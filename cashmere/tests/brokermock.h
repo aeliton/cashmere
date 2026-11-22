@@ -45,7 +45,7 @@ public:
   MOCK_METHOD(Clock, relay, (const Data& data, Source source), (override));
   MOCK_METHOD(std::string, schema, (), (const, override));
   MOCK_METHOD(std::set<Source>, connectedPorts, (), (const, override));
-  MOCK_METHOD(Source, disconnect, (Source source), (override));
+  MOCK_METHOD(bool, disconnect, (Source source), (override));
 };
 
 }
